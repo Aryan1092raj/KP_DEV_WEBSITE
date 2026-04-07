@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.png";
-import ThemeToggle from "../common/ThemeToggle";
 
 const links = [
   { to: "/admin", label: "Dashboard", end: true },
@@ -14,7 +13,7 @@ const links = [
   { to: "/admin/contact-messages", label: "Contact inbox" },
 ];
 
-export default function AdminSidebar({ darkMode, onToggleTheme, onLogout }) {
+export default function AdminSidebar({ onLogout }) {
   return (
     <aside className="border-b border-slate-200/80 bg-white/85 p-6 dark:border-white/10 dark:bg-white/5 lg:min-h-screen lg:border-b-0 lg:border-r">
       <div className="flex items-center justify-between gap-3 lg:block">
@@ -27,7 +26,6 @@ export default function AdminSidebar({ darkMode, onToggleTheme, onLogout }) {
           </p>
           <h2 className="mt-2 text-2xl font-semibold">KP Control Room</h2>
         </div>
-        <ThemeToggle darkMode={darkMode} onToggle={onToggleTheme} />
       </div>
 
       <nav className="mt-8 grid gap-2">

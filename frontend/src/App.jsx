@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import AdminSidebar from "./components/admin/AdminSidebar";
@@ -25,28 +25,24 @@ import ProjectsPage from "./pages/public/ProjectsPage";
 import TeamPage from "./pages/public/TeamPage";
 import ProtectedRoute from "./router/ProtectedRoute";
 
-function PublicLayout({ darkMode, onToggleTheme }) {
+function PublicLayout() {
   const { session, isAdmin } = useAuth();
 
   return (
     <div className="relative z-10">
-      <Navbar
-        authenticated={Boolean(session && isAdmin)}
-        darkMode={darkMode}
-        onToggleTheme={onToggleTheme}
-      />
+      <Navbar authenticated={Boolean(session && isAdmin)} />
       <Outlet />
       <Footer />
     </div>
   );
 }
 
-function AdminLayout({ darkMode, onToggleTheme }) {
+function AdminLayout() {
   const { logout } = useAuth();
 
   return (
     <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
-      <AdminSidebar darkMode={darkMode} onLogout={logout} onToggleTheme={onToggleTheme} />
+      <AdminSidebar onLogout={logout} />
       <main className="p-4 sm:p-6 lg:p-8">
         <Outlet />
       </main>
@@ -54,10 +50,10 @@ function AdminLayout({ darkMode, onToggleTheme }) {
   );
 }
 
-function AppRoutes({ darkMode, onToggleTheme }) {
+function AppRoutes() {
   return (
     <Routes>
-      <Route element={<PublicLayout darkMode={darkMode} onToggleTheme={onToggleTheme} />}>
+      <Route element={<PublicLayout />}>
         <Route element={<HomePage />} path="/" />
         <Route element={<ProjectsPage />} path="/projects" />
         <Route element={<TeamPage />} path="/team" />
@@ -71,7 +67,7 @@ function AppRoutes({ darkMode, onToggleTheme }) {
       <Route
         element={
           <ProtectedRoute>
-            <AdminLayout darkMode={darkMode} onToggleTheme={onToggleTheme} />
+            <AdminLayout />
           </ProtectedRoute>
         }
         path="/admin"
@@ -93,14 +89,11 @@ function AppRoutes({ darkMode, onToggleTheme }) {
 }
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(() =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
-  const particleColors = darkMode ? ["#ffffff"] : ["#000000"];
+  const particleColors = ["#ffffff"];
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
+    document.documentElement.classList.add("dark");
+  }, []);
 
   return (
     <AuthProvider>
@@ -112,25 +105,22 @@ export default function App() {
               cameraDistance={24}
               disableRotation={false}
               moveParticlesOnHover
-              particleBaseSize={500}
+              particleBaseSize={400}
               particleColors={particleColors}
               particleCount={1000}
               particleHoverFactor={0.65}
-              particleSpread={50}
+              particleSpread={40}
               pixelRatio={1}
               sizeRandomness={0.85}
-              speed={0.1}
+              speed={0.2}
             />
           </div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(14,26,52,0.42),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.12),transparent_30%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(241,245,249,0.78),rgba(248,250,252,0.82))] dark:bg-[linear-gradient(180deg,rgba(8,17,31,0.5),rgba(6,10,19,0.72))]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.5),rgba(6,10,19,0.72))]" />
         </div>
 
         <div className="relative z-10">
-          <AppRoutes
-            darkMode={darkMode}
-            onToggleTheme={() => setDarkMode((current) => !current)}
-          />
+          <AppRoutes />
         </div>
       </div>
     </AuthProvider>

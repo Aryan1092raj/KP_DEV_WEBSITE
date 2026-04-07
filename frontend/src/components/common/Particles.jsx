@@ -134,15 +134,16 @@ export default function Particles({
     window.addEventListener("resize", resize, false);
     resize();
 
-    const handleMouseMove = (event) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+    const handlePointerMove = (event) => {
+      const width = window.innerWidth || 1;
+      const height = window.innerHeight || 1;
+      const x = (event.clientX / width) * 2 - 1;
+      const y = -((event.clientY / height) * 2 - 1);
       mouseRef.current = { x, y };
     };
 
     if (moveParticlesOnHover) {
-      container.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("pointermove", handlePointerMove, { passive: true });
     }
 
     const count = particleCount;
@@ -231,7 +232,7 @@ export default function Particles({
       window.removeEventListener("resize", resize);
 
       if (moveParticlesOnHover) {
-        container.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("pointermove", handlePointerMove);
       }
 
       cancelAnimationFrame(animationFrameId);

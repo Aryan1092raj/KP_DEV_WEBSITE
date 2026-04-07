@@ -1,7 +1,6 @@
 import { Skeleton } from "boneyard-js/react";
 
 import { CardGridFallback } from "../../components/common/BoneyardFallbacks";
-import BounceCards from "../../components/common/BounceCards";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import ProjectCard from "../../components/public/ProjectCard";
 import { useFetch } from "../../hooks/useFetch";
@@ -63,17 +62,6 @@ export default function ProjectsPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const sourceProjects = (data?.length ? data : fixtureProjects).slice(0, 5);
-  const projectShowcaseCards = sourceProjects.map((project) => ({
-    id: project.id,
-    title: project.title,
-    subtitle: project.status || "project",
-    description: project.description,
-    badge: project.year ? String(project.year) : project.tech_stack?.[0] || "Build",
-    href: project.live_url || project.github_url || "/projects",
-    imageUrl: project.thumbnail_url || "",
-    cta: project.live_url ? "Live demo" : project.github_url ? "GitHub" : "View",
-  }));
 
   return (
     <div className="page-shell space-y-6">
@@ -83,26 +71,6 @@ export default function ProjectsPage() {
         </p>
         <h1 className="mt-3 text-4xl font-bold">Full build archive from the club database</h1>
       </div>
-
-      <section className="section-card overflow-hidden">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Visual stack
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold">Project quick cards</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Live records from database rendered as clickable cards.
-        </p>
-        <div className="mt-5">
-          <BounceCards
-            animationDelay={0.2}
-            cards={projectShowcaseCards}
-            containerHeight={280}
-            containerWidth="100%"
-            enableHover={!boneyardBuildMode}
-            imageAltPrefix="project"
-          />
-        </div>
-      </section>
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
 

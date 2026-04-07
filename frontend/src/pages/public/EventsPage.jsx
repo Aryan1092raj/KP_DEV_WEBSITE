@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import { EventsPageFallback } from "../../components/common/BoneyardFallbacks";
-import BounceCards from "../../components/common/BounceCards";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import EventCard from "../../components/public/EventCard";
 import { eventService } from "../../services/eventService";
@@ -62,17 +61,6 @@ export default function EventsPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const sourceEvents = (allEvents.length ? allEvents : fixtureAllEvents).slice(0, 5);
-  const eventShowcaseCards = sourceEvents.map((event) => ({
-    id: event.id,
-    title: event.title,
-    subtitle: event.event_type || "event",
-    description: event.description || "Club update",
-    badge: event.event_date,
-    href: event.resource_url || "/events",
-    cta: event.resource_url ? "Resources" : "View",
-    imageUrl: "",
-  }));
 
   async function load() {
     setLoading(true);
@@ -95,7 +83,28 @@ export default function EventsPage() {
     if (boneyardBuildMode) {
       return;
     }
+
     load();
+
+    const refresh = () => {
+      load();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refresh();
+      }
+    };
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const intervalId = window.setInterval(refresh, 30000);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(intervalId);
+    };
   }, [boneyardBuildMode]);
 
   return (
@@ -106,26 +115,6 @@ export default function EventsPage() {
         </p>
         <h1 className="mt-3 text-4xl font-bold">Workshops, talks, hackathons, and club sessions</h1>
       </div>
-
-      <section className="section-card overflow-hidden">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Event stack
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold">Upcoming and recent cards</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Live database events presented as clickable cards.
-        </p>
-        <div className="mt-5">
-          <BounceCards
-            animationDelay={0.2}
-            cards={eventShowcaseCards}
-            containerHeight={280}
-            containerWidth="100%"
-            enableHover={!boneyardBuildMode}
-            imageAltPrefix="event"
-          />
-        </div>
-      </section>
 
       {showError ? <ErrorMessage message={error} onRetry={load} /> : null}
 
