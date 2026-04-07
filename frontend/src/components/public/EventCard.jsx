@@ -1,10 +1,19 @@
 export default function EventCard({ event }) {
+  const status = event.is_ongoing ? "ongoing" : event.is_upcoming ? "upcoming" : "completed";
+  const statusLabel = status === "ongoing" ? "Ongoing" : status === "upcoming" ? "Upcoming" : "Completed";
+  const statusClass =
+    status === "upcoming"
+      ? "!bg-emerald-100 !text-emerald-700 dark:!bg-emerald-500/20 dark:!text-emerald-200"
+      : status === "ongoing"
+        ? "!bg-amber-100 !text-amber-700 dark:!bg-amber-500/20 dark:!text-amber-200"
+        : "";
+
   return (
     <article className="section-card h-full">
       <div className="flex items-center justify-between gap-3">
         <span className="chip">{event.event_type}</span>
-        <span className={`chip ${event.is_upcoming ? "!bg-emerald-100 !text-emerald-700 dark:!bg-emerald-500/20 dark:!text-emerald-200" : ""}`}>
-          {event.is_upcoming ? "Upcoming" : "Completed"}
+        <span className={`chip ${statusClass}`}>
+          {statusLabel}
         </span>
       </div>
       <h3 className="mt-4 text-2xl font-semibold">{event.title}</h3>
