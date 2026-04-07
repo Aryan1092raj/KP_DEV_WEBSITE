@@ -16,6 +16,18 @@ Production-grade implementation of the `ARCHITECTURE.md` system for Kamand Promp
 3. Run `docker compose up --build` from the repo root.
 4. Open `http://localhost:3000` for the app and `http://localhost:8000/docs` for FastAPI docs.
 
+## Keep Backend Running (Cron)
+
+This repo now includes a GitHub Actions cron workflow at `.github/workflows/backend-keepalive.yml`.
+
+1. In your GitHub repository settings, add a secret named `BACKEND_HEALTHCHECK_URL`.
+2. Set it to your deployed backend health URL (example: `https://your-backend-domain.up.railway.app/health`).
+3. The workflow runs every 10 minutes and sends a health ping.
+
+Notes:
+- This is the recommended way to keep request-driven deployments warm.
+- Locally, Docker Compose now uses `restart: unless-stopped` for the backend service.
+
 ## System Notes
 
 - Public pages load all dynamic content through FastAPI; there is no hardcoded showcase data in React pages.
