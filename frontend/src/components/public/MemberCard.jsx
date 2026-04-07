@@ -1,26 +1,40 @@
+import { useMemo, useState } from "react";
+
 export default function MemberCard({ member }) {
-  const initials = member.name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2);
+  const [imageFailed, setImageFailed] = useState(false);
+  const name = (member.name || "Anonymous").trim();
+  const photoUrl = typeof member.photo_url === "string" ? member.photo_url.trim() : "";
+  const showPhoto = Boolean(photoUrl) && !imageFailed;
+  const initials = useMemo(
+    () =>
+      name
+        .split(" ")
+        .filter(Boolean)
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase(),
+    [name],
+  );
 
   return (
     <article className="section-card h-full">
       <div className="flex items-center gap-4">
-        {member.photo_url ? (
+        {showPhoto ? (
           <img
-            alt={`${member.name} profile`}
+            alt={`${name} profile`}
             className="h-16 w-16 rounded-3xl border border-slate-200 object-cover dark:border-white/10"
-            src={member.photo_url}
+            loading="lazy"
+            onError={() => setImageFailed(true)}
+            src={photoUrl}
           />
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-ink text-xl font-bold text-white dark:bg-white/10">
-            {initials}
+            {initials || "A"}
           </div>
         )}
         <div>
-          <h3 className="text-xl font-semibold">{member.name}</h3>
+          <h3 className="text-xl font-semibold">{name}</h3>
           <p className="text-sm text-ember">{member.role}</p>
         </div>
       </div>

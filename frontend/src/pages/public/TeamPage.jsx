@@ -1,7 +1,10 @@
+import { useMemo } from "react";
 import { Skeleton } from "boneyard-js/react";
 
+import kpLogo from "../../assets/kp-logo.png";
 import { TeamGridFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import CircularGallery from "../../components/public/CircularGallery";
 import MemberCard from "../../components/public/MemberCard";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
@@ -68,6 +71,20 @@ export default function TeamPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
+  const membersToRender = boneyardBuildMode || loading || !(data ?? []).length ? fixtureMembers : data ?? [];
+
+  const galleryItems = useMemo(
+    () =>
+      membersToRender.map((member, index) => {
+        const image =
+          typeof member.photo_url === "string" && member.photo_url.trim()
+            ? member.photo_url.trim()
+            : kpLogo;
+        const text = member.name || `Member ${index + 1}`;
+        return { image, text };
+      }),
+    [membersToRender],
+  );
 
   return (
     <div className="page-shell space-y-6">
@@ -79,6 +96,19 @@ export default function TeamPage() {
       </div>
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
+
+      <section className="section-card !p-0">
+        <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
+          <CircularGallery
+            bend={1}
+            borderRadius={0.05}
+            items={galleryItems}
+            scrollEase={0.05}
+            scrollSpeed={2}
+            textColor="#ffffff"
+          />
+        </div>
+      </section>
 
       {!showError ? (
         <Skeleton
