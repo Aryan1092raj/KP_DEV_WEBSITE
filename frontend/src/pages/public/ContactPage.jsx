@@ -57,8 +57,12 @@ function ContactInfoCard({ label, value, href, icon }) {
     <div className="flex items-center gap-4 rounded-[22px] border border-white/10 bg-black/30 px-4 py-5">
       <div className="text-[#8e8b7c]">{icon}</div>
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-[#8e8b7c]">{label}</p>
-        <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+        <p className="text-xs uppercase tracking-[0.24em] text-[#8e8b7c]">
+          <VariableText label={label} radius={85} />
+        </p>
+        <p className="mt-1 text-xl font-semibold text-white">
+          <VariableText label={value} radius={85} />
+        </p>
       </div>
     </div>
   );
@@ -130,8 +134,11 @@ export default function ContactPage() {
         </h1>
         <p className="max-w-2xl text-base text-slate-600 dark:text-slate-300">
           <span className="font-mono text-ember">$ ./contact.sh --init</span>
-          {" "}Use the terminal-style contact panel below to write to Kamand Prompt,
-          reach the coordinator, or jump directly to the official socials.
+          {" "}
+          <VariableText
+            label="Use the terminal-style contact panel below to write to Kamand Prompt, reach the coordinator, or jump directly to the official socials."
+            radius={85}
+          />
         </p>
       </div>
 
@@ -195,26 +202,32 @@ export default function ContactPage() {
             </button>
 
             <div className="space-y-2 text-sm text-[#8e8b7c]">
-              <p>Saves your message to the club contact inbox in the database.</p>
               <p>
-                You can also email{" "}
+                <VariableText label="Saves your message to the club contact inbox in the database." radius={85} />
+              </p>
+              <p>
+                <VariableText label="You can also email" radius={85} />{" "}
                 <a
                   className="text-[#d5d0bf] underline-offset-4 hover:underline"
                   href="mailto:pc@iitmandi.ac.in"
                 >
-                  pc@iitmandi.ac.in
+                  <VariableText label="pc@iitmandi.ac.in" radius={85} />
                 </a>{" "}
-                directly or{" "}
+                <VariableText label="directly or" radius={85} />{" "}
                 <button
                   className="text-[#d5d0bf] underline-offset-4 hover:underline"
                   onClick={copyEmailAddress}
                   type="button"
                 >
-                  copy the email
+                  <VariableText label="copy the email" radius={85} />
                 </button>
                 .
               </p>
-              {copied ? <p className="text-emerald-300">Email copied to clipboard.</p> : null}
+              {copied ? (
+                <p className="text-emerald-300">
+                  <VariableText label="Email copied to clipboard." radius={85} />
+                </p>
+              ) : null}
             </div>
           </form>
         </TerminalPanel>
@@ -262,7 +275,7 @@ export default function ContactPage() {
                   className="mt-3 inline-block font-mono text-2xl text-[#d5d0bf] hover:text-white"
                   href="tel:+919418539191"
                 >
-                  +91 94185 39191
+                  <VariableText label="+91 94185 39191" radius={85} />
                 </a>
               </div>
             </div>
@@ -280,7 +293,7 @@ export default function ContactPage() {
                 >
                   {item.icon}
                   <span className="font-mono text-xl uppercase tracking-[0.12em]">
-                    {item.label}
+                    <VariableText label={item.label} radius={85} />
                   </span>
                 </a>
               ))}

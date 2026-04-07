@@ -11,7 +11,9 @@ export default function TimelineItem({ item }) {
       <h3 className="mt-2 text-xl font-semibold">
         <VariableText label={item.title} />
       </h3>
-      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
+      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+        <VariableText label={item.description} radius={85} />
+      </p>
     </div>
   );
 }

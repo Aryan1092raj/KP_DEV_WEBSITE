@@ -20,37 +20,37 @@ export default function Footer() {
         </div>
         <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            Website:{" "}
+            <VariableText label="Website:" radius={85} />{" "}
             <a
               className="text-ember underline-offset-4 hover:underline"
               href="https://pc.iitmandi.co.in"
               rel="noreferrer"
               target="_blank"
             >
-              https://pc.iitmandi.co.in
+              <VariableText label="https://pc.iitmandi.co.in" radius={85} />
             </a>
           </p>
           <p>
-            Email:{" "}
+            <VariableText label="Email:" radius={85} />{" "}
             <a
               className="text-ember underline-offset-4 hover:underline"
               href="mailto:pc@iitmandi.ac.in"
             >
-              pc@iitmandi.ac.in
+              <VariableText label="pc@iitmandi.ac.in" radius={85} />
             </a>
           </p>
           <p>
-            GitHub:{" "}
+            <VariableText label="GitHub:" radius={85} />{" "}
             <a
               className="text-ember underline-offset-4 hover:underline"
               href="https://github.com/KamandPrompt"
               rel="noreferrer"
               target="_blank"
             >
-              https://github.com/KamandPrompt
+              <VariableText label="https://github.com/KamandPrompt" radius={85} />
             </a>
           </p>
-          <p>Built for the official club website architecture.</p>
+          <p><VariableText label="Built for the official club website architecture." radius={85} /></p>
         </div>
       </div>
     </footer>

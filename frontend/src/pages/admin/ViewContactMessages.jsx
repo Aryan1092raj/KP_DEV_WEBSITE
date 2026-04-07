@@ -1,5 +1,6 @@
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { contactService } from "../../services/contactService";
 
@@ -17,10 +18,10 @@ export default function ViewContactMessages() {
     <div className="space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Contact inbox
+          <VariableText label="Contact inbox" radius={85} />
         </p>
         <h1 className="mt-3 text-4xl font-bold">
-          Review messages submitted from the public contact page
+          <VariableText label="Review messages submitted from the public contact page" />
         </h1>
       </div>
 
@@ -39,13 +40,13 @@ export default function ViewContactMessages() {
                       className="mt-1 inline-block text-sm text-ember underline-offset-4 hover:underline"
                       href={`mailto:${message.email}`}
                     >
-                      {message.email}
+                      <VariableText label={message.email} radius={85} />
                     </a>
                   </div>
                   <span className="chip">{formatDate(message.created_at)}</span>
                 </div>
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {message.message}
+                  <VariableText label={message.message} radius={85} />
                 </p>
               </div>
             ))}
@@ -53,7 +54,7 @@ export default function ViewContactMessages() {
         ) : (
           <div className="admin-card">
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              No contact messages have been submitted yet.
+              <VariableText label="No contact messages have been submitted yet." radius={85} />
             </p>
           </div>
         )
