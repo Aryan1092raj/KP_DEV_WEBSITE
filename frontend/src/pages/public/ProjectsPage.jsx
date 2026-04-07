@@ -2,6 +2,7 @@ import { Skeleton } from "boneyard-js/react";
 
 import { CardGridFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import VariableText from "../../components/common/VariableText";
 import ProjectCard from "../../components/public/ProjectCard";
 import { useFetch } from "../../hooks/useFetch";
 import { projectService } from "../../services/projectService";
@@ -67,9 +68,11 @@ export default function ProjectsPage() {
     <div className="page-shell space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Projects showcase
+          <VariableText label="Projects showcase" />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">Full build archive from the club database</h1>
+        <h1 className="mt-3 text-4xl font-bold">
+          <VariableText label="Full build archive from the club database" />
+        </h1>
       </div>
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}

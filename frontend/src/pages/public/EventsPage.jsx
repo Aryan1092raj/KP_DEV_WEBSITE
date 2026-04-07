@@ -3,6 +3,7 @@ import { Skeleton } from "boneyard-js/react";
 
 import { EventsPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import VariableText from "../../components/common/VariableText";
 import EventCard from "../../components/public/EventCard";
 import Lanyard from "../../components/public/Lanyard";
 import { eventService } from "../../services/eventService";
@@ -163,9 +164,11 @@ export default function EventsPage() {
     <div className="page-shell space-y-8">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Events and sessions
+          <VariableText label="Events and sessions" />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">Workshops, talks, hackathons, and club sessions</h1>
+        <h1 className="mt-3 text-4xl font-bold">
+          <VariableText label="Workshops, talks, hackathons, and club sessions" />
+        </h1>
       </div>
 
       {showError ? <ErrorMessage message={error} onRetry={load} /> : null}
@@ -175,10 +178,10 @@ export default function EventsPage() {
           <Lanyard gravity={[0, -40, 0]} position={[0, 0, 24]} />
           <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-2xl border border-white/20 bg-ink/65 p-4 backdrop-blur sm:inset-x-6 sm:bottom-6 sm:p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">
-              Event spotlight
+              <VariableText label="Event spotlight" radius={85} />
             </p>
             <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl">
-              {featuredEvent?.title || "KP Dev Sessions"}
+              <VariableText label={featuredEvent?.title || "KP Dev Sessions"} />
             </h2>
             <p className="mt-1 text-sm text-slate-200">
               {featuredEvent?.description || "Builds, talks, and hack nights from the KP community."}
@@ -193,7 +196,9 @@ export default function EventsPage() {
           fixture={
             <>
               <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">Upcoming</h2>
+                <h2 className="text-2xl font-semibold">
+                  <VariableText label="Upcoming" />
+                </h2>
                 <div className="grid gap-5 lg:grid-cols-2">
                   {fixtureUpcomingEvents.map((event) => (
                     <EventCard event={event} key={event.id} />
@@ -202,7 +207,9 @@ export default function EventsPage() {
               </section>
 
               <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">Ongoing</h2>
+                <h2 className="text-2xl font-semibold">
+                  <VariableText label="Ongoing" />
+                </h2>
                 <div className="grid gap-5 lg:grid-cols-2">
                   {fixtureOngoingEvents.map((event) => (
                     <EventCard event={event} key={event.id} />
@@ -211,7 +218,9 @@ export default function EventsPage() {
               </section>
 
               <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">All events</h2>
+                <h2 className="text-2xl font-semibold">
+                  <VariableText label="All events" />
+                </h2>
                 <div className="grid gap-5 lg:grid-cols-2">
                   {fixtureAllEvents.map((event) => (
                     <EventCard event={event} key={event.id} />
@@ -225,7 +234,9 @@ export default function EventsPage() {
         >
           <>
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">Upcoming</h2>
+              <h2 className="text-2xl font-semibold">
+                <VariableText label="Upcoming" />
+              </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {normalizedUpcoming.length ? (
                   normalizedUpcoming.map((event) => <EventCard event={event} key={event.id} />)
@@ -238,7 +249,9 @@ export default function EventsPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">Ongoing</h2>
+              <h2 className="text-2xl font-semibold">
+                <VariableText label="Ongoing" />
+              </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {ongoing.length ? (
                   ongoing.map((event) => <EventCard event={event} key={event.id} />)
@@ -251,7 +264,9 @@ export default function EventsPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">All events</h2>
+              <h2 className="text-2xl font-semibold">
+                <VariableText label="All events" />
+              </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {normalizedAllEvents.map((event) => (
                   <EventCard event={event} key={event.id} />

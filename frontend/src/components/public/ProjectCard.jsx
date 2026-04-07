@@ -1,12 +1,16 @@
+import VariableText from "../common/VariableText";
+
 export default function ProjectCard({ project }) {
   return (
     <article className="section-card flex h-full flex-col">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ember">
-            {project.status}
+            <VariableText label={project.status} radius={85} />
           </p>
-          <h3 className="mt-2 text-2xl font-semibold">{project.title}</h3>
+          <h3 className="mt-2 text-2xl font-semibold">
+            <VariableText label={project.title} />
+          </h3>
         </div>
         {project.year ? <span className="chip">{project.year}</span> : null}
       </div>

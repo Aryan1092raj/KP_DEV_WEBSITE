@@ -4,6 +4,7 @@ import { Skeleton } from "boneyard-js/react";
 import kpLogo from "../../assets/kp-logo.png";
 import { TeamGridFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import VariableText from "../../components/common/VariableText";
 import CircularGallery from "../../components/public/CircularGallery";
 import MemberCard from "../../components/public/MemberCard";
 import { useFetch } from "../../hooks/useFetch";
@@ -90,9 +91,11 @@ export default function TeamPage() {
     <div className="page-shell space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Core team
+          <VariableText label="Core team" />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">The builders behind Kamand Prompt</h1>
+        <h1 className="mt-3 text-4xl font-bold">
+          <VariableText label="The builders behind Kamand Prompt" />
+        </h1>
       </div>
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}

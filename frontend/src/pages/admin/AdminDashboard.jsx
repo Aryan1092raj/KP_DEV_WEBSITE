@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import VariableText from "../../components/common/VariableText";
 import { announcementService } from "../../services/announcementService";
 import { applicationService } from "../../services/applicationService";
 import { contactService } from "../../services/contactService";
@@ -76,16 +77,18 @@ export default function AdminDashboard() {
     <div className="space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Dashboard
+          <VariableText label="Dashboard" radius={85} />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">Admin summary pulled from the live API</h1>
+        <h1 className="mt-3 text-4xl font-bold">
+          <VariableText label="Admin summary pulled from the live API" />
+        </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {tiles.map((tile) => (
           <div key={tile.label} className="admin-card">
             <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
-              {tile.label}
+              <VariableText label={tile.label} radius={85} />
             </p>
             <p className="mt-3 text-4xl font-bold text-ink dark:text-white">{tile.value}</p>
           </div>
@@ -94,7 +97,9 @@ export default function AdminDashboard() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Recent announcements</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Recent announcements" />
+          </h2>
           <div className="mt-4 space-y-4">
             {summary.announcements.slice(0, 4).map((announcement) => (
               <div key={announcement.id} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
@@ -108,7 +113,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Application queue</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Application queue" />
+          </h2>
           <div className="mt-4 space-y-4">
             {summary.applications.slice(0, 5).map((application) => (
               <div key={application.id} className="rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
@@ -125,7 +132,9 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-card xl:col-span-2">
-          <h2 className="text-2xl font-semibold">Latest contact messages</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Latest contact messages" />
+          </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {summary.contactMessages.length ? (
               summary.contactMessages.slice(0, 4).map((message) => (

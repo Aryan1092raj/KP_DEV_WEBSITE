@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 
+import VariableText from "../common/VariableText";
+
 export default function MemberCard({ member }) {
   const [imageFailed, setImageFailed] = useState(false);
   const name = (member.name || "Anonymous").trim();
@@ -34,8 +36,12 @@ export default function MemberCard({ member }) {
           </div>
         )}
         <div>
-          <h3 className="text-xl font-semibold">{name}</h3>
-          <p className="text-sm text-ember">{member.role}</p>
+          <h3 className="text-xl font-semibold">
+            <VariableText label={name} />
+          </h3>
+          <p className="text-sm text-ember">
+            <VariableText label={member.role} radius={85} />
+          </p>
         </div>
       </div>
       <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{member.bio || "KP core contributor"}</p>

@@ -1,3 +1,5 @@
+import VariableText from "../common/VariableText";
+
 export default function EventCard({ event }) {
   const status = event.is_ongoing ? "ongoing" : event.is_upcoming ? "upcoming" : "completed";
   const statusLabel = status === "ongoing" ? "Ongoing" : status === "upcoming" ? "Upcoming" : "Completed";
@@ -11,12 +13,16 @@ export default function EventCard({ event }) {
   return (
     <article className="section-card h-full">
       <div className="flex items-center justify-between gap-3">
-        <span className="chip">{event.event_type}</span>
+        <span className="chip">
+          <VariableText label={event.event_type} radius={85} />
+        </span>
         <span className={`chip ${statusClass}`}>
-          {statusLabel}
+          <VariableText label={statusLabel} radius={85} />
         </span>
       </div>
-      <h3 className="mt-4 text-2xl font-semibold">{event.title}</h3>
+      <h3 className="mt-4 text-2xl font-semibold">
+        <VariableText label={event.title} />
+      </h3>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">{event.event_date}</p>
       <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
         {event.description || "Details will be shared with the club community."}

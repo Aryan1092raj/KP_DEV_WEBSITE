@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.png";
+import VariableText from "./VariableText";
 
 const links = [
   { to: "/", label: "Home" },
@@ -21,9 +22,11 @@ export default function Navbar({ authenticated }) {
           </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              IIT Mandi
+              <VariableText label="IIT Mandi" />
             </p>
-            <p className="text-lg font-semibold">Kamand Prompt</p>
+            <p className="text-lg font-semibold">
+              <VariableText label="Kamand Prompt" />
+            </p>
           </div>
         </Link>
 
@@ -38,14 +41,14 @@ export default function Navbar({ authenticated }) {
               }
               to={link.to}
             >
-              {link.label}
+              <VariableText label={link.label} radius={85} />
             </NavLink>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
           <Link className="btn-primary !px-4 !py-2" to={authenticated ? "/admin" : "/admin/login"}>
-            {authenticated ? "Dashboard" : "Admin login"}
+            <VariableText label={authenticated ? "Dashboard" : "Admin login"} radius={85} />
           </Link>
         </div>
       </div>
