@@ -1,4 +1,5 @@
 import kpLogo from "../../assets/kp-logo.png";
+import VariableText from "./VariableText";
 
 export default function Footer() {
   return (
@@ -11,9 +12,11 @@ export default function Footer() {
             src={kpLogo}
           />
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Eat, Sleep, Code, Repeat
+            <VariableText label="Eat, Sleep, Code, Repeat" />
           </p>
-          <h3 className="mt-2 text-2xl font-semibold">KP Dev Cell, IIT Mandi</h3>
+          <h3 className="mt-2 text-2xl font-semibold">
+            <VariableText label="KP Dev Cell, IIT Mandi" />
+          </h3>
         </div>
         <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <p>

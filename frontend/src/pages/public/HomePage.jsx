@@ -10,6 +10,7 @@ import {
   TimelineAnnouncementFallback,
 } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import VariableText from "../../components/common/VariableText";
 import AnnouncementCard from "../../components/public/AnnouncementCard";
 import HeroSection from "../../components/public/HeroSection";
 import MemberCard from "../../components/public/MemberCard";
@@ -258,9 +259,11 @@ export default function HomePage() {
               <div className="section-card space-y-6">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-                    Club timeline
+                    <VariableText label="Club timeline" />
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold">Milestones that shaped KP</h2>
+                  <h2 className="mt-2 text-3xl font-semibold">
+                    <VariableText label="Milestones that shaped KP" />
+                  </h2>
                 </div>
                 {timelineFixture.map((item) => (
                   <TimelineItem item={item} key={item.id} />
@@ -270,9 +273,11 @@ export default function HomePage() {
               <div className="space-y-5">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-                    Announcements
+                    <VariableText label="Announcements" />
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold">What the club is saying this week</h2>
+                  <h2 className="mt-2 text-3xl font-semibold">
+                    <VariableText label="What the club is saying this week" />
+                  </h2>
                 </div>
                 <div className="grid gap-5">
                   {announcementFixture.map((announcement) => (
@@ -315,12 +320,14 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              Featured projects
+              <VariableText label="Featured projects" />
             </p>
-            <h2 className="mt-2 text-3xl font-semibold">What the club is building right now</h2>
+            <h2 className="mt-2 text-3xl font-semibold">
+              <VariableText label="What the club is building right now" />
+            </h2>
           </div>
           <Link className="btn-secondary" to="/projects">
-            See all projects
+            <VariableText label="See all projects" radius={85} />
           </Link>
         </div>
         <div className="grid gap-5 lg:grid-cols-2">
@@ -334,12 +341,14 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              Core team
+              <VariableText label="Core team" />
             </p>
-            <h2 className="mt-2 text-3xl font-semibold">People who keep the loop alive</h2>
+            <h2 className="mt-2 text-3xl font-semibold">
+              <VariableText label="People who keep the loop alive" />
+            </h2>
           </div>
           <Link className="btn-secondary" to="/team">
-            Meet the team
+            <VariableText label="Meet the team" radius={85} />
           </Link>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -353,9 +362,11 @@ export default function HomePage() {
         <div className="section-card space-y-6">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              Club timeline
+              <VariableText label="Club timeline" />
             </p>
-            <h2 className="mt-2 text-3xl font-semibold">Milestones that shaped KP</h2>
+            <h2 className="mt-2 text-3xl font-semibold">
+              <VariableText label="Milestones that shaped KP" />
+            </h2>
           </div>
           {data.timeline.slice(0, 5).map((item) => (
             <TimelineItem item={item} key={item.id} />
@@ -365,9 +376,11 @@ export default function HomePage() {
         <div className="space-y-5">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              Announcements
+              <VariableText label="Announcements" />
             </p>
-            <h2 className="mt-2 text-3xl font-semibold">What the club is saying this week</h2>
+            <h2 className="mt-2 text-3xl font-semibold">
+              <VariableText label="What the club is saying this week" />
+            </h2>
           </div>
           <div className="grid gap-5">
             {data.announcements.slice(0, 3).map((announcement) => (

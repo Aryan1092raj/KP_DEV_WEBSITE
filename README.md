@@ -187,3 +187,36 @@ Notes:
 - Backend import and route registration verified with `python` from `backend/`.
 - FastAPI smoke checks verified `200 /health`, `401` missing token, `401` invalid token, `403` non-admin token, and `422` invalid admin payload with a valid admin token.
 - `docker compose config` verified the new Compose topology. Building images requires a running Docker daemon plus real Supabase credentials.
+
+## Variable Proximity Typography (Global Text Effect)
+
+This repository now includes a motion-based variable-font text system that reacts to cursor proximity across the app.
+
+- Installed package: `motion` (`npm install motion` in `frontend/`).
+- Core component: `frontend/src/components/common/VariableProximity.jsx`.
+- Styling: `frontend/src/components/common/VariableProximity.css`.
+- App-wide wrapper: `frontend/src/components/common/VariableText.jsx`.
+- Global container context: `frontend/src/context/ProximityContext.jsx`.
+- App integration point: `frontend/src/App.jsx` (provides a shared container ref for proximity calculations).
+
+Default settings used by `VariableText`:
+
+- `fromFontVariationSettings`: `'wght' 400, 'opsz' 9`
+- `toFontVariationSettings`: `'wght' 1000, 'opsz' 40`
+- `radius`: `100`
+- `falloff`: `gaussian`
+
+Usage example:
+
+```jsx
+import VariableText from "../../components/common/VariableText";
+
+<h1 className="text-4xl font-bold">
+	<VariableText label="Workshops, talks, hackathons, and club sessions" />
+</h1>
+```
+
+Notes:
+
+- The effect is intentionally applied to major UI text surfaces (headings, labels, CTA text, and card titles) across shared components and pages for broad consistency.
+- Global body text also uses `Roboto Flex` with variable font settings via `frontend/src/index.css`.

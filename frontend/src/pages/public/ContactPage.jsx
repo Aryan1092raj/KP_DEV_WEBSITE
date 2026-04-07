@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { contactService } from "../../services/contactService";
 
 const socialLinks = [
@@ -44,7 +45,7 @@ function TerminalPanel({ title, children, className = "" }) {
   return (
     <section className={`overflow-hidden rounded-[28px] border border-white/10 bg-[#070707] text-white shadow-soft ${className}`}>
       <div className="border-b border-white/10 px-5 py-4 text-sm uppercase tracking-[0.22em] text-[#8e8b7c]">
-        {title}
+        <VariableText label={title} radius={85} />
       </div>
       <div className="p-5 sm:p-7">{children}</div>
     </section>
@@ -122,9 +123,11 @@ export default function ContactPage() {
       <Toast onClose={() => setToast(null)} toast={toast} />
       <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          ./JOIN.SH
+          <VariableText label="./JOIN.SH" radius={85} />
         </p>
-        <h1 className="text-4xl font-bold sm:text-5xl">Contact us</h1>
+        <h1 className="text-4xl font-bold sm:text-5xl">
+          <VariableText label="Contact us" />
+        </h1>
         <p className="max-w-2xl text-base text-slate-600 dark:text-slate-300">
           <span className="font-mono text-ember">$ ./contact.sh --init</span>
           {" "}Use the terminal-style contact panel below to write to Kamand Prompt,
