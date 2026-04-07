@@ -6,13 +6,13 @@ export default function HeroSection({ stats }) {
   return (
     <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="section-card overflow-hidden">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">
           <VariableText label="Official Programming Club" />
         </p>
         <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-tight">
           <VariableText label="We turn curiosity into code, demos, and deep engineering culture." />
         </h1>
-        <p className="mt-5 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+        <p className="mt-5 max-w-2xl text-lg text-white">
           <VariableText
             label="Kamand Prompt brings together builders at IIT Mandi through projects, workshops, talks, hackathons, and a relentless practice loop."
             radius={80}
@@ -30,7 +30,7 @@ export default function HeroSection({ stats }) {
 
       <div className="section-card flex flex-col justify-between bg-ink text-white dark:bg-white/5">
         <div>
-          <p className="text-sm uppercase tracking-[0.28em] text-orange-300">
+          <p className="text-sm uppercase tracking-[0.28em] text-white">
             <VariableText label="Club Pulse" />
           </p>
           <h2 className="mt-4 text-3xl font-semibold">
@@ -43,8 +43,8 @@ export default function HeroSection({ stats }) {
               key={stat.label}
               className="rounded-[22px] border border-white/10 bg-white/5 p-4"
             >
-              <p className="text-3xl font-bold text-orange-300">{stat.value}</p>
-              <p className="mt-2 text-sm text-slate-200">
+              <p className="text-3xl font-bold text-white">{stat.value}</p>
+              <p className="mt-2 text-sm text-white">
                 <VariableText label={stat.label} radius={90} />
               </p>
             </div>

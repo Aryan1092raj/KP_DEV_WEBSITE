@@ -94,6 +94,12 @@ export default function ApplyPage() {
             <textarea autoComplete="off" className="input min-h-[110px]" name="skills" onChange={handleChange} value={form.skills} />
           </label>
           <button className="btn-primary" disabled={loading} type="submit">
+            {loading ? (
+              <span
+                aria-hidden="true"
+                className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              />
+            ) : null}
             <VariableText label={loading ? "Submitting..." : "Submit application"} radius={85} />
           </button>
         </form>

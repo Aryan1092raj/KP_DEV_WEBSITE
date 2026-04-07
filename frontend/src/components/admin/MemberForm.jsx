@@ -120,7 +120,7 @@ export default function MemberForm({ initialData, onSubmit, onCancel, loading })
         </span>
         <input accept="image/*" className="input" onChange={handlePhotoUpload} type="file" />
       </label>
-      {photoError ? <p className="text-sm text-rose-400">{photoError}</p> : null}
+      {photoError ? <p className="text-sm text-white">{photoError}</p> : null}
       {form.photo_url ? (
         <div className="rounded-2xl border border-slate-200/80 p-3 dark:border-white/10">
           <p className="mb-2 text-xs uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">

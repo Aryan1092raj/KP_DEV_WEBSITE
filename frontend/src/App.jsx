@@ -90,7 +90,7 @@ function AppRoutes() {
 }
 
 export default function App() {
-  const particleColors = ["#ffffff"];
+  const particleColors = ["#ffffff", "#d4d4d4", "#8a8a8a"];
   const proximityContainerRef = useRef(null);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function App() {
       <ProximityContainerProvider containerRef={proximityContainerRef}>
         <div className="relative isolate min-h-screen overflow-x-hidden" ref={proximityContainerRef}>
           <div className="pointer-events-none fixed inset-0 z-0">
-            <div className="absolute inset-0 opacity-75 dark:opacity-90">
+            <div className="absolute inset-0 opacity-90">
               <Particles
                 alphaParticles
                 cameraDistance={24}
@@ -118,8 +118,6 @@ export default function App() {
                 speed={0.2}
               />
             </div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(14,26,52,0.42),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(249,115,22,0.12),transparent_30%)]" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.5),rgba(6,10,19,0.72))]" />
           </div>
 
           <div className="relative z-10">

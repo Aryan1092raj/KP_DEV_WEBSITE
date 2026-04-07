@@ -16,6 +16,12 @@ Production-grade implementation of the `ARCHITECTURE.md` system for Kamand Promp
 3. Run `docker compose up --build` from the repo root.
 4. Open `http://localhost:3000` for the app and `http://localhost:8000/docs` for FastAPI docs.
 
+## Environment Scope
+
+- `backend/.env`: Required for backend runtime in Docker Compose (`docker-compose.yml` uses `env_file: ./backend/.env`).
+- `frontend/.env`: Required for frontend build/runtime variables (Vite `VITE_*`).
+- Root `.env`: Not used by current Docker Compose or runtime code paths in this repository, so it is intentionally removed to avoid confusion.
+
 ## Keep Backend Running (Cron)
 
 This repo now includes a GitHub Actions cron workflow at `.github/workflows/backend-keepalive.yml`.
@@ -32,8 +38,9 @@ Notes:
 
 - Public pages load all dynamic content through FastAPI; there is no hardcoded showcase data in React pages.
 - Admin routes require a Supabase JWT and `app_metadata.role === "admin"`; `user_metadata.role` is accepted only as a fallback for older users.
-- The frontend keeps the access token in memory through `AuthContext`; the app does not manually write auth tokens to `localStorage`.
+- The frontend uses Supabase session persistence with auto-refresh enabled, and `AuthContext` syncs session/user state for guarded routes.
 - The backend uses the Supabase anon key so RLS remains in force instead of being bypassed by a service role.
+- Backend admin APIs include in-app request rate limiting and failed-auth logging for hardening.
 
 ## File Inventory
 
@@ -46,6 +53,7 @@ Notes:
 - `cmd.txt`: Local command reference for common run/debug workflows; input is developer setup choices; output is quick operational commands for Docker and local runs.
 - `.gitignore`: Hides `.env`, build output, caches, and local tooling files; input is generated artifacts; output is a clean repo state; protects secrets and runtime noise.
 - `.dockerignore`: Filters noisy root files from Docker contexts where applicable; input is local dev artifacts; output is smaller build contexts; complements containerized builds.
+- `.github/workflows/backend-keepalive.yml`: Scheduled health-ping workflow; input is `BACKEND_HEALTHCHECK_URL` GitHub secret; output is periodic backend keepalive requests to reduce cold starts.
 - `package-lock.json`: Root lockfile used by workspace-level npm operations; input is resolved package graph; output is deterministic installs at root scope.
 - `README.md`: Setup, runtime notes, and per-file documentation; input is the built repo structure; output is evaluator-facing guidance; explains how all layers fit.
 
@@ -56,9 +64,9 @@ Notes:
 - `backend/requirements.txt`: Pins backend dependencies; input is Python package requirements; output is a reproducible environment; supports FastAPI, Supabase, JWT, and validation.
 - `backend/.env.example`: Documents required backend env vars; input is deployment configuration; output is a copyable template; drives FastAPI, CORS, and Supabase connectivity.
 - `backend/app/main.py`: Initializes FastAPI, CORS, exception handlers, health route, and all routers; input is requests plus imported routers; output is the ASGI app; central backend entrypoint.
-- `backend/app/config.py`: Defines `Settings`; input is `backend/.env`; output is shared typed config; imported by app startup, auth, and Supabase client helpers.
+- `backend/app/config.py`: Defines `Settings`; input is `backend/.env`; output is shared typed config (including admin rate-limit knobs); imported by app startup, auth, and Supabase client helpers.
 - `backend/app/db/client.py`: Exposes `get_supabase()` and `get_postgrest_client()`; input is backend settings and optional caller JWT; output is cached or request-scoped database clients; keeps backend DB access consistent and RLS-aware.
-- `backend/app/middleware/auth.py`: Defines `verify_admin()`; input is Bearer credentials; output is decoded JWT metadata or 401/403 JSON; guards every admin route.
+- `backend/app/middleware/auth.py`: Defines `verify_admin()`; input is Bearer credentials; output is decoded JWT metadata or 401/403 JSON with failed-auth logging; guards every admin route.
 - `backend/app/exceptions/handlers.py`: Defines `error_payload()`, `raise_not_found()`, `raise_conflict()`, and global handlers; input is FastAPI/validation/PostgREST errors; output is structured JSON errors; standardizes backend failure behavior.
 
 #### Backend Models
@@ -98,13 +106,21 @@ Notes:
 - `frontend/src/main.jsx`: Mounts React into `#root`; input is `App.jsx`; output is the running SPA inside `BrowserRouter`; frontend bootstrap.
 - `frontend/src/assets/kp-logo.png`: Primary logo used in navbar/footer/admin UI; input is exported brand image; output is consistent in-app identity visuals.
 - `frontend/src/bones/registry.js`: Initializes the `boneyard-js` registry import path; input is generated or registered bones; output is globally available skeleton layouts; imported once at app startup.
+- `frontend/src/bones/home-hero.bones.json`: Skeleton contract for homepage hero loading shape; input is captured hero DOM; output is reusable loading scaffold for home hero region.
+- `frontend/src/bones/home-stats.bones.json`: Skeleton contract for homepage stats loading shape; input is captured stats DOM; output is reusable loading scaffold for stat cards.
+- `frontend/src/bones/home-projects-preview.bones.json`: Skeleton contract for homepage project preview loading shape; input is captured project preview DOM; output is reusable loading scaffold for featured projects.
+- `frontend/src/bones/home-team-preview.bones.json`: Skeleton contract for homepage team preview loading shape; input is captured team preview DOM; output is reusable loading scaffold for featured members.
+- `frontend/src/bones/home-timeline-announcements.bones.json`: Skeleton contract for homepage timeline/announcement loading shape; input is captured timeline + announcement DOM; output is reusable loading scaffold for these sections.
+- `frontend/src/bones/projects-grid.bones.json`: Skeleton contract for projects page grid loading shape; input is captured projects grid DOM; output is reusable loading scaffold for project-list loading.
+- `frontend/src/bones/team-grid.bones.json`: Skeleton contract for team page grid loading shape; input is captured team grid DOM; output is reusable loading scaffold for team-list loading.
+- `frontend/src/bones/events-page.bones.json`: Skeleton contract for events page loading shape; input is captured events DOM; output is reusable loading scaffold for events loading states.
 - `frontend/src/App.jsx`: Declares public/admin route trees, layouts, theme state, and protected admin area; input is current route and auth state; output is routed page rendering; central frontend entrypoint.
 - `frontend/src/index.css`: Defines Tailwind layers, shared classes, theme styling, and design tokens; input is Tailwind processing; output is the app stylesheet; shared by all pages and components.
 
 #### Frontend Auth / Library / Hooks
 
 - `frontend/src/context/AuthContext.jsx`: Provides `AuthProvider`, `login`, `logout`, and in-memory session state; input is Supabase auth events and login credentials; output is shared auth/session context; integrates Axios interceptors with route protection.
-- `frontend/src/lib/supabase.js`: Creates the frontend Supabase client; input is `VITE_SUPABASE_*` env vars; output is a configured auth client with `persistSession: false`; used only for frontend auth.
+- `frontend/src/lib/supabase.js`: Creates the frontend Supabase client; input is `VITE_SUPABASE_*` env vars; output is a configured auth client with session persistence and auto-refresh; used only for frontend auth.
 - `frontend/src/lib/api.js`: Creates the shared Axios instance plus request/response interceptors; input is API base URL and current access token; output is authenticated HTTP requests and normalized errors; used by every service file.
 - `frontend/src/hooks/useAuth.js`: Thin hook over `AuthContext`; input is provider state; output is auth helpers; consumed by routes, layouts, and login/logout actions.
 - `frontend/src/hooks/useFetch.js`: Generic loading/error/data hook with `refetch`; input is any async fetcher; output is request state and refresh control; used by public and admin pages.
@@ -124,6 +140,9 @@ Notes:
 - `frontend/src/components/common/Navbar.jsx`: Public site header and nav; input is route state, auth presence, and theme toggle props; output is top-level navigation UI; shared across public pages.
 - `frontend/src/components/common/Particles.jsx`: Renders the OGL-based particle background globally across public and admin routes; input is particle count/spread/speed/theme color props; output is a full-screen animated canvas background.
 - `frontend/src/components/common/Particles.css`: Defines container/canvas sizing for the OGL particle background; input is global background layout; output is proper full-screen canvas behavior.
+- `frontend/src/components/common/VariableProximity.jsx`: Core motion-based variable-font interpolation component; input is mouse position and typography settings; output is proximity-reactive text rendering.
+- `frontend/src/components/common/VariableProximity.css`: Styling for variable proximity text behavior; input is text animation config styles; output is smooth variable-font transitions.
+- `frontend/src/components/common/VariableText.jsx`: Project-wide wrapper around `VariableProximity`; input is label text and optional radius/falloff; output is consistent dynamic typography across UI surfaces.
 - `frontend/src/components/common/BounceCards.jsx`: Animated GSAP card-stack component for clickable project/event highlights; input is card data (title, badge, description, links, optional image); output is interactive stacked showcase cards.
 - `frontend/src/components/common/BounceCards.css`: Styling layer for BounceCards layout, typography, and hover presentation; input is card-stack design tokens; output is polished interactive card visuals.
 - `frontend/src/components/common/Antigravity.jsx`: Legacy three.js background component retained for experimentation; input is particle-field props; output is an alternative animated scene that is currently not mounted in `App.jsx`.
@@ -139,6 +158,10 @@ Notes:
 #### Frontend Public Components
 
 - `frontend/src/components/public/HeroSection.jsx`: Homepage hero and CTA block; input is computed live stats; output is the homepage lead section; fed by `HomePage`.
+- `frontend/src/components/public/CircularGallery.jsx`: OGL-powered circular media gallery used for team visuals; input is member image/text items and interaction state; output is animated radial gallery rendering.
+- `frontend/src/components/public/CircularGallery.css`: Styling for circular gallery wrapper and responsiveness; input is gallery layout tokens; output is stable viewport-aware gallery presentation.
+- `frontend/src/components/public/Lanyard.jsx`: Three.js/R3F-based hanging card visual module; input is logo texture, physics settings, and pointer interaction; output is an interactive lanyard visual.
+- `frontend/src/components/public/Lanyard.css`: Layout styles for lanyard container and sizing; input is lanyard viewport constraints; output is responsive lanyard placement.
 - `frontend/src/components/public/ProjectCard.jsx`: Project presentation card; input is one project record; output is project summary UI with links and contributors; used on home and projects pages.
 - `frontend/src/components/public/MemberCard.jsx`: Team presentation card; input is one member record; output is member profile UI; used on home and team pages.
 - `frontend/src/components/public/EventCard.jsx`: Event/session presentation card; input is one event record; output is event summary UI; used on events pages.
@@ -167,7 +190,7 @@ Notes:
 
 #### Frontend Admin Pages
 
-- `frontend/src/pages/admin/AdminLoginPage.jsx`: Handles Supabase email/password login; input is credentials; output is authenticated admin session state and redirect; entrypoint to the protected portal.
+- `frontend/src/pages/admin/AdminLoginPage.jsx`: Hardened admin login entrypoint for Supabase email/password auth; input is credentials and validation state; output is authenticated admin session redirect with lock icon, security messaging, inline validation, show-password toggle, loading spinner, failed-attempt feedback, cooldown lockout, and captcha challenge.
 - `frontend/src/pages/admin/AdminDashboard.jsx`: Loads summary metrics for members, projects, events, milestones, announcements, and applications; input is parallel admin service calls; output is the admin overview; surfaces system state quickly.
 - `frontend/src/pages/admin/ManageMembers.jsx`: Member CRUD screen with toasts and confirm-before-delete; input is member form actions; output is create/update/delete calls and refreshed lists; manages the team dataset.
 - `frontend/src/pages/admin/ManageProjects.jsx`: Project CRUD screen with contributor selection; input is project form state and active members; output is project mutations and refreshed lists; manages showcase content plus junction-table links.
@@ -187,6 +210,29 @@ Notes:
 - Backend import and route registration verified with `python` from `backend/`.
 - FastAPI smoke checks verified `200 /health`, `401` missing token, `401` invalid token, `403` non-admin token, and `422` invalid admin payload with a valid admin token.
 - `docker compose config` verified the new Compose topology. Building images requires a running Docker daemon plus real Supabase credentials.
+- Global particles are rendered from `frontend/src/App.jsx` at app-shell level, so they stay active for both public and admin routes.
+- Black/Charcoal connected theme is centralized in `frontend/src/index.css`, so admin and public cards/options share the same visual language.
+
+## Admin Login Security UX
+
+- Page title updated to: `Admin Panel Access - IIT Mandi`.
+- Subtle access footer added: `Authorized access only` and `© IIT Mandi`.
+- Lock icon and explicit `Secure login via Supabase` signal added.
+- Inline form validation added for invalid email and empty password.
+- Show-password toggle and loading spinner on submit added.
+- Failed login feedback now includes attempts remaining.
+- Cooldown lockout after repeated failures added on UI.
+- Captcha challenge appears after repeated failed attempts.
+- Last-login display added in the admin sidebar after authentication.
+
+## Backend Hardening Notes
+
+- Admin API rate limiting middleware added in `backend/app/main.py`.
+- Failed admin-auth attempts are logged in `backend/app/middleware/auth.py`.
+- Rate-limit settings are configurable with:
+	- `ADMIN_RATE_LIMIT_REQUESTS`
+	- `ADMIN_RATE_LIMIT_WINDOW_SECONDS`
+- RLS remains enforced through Supabase + anon-key access pattern.
 
 ## Variable Proximity Typography (Global Text Effect)
 

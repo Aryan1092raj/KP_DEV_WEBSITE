@@ -43,8 +43,10 @@ const socialLinks = [
 
 function TerminalPanel({ title, children, className = "" }) {
   return (
-    <section className={`overflow-hidden rounded-[28px] border border-white/10 bg-[#070707] text-white shadow-soft ${className}`}>
-      <div className="border-b border-white/10 px-5 py-4 text-sm uppercase tracking-[0.22em] text-[#8e8b7c]">
+    <section
+      className={`overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] text-white shadow-soft ${className}`}
+    >
+      <div className="border-b border-[var(--kp-border)] px-5 py-4 text-sm uppercase tracking-[0.22em] text-white">
         <VariableText label={title} radius={85} />
       </div>
       <div className="p-5 sm:p-7">{children}</div>
@@ -54,10 +56,10 @@ function TerminalPanel({ title, children, className = "" }) {
 
 function ContactInfoCard({ label, value, href, icon }) {
   const content = (
-    <div className="flex items-center gap-4 rounded-[22px] border border-white/10 bg-black/30 px-4 py-5">
-      <div className="text-[#8e8b7c]">{icon}</div>
+    <div className="flex items-center gap-4 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
+      <div className="text-white">{icon}</div>
       <div>
-        <p className="text-xs uppercase tracking-[0.24em] text-[#8e8b7c]">
+        <p className="text-xs uppercase tracking-[0.24em] text-white">
           <VariableText label={label} radius={85} />
         </p>
         <p className="mt-1 text-xl font-semibold text-white">
@@ -132,8 +134,8 @@ export default function ContactPage() {
         <h1 className="text-4xl font-bold sm:text-5xl">
           <VariableText label="Contact us" />
         </h1>
-        <p className="max-w-2xl text-base text-slate-600 dark:text-slate-300">
-          <span className="font-mono text-ember">$ ./contact.sh --init</span>
+        <p className="max-w-2xl text-base text-white">
+          <span className="font-mono text-white">$ ./contact.sh --init</span>
           {" "}
           <VariableText
             label="Use the terminal-style contact panel below to write to Kamand Prompt, reach the coordinator, or jump directly to the official socials."
@@ -146,10 +148,10 @@ export default function ContactPage() {
         <TerminalPanel title="message.sh" className="min-h-[620px]">
           <form className="space-y-7" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="mb-3 block font-mono text-lg text-[#d5d0bf]">$ name</span>
+              <span className="mb-3 block font-mono text-lg text-white">$ name</span>
               <input
                 autoComplete="name"
-                className="w-full rounded-none border border-white/15 bg-[#111111] px-5 py-4 text-lg text-white outline-none transition placeholder:text-[#55524a] focus:border-[#d5d0bf]"
+                className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
                 name="name"
                 onChange={handleChange}
                 placeholder="your_name"
@@ -159,10 +161,10 @@ export default function ContactPage() {
             </label>
 
             <label className="block">
-              <span className="mb-3 block font-mono text-lg text-[#d5d0bf]">$ email</span>
+              <span className="mb-3 block font-mono text-lg text-white">$ email</span>
               <input
                 autoComplete="email"
-                className="w-full rounded-none border border-white/15 bg-[#111111] px-5 py-4 text-lg text-white outline-none transition placeholder:text-[#55524a] focus:border-[#d5d0bf]"
+                className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
                 name="email"
                 onChange={handleChange}
                 placeholder="your@email.com"
@@ -173,10 +175,10 @@ export default function ContactPage() {
             </label>
 
             <label className="block">
-              <span className="mb-3 block font-mono text-lg text-[#d5d0bf]">$ message</span>
+              <span className="mb-3 block font-mono text-lg text-white">$ message</span>
               <textarea
                 autoComplete="off"
-                className="min-h-[180px] w-full rounded-none border border-white/15 bg-[#111111] px-5 py-4 text-lg text-white outline-none transition placeholder:text-[#55524a] focus:border-[#d5d0bf]"
+                className="min-h-[180px] w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
                 name="message"
                 onChange={handleChange}
                 placeholder="your_message..."
@@ -187,13 +189,19 @@ export default function ContactPage() {
 
             <button
               disabled={!isReady || isSubmitting}
-              className={`flex w-full items-center justify-center gap-3 border border-white px-5 py-4 font-mono text-2xl font-semibold uppercase tracking-[0.18em] transition ${
+              className={`flex w-full items-center justify-center gap-3 rounded-[14px] border border-[var(--kp-border)] px-5 py-4 font-mono text-2xl font-semibold uppercase tracking-[0.18em] transition ${
                 isReady && !isSubmitting
-                  ? "bg-white text-black hover:bg-[#efede9]"
-                  : "cursor-not-allowed bg-[#cfcfcf] text-[#55524a] opacity-60"
+                  ? "bg-[var(--kp-elevated)] text-white hover:opacity-90"
+                  : "cursor-not-allowed bg-[var(--kp-elevated)] text-white opacity-60"
               }`}
               type="submit"
             >
+              {isSubmitting ? (
+                <span
+                  aria-hidden="true"
+                  className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                />
+              ) : null}
               <span>{isSubmitting ? "$ ./SENDING.SH" : "$ ./SEND.SH"}</span>
               <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
                 <path d="M21 3 10 14" stroke="currentColor" strokeWidth="1.8" />
@@ -201,21 +209,21 @@ export default function ContactPage() {
               </svg>
             </button>
 
-            <div className="space-y-2 text-sm text-[#8e8b7c]">
+            <div className="space-y-2 text-sm text-white">
               <p>
-                <VariableText label="Saves your message to the club contact inbox in the database." radius={85} />
+                <VariableText label="Your message is delivered to the club contact inbox." radius={85} />
               </p>
               <p>
                 <VariableText label="You can also email" radius={85} />{" "}
                 <a
-                  className="text-[#d5d0bf] underline-offset-4 hover:underline"
+                  className="text-white underline-offset-4 hover:underline"
                   href="mailto:pc@iitmandi.ac.in"
                 >
                   <VariableText label="pc@iitmandi.ac.in" radius={85} />
                 </a>{" "}
                 <VariableText label="directly or" radius={85} />{" "}
                 <button
-                  className="text-[#d5d0bf] underline-offset-4 hover:underline"
+                  className="text-white underline-offset-4 hover:underline"
                   onClick={copyEmailAddress}
                   type="button"
                 >
@@ -224,7 +232,7 @@ export default function ContactPage() {
                 .
               </p>
               {copied ? (
-                <p className="text-emerald-300">
+                <p className="text-white">
                   <VariableText label="Email copied to clipboard." radius={85} />
                 </p>
               ) : null}
@@ -260,19 +268,19 @@ export default function ContactPage() {
           </TerminalPanel>
 
           <TerminalPanel title="$ WHOAMI --COORDINATOR">
-            <div className="flex items-center gap-5 rounded-[22px] border border-white/10 bg-black/30 px-4 py-5">
-              <div className="flex h-20 w-20 items-center justify-center border border-white/10 bg-[#1a1a1a] font-mono text-2xl font-bold text-white">
+            <div className="flex items-center gap-5 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
+              <div className="flex h-20 w-20 items-center justify-center border border-[var(--kp-border)] bg-[var(--kp-elevated)] font-mono text-2xl font-bold text-white">
                 HJ
               </div>
               <div>
                 <p className="text-4xl font-bold uppercase tracking-[0.05em] text-white">
                   HARSHIT_JAIN
                 </p>
-                <p className="mt-1 font-mono text-xl uppercase tracking-[0.12em] text-[#9d9989]">
+                <p className="mt-1 font-mono text-xl uppercase tracking-[0.12em] text-white">
                   COORDINATOR
                 </p>
                 <a
-                  className="mt-3 inline-block font-mono text-2xl text-[#d5d0bf] hover:text-white"
+                  className="mt-3 inline-block font-mono text-2xl text-white hover:text-white"
                   href="tel:+919418539191"
                 >
                   <VariableText label="+91 94185 39191" radius={85} />
@@ -286,7 +294,7 @@ export default function ContactPage() {
               {socialLinks.map((item) => (
                 <a
                   key={item.label}
-                  className="flex flex-col items-center justify-center gap-5 border border-white/10 bg-black/30 px-4 py-8 text-center text-[#9d9989] transition hover:border-white/20 hover:text-white"
+                  className="flex flex-col items-center justify-center gap-5 border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-8 text-center text-white transition hover:opacity-90"
                   href={item.href}
                   rel="noreferrer"
                   target="_blank"

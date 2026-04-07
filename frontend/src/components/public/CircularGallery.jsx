@@ -215,7 +215,7 @@ class Media {
       fallback.width = 8;
       fallback.height = 8;
       const ctx = fallback.getContext("2d");
-      ctx.fillStyle = "#1f2937";
+      ctx.fillStyle = "#111111";
       ctx.fillRect(0, 0, 8, 8);
       texture.image = fallback;
       this.program.uniforms.uImageSizes.value = [8, 8];

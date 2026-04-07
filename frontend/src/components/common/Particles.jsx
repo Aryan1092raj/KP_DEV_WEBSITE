@@ -3,7 +3,7 @@ import { Camera, Geometry, Mesh, Program, Renderer } from "ogl";
 
 import "./Particles.css";
 
-const defaultColors = ["#ffffff", "#e2e8ff", "#ffb36b"];
+const defaultColors = ["#ffffff", "#d9d9d9", "#bfbfbf"];
 
 const hexToRgb = (hex) => {
   let normalized = hex.replace(/^#/, "");

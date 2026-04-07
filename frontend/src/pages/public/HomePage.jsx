@@ -69,7 +69,7 @@ const memberFixture = [
     id: "fixture-home-member-2",
     name: "Isha Verma",
     role: "Backend Lead",
-    bio: "Owns API design, data modeling, and reliability in club services.",
+    bio: "Owns platform architecture, data quality, and service reliability.",
     batch: "2022",
     github_url: "#",
     linkedin_url: "#",
@@ -151,7 +151,7 @@ const announcementFixture = [
     id: "fixture-home-announcement-2",
     author: "Events Desk",
     title: "Systems design workshop",
-    body: "Join the new architecture session focused on reliability and API evolution.",
+    body: "Join the new architecture session focused on reliability and platform evolution.",
     published_at: "2026-03-28",
   },
   {

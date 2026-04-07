@@ -11,7 +11,7 @@ import _projects_grid from './projects-grid.bones.json'
 import _team_grid from './team-grid.bones.json'
 import _events_page from './events-page.bones.json'
 
-configureBoneyard({"color":"rgba(82,39,255,0.12)","animate":"pulse"})
+configureBoneyard({"color":"rgba(255,255,255,0.12)","animate":"pulse"})
 
 registerBones({
   "home-hero": _home_hero,

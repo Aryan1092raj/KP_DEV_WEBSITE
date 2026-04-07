@@ -50,7 +50,7 @@ export default function Footer() {
               <VariableText label="https://github.com/KamandPrompt" radius={85} />
             </a>
           </p>
-          <p><VariableText label="Built for the official club website architecture." radius={85} /></p>
+          <p><VariableText label="Official digital platform for Prompt Dev Cell, IIT Mandi." radius={85} /></p>
         </div>
       </div>
     </footer>
