@@ -5,6 +5,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 
@@ -83,12 +84,14 @@ export default function ManageMembers() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Team members
+            <VariableText label="Team members" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">Manage current members and alumni state</h1>
+          <h1 className="mt-3 text-4xl font-bold">
+            <VariableText label="Manage current members and alumni state" />
+          </h1>
         </div>
         <button className="btn-primary" onClick={() => setActiveMember(null)} type="button">
-          New member
+          <VariableText label="New member" radius={85} />
         </button>
       </div>
 
@@ -101,7 +104,9 @@ export default function ManageMembers() {
         />
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">All members</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="All members" />
+          </h2>
           {loading ? <LoadingSpinner label="Loading members..." /> : null}
           {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
           {!loading && !error ? (
@@ -120,10 +125,10 @@ export default function ManageMembers() {
                     </div>
                     <div className="flex gap-3">
                       <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveMember(member)} type="button">
-                        Edit
+                        <VariableText label="Edit" radius={85} />
                       </button>
                       <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingMember(member)} type="button">
-                        Delete
+                        <VariableText label="Delete" radius={85} />
                       </button>
                     </div>
                   </div>

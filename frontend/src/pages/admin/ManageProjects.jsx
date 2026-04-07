@@ -5,6 +5,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 import { projectService } from "../../services/projectService";
@@ -85,12 +86,14 @@ export default function ManageProjects() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Projects
+            <VariableText label="Projects" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">Manage project metadata and contributors</h1>
+          <h1 className="mt-3 text-4xl font-bold">
+            <VariableText label="Manage project metadata and contributors" />
+          </h1>
         </div>
         <button className="btn-primary" onClick={() => setActiveProject(null)} type="button">
-          New project
+          <VariableText label="New project" radius={85} />
         </button>
       </div>
 
@@ -108,7 +111,9 @@ export default function ManageProjects() {
         )}
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Project list</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Project list" />
+          </h2>
           {loading ? <LoadingSpinner label="Loading projects..." /> : null}
           {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
           {!loading && !error ? (
@@ -130,10 +135,10 @@ export default function ManageProjects() {
                     </div>
                     <div className="flex gap-3">
                       <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveProject(project)} type="button">
-                        Edit
+                        <VariableText label="Edit" radius={85} />
                       </button>
                       <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingProject(project)} type="button">
-                        Delete
+                        <VariableText label="Delete" radius={85} />
                       </button>
                     </div>
                   </div>

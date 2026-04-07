@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.png";
+import VariableText from "../common/VariableText";
 
 const links = [
   { to: "/admin", label: "Dashboard", end: true },
@@ -22,9 +23,11 @@ export default function AdminSidebar({ onLogout }) {
             <img alt="Kamand Prompt logo" className="h-full w-full object-contain" src={kpLogo} />
           </div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Admin portal
+            <VariableText label="Admin portal" radius={85} />
           </p>
-          <h2 className="mt-2 text-2xl font-semibold">KP Control Room</h2>
+          <h2 className="mt-2 text-2xl font-semibold">
+            <VariableText label="KP Control Room" />
+          </h2>
         </div>
       </div>
 
@@ -42,13 +45,13 @@ export default function AdminSidebar({ onLogout }) {
             end={link.end}
             to={link.to}
           >
-            {link.label}
+            <VariableText label={link.label} radius={85} />
           </NavLink>
         ))}
       </nav>
 
       <button className="btn-danger mt-8 w-full" onClick={onLogout} type="button">
-        Logout
+        <VariableText label="Logout" radius={85} />
       </button>
     </aside>
   );

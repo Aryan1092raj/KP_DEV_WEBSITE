@@ -67,6 +67,23 @@ const fixtureMembers = [
   },
 ];
 
+function isValidImageSource(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "#") {
+    return false;
+  }
+
+  return (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("data:image/")
+  );
+}
+
 export default function TeamPage() {
   const { data, error, loading, refetch } = useFetch(memberService.getAll);
   const boneyardBuildMode =
@@ -77,10 +94,7 @@ export default function TeamPage() {
   const galleryItems = useMemo(
     () =>
       membersToRender.map((member, index) => {
-        const image =
-          typeof member.photo_url === "string" && member.photo_url.trim()
-            ? member.photo_url.trim()
-            : kpLogo;
+        const image = isValidImageSource(member.photo_url) ? member.photo_url.trim() : kpLogo;
         const text = member.name || `Member ${index + 1}`;
         return { image, text };
       }),

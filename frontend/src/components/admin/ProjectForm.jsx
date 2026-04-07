@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import VariableText from "../common/VariableText";
+
 const emptyProject = {
   title: "",
   description: "",
@@ -89,7 +91,9 @@ export default function ProjectForm({
 
   return (
     <form className="admin-card space-y-4" onSubmit={submit}>
-      <h3 className="text-2xl font-semibold">{initialData ? "Edit project" : "Create project"}</h3>
+      <h3 className="text-2xl font-semibold">
+        <VariableText label={initialData ? "Edit project" : "Create project"} />
+      </h3>
       {[
         ["title", "Title"],
         ["github_url", "GitHub URL"],
@@ -97,12 +101,16 @@ export default function ProjectForm({
         ["thumbnail_url", "Thumbnail URL"],
       ].map(([name, label]) => (
         <label key={name}>
-          <span className="label">{label}</span>
+          <span className="label">
+            <VariableText label={label} radius={85} />
+          </span>
           <input className="input" name={name} onChange={updateField} value={form[name]} />
         </label>
       ))}
       <label>
-        <span className="label">Description</span>
+        <span className="label">
+          <VariableText label="Description" radius={85} />
+        </span>
         <textarea className="input min-h-[110px]" name="description" onChange={updateField} value={form.description} />
       </label>
       <label>
@@ -125,7 +133,7 @@ export default function ProjectForm({
       </div>
       <label className="flex items-center gap-3 text-sm font-medium">
         <input checked={form.is_featured} name="is_featured" onChange={updateField} type="checkbox" />
-        Featured on homepage
+        <VariableText label="Featured on homepage" radius={85} />
       </label>
 
       <div className="rounded-[24px] border border-slate-200/80 p-4 dark:border-white/10">
@@ -169,10 +177,10 @@ export default function ProjectForm({
 
       <div className="flex flex-wrap gap-3">
         <button className="btn-primary" disabled={loading} type="submit">
-          {loading ? "Saving..." : initialData ? "Update project" : "Create project"}
+          <VariableText label={loading ? "Saving..." : initialData ? "Update project" : "Create project"} radius={85} />
         </button>
         <button className="btn-secondary" onClick={onCancel} type="button">
-          Cancel
+          <VariableText label="Cancel" radius={85} />
         </button>
       </div>
     </form>

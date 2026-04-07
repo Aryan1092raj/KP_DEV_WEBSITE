@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
+import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function AdminLoginPage() {
@@ -19,6 +21,10 @@ export default function AdminLoginPage() {
 
   if (!loading && session && isAdmin) {
     return <Navigate replace to="/admin" />;
+  }
+
+  if (loading) {
+    return <LoadingSpinner label="Checking admin session..." />;
   }
 
   function handleChange(event) {
@@ -48,33 +54,43 @@ export default function AdminLoginPage() {
       <Toast onClose={() => setToast(null)} toast={toast} />
       <div className="mb-5">
         <Link className="btn-secondary !px-4 !py-2" to="/">
-          &larr; Back to main page
+          <VariableText label="Back to main page" radius={85} />
         </Link>
       </div>
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_0.9fr]">
         <section className="section-card bg-ink text-white dark:bg-white/5">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-300">
-            Admin access
+            <VariableText label="Admin access" radius={85} />
           </p>
-          <h1 className="mt-4 text-4xl font-bold">Sign in with your Supabase admin account.</h1>
+          <h1 className="mt-4 text-4xl font-bold">
+            <VariableText label="Sign in with your Supabase admin account." />
+          </h1>
           <p className="mt-4 text-slate-200">
-            The session stays in memory only, the JWT is attached through Axios
-            interceptors, and protected routes redirect back here on 401.
+            <VariableText
+              label="The session stays in memory only, the JWT is attached through Axios interceptors, and protected routes redirect back here on 401."
+              radius={85}
+            />
           </p>
         </section>
 
         <form className="section-card space-y-4" onSubmit={submit}>
-          <h2 className="text-2xl font-semibold">Admin login</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Admin login" />
+          </h2>
           <label>
-            <span className="label">Email</span>
+            <span className="label">
+              <VariableText label="Email" radius={85} />
+            </span>
             <input autoComplete="email" className="input" name="email" onChange={handleChange} type="email" value={form.email} />
           </label>
           <label>
-            <span className="label">Password</span>
+            <span className="label">
+              <VariableText label="Password" radius={85} />
+            </span>
             <input autoComplete="current-password" className="input" name="password" onChange={handleChange} type="password" value={form.password} />
           </label>
           <button className="btn-primary w-full" disabled={submitting} type="submit">
-            {submitting ? "Signing in..." : "Login"}
+            <VariableText label={submitting ? "Signing in..." : "Login"} radius={85} />
           </button>
         </form>
       </div>

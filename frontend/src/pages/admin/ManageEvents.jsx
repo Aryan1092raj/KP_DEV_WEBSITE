@@ -5,6 +5,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { eventService } from "../../services/eventService";
 
@@ -83,12 +84,14 @@ export default function ManageEvents() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Events
+            <VariableText label="Events" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">Manage sessions, workshops, and talks</h1>
+          <h1 className="mt-3 text-4xl font-bold">
+            <VariableText label="Manage sessions, workshops, and talks" />
+          </h1>
         </div>
         <button className="btn-primary" onClick={() => setActiveEvent(null)} type="button">
-          New event
+          <VariableText label="New event" radius={85} />
         </button>
       </div>
 
@@ -101,7 +104,9 @@ export default function ManageEvents() {
         />
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Event list</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Event list" />
+          </h2>
           {loading ? <LoadingSpinner label="Loading events..." /> : null}
           {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
           {!loading && !error ? (
@@ -117,10 +122,10 @@ export default function ManageEvents() {
                     </div>
                     <div className="flex gap-3">
                       <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveEvent(event)} type="button">
-                        Edit
+                        <VariableText label="Edit" radius={85} />
                       </button>
                       <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingEvent(event)} type="button">
-                        Delete
+                        <VariableText label="Delete" radius={85} />
                       </button>
                     </div>
                   </div>

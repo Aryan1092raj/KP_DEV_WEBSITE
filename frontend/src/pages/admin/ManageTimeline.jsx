@@ -5,6 +5,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { timelineService } from "../../services/timelineService";
 
@@ -74,12 +75,14 @@ export default function ManageTimeline() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Timeline
+            <VariableText label="Timeline" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">Curate club milestones and historical order</h1>
+          <h1 className="mt-3 text-4xl font-bold">
+            <VariableText label="Curate club milestones and historical order" />
+          </h1>
         </div>
         <button className="btn-primary" onClick={() => setActiveItem(null)} type="button">
-          New milestone
+          <VariableText label="New milestone" radius={85} />
         </button>
       </div>
 
@@ -92,7 +95,9 @@ export default function ManageTimeline() {
         />
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Timeline list</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Timeline list" />
+          </h2>
           {loading ? <LoadingSpinner label="Loading timeline..." /> : null}
           {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
           {!loading && !error ? (
@@ -108,10 +113,10 @@ export default function ManageTimeline() {
                     </div>
                     <div className="flex gap-3">
                       <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveItem(item)} type="button">
-                        Edit
+                        <VariableText label="Edit" radius={85} />
                       </button>
                       <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingItem(item)} type="button">
-                        Delete
+                        <VariableText label="Delete" radius={85} />
                       </button>
                     </div>
                   </div>
