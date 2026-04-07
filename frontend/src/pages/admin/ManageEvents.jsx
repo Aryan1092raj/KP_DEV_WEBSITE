@@ -8,6 +8,17 @@ import Toast from "../../components/common/Toast";
 import { useFetch } from "../../hooks/useFetch";
 import { eventService } from "../../services/eventService";
 
+function getRequestErrorMessage(requestError, fallbackMessage) {
+  if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
+    const firstIssue = requestError.details[0];
+    if (firstIssue?.msg && Array.isArray(firstIssue?.loc)) {
+      return `${firstIssue.loc.slice(-1)[0]}: ${firstIssue.msg}`;
+    }
+  }
+
+  return requestError?.message || fallbackMessage;
+}
+
 export default function ManageEvents() {
   const { data, error, loading, refetch } = useFetch(eventService.getAdminAll);
   const [activeEvent, setActiveEvent] = useState(null);
@@ -29,7 +40,10 @@ export default function ManageEvents() {
       setActiveEvent(null);
       refetch();
     } catch (requestError) {
-      setToast({ type: "error", message: requestError.message || "Unable to save event." });
+      setToast({
+        type: "error",
+        message: getRequestErrorMessage(requestError, "Unable to save event."),
+      });
     } finally {
       setSaving(false);
     }
