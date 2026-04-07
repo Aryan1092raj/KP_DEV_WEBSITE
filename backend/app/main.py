@@ -62,3 +62,8 @@ for router in (
 @app.get("/health", tags=["Health"])
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/", tags=["Health"])
+def root() -> dict[str, str]:
+    return {"service": "KP Dev Cell API", "status": "ok", "docs": "/docs"}
