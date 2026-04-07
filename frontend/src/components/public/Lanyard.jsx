@@ -86,9 +86,9 @@ function Band({ gravity = [0, -40, 0], isMobile = false }) {
     canvas.width = 256;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#0f172a";
+    ctx.fillStyle = "#050505";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#f97316";
+    ctx.fillStyle = "#ffffff";
     for (let x = 0; x < canvas.width; x += 24) {
       ctx.fillRect(x, 0, 10, canvas.height);
     }
@@ -165,7 +165,7 @@ function Band({ gravity = [0, -40, 0], isMobile = false }) {
     <>
       <mesh position={[0, 3.7, 0]}>
         <sphereGeometry args={[0.08, 16, 16]} />
-        <meshStandardMaterial color="#d1d5db" metalness={0.9} roughness={0.25} />
+        <meshStandardMaterial color="#111111" metalness={0.9} roughness={0.25} />
       </mesh>
 
       <group
@@ -194,7 +194,7 @@ function Band({ gravity = [0, -40, 0], isMobile = false }) {
         </mesh>
         <mesh position={[0, 2.35, 0]}>
           <cylinderGeometry args={[0.16, 0.16, 0.24, 24]} />
-          <meshStandardMaterial color="#9ca3af" metalness={0.8} roughness={0.3} />
+          <meshStandardMaterial color="#151515" metalness={0.8} roughness={0.3} />
         </mesh>
       </group>
 

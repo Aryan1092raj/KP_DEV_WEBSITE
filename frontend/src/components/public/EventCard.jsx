@@ -5,9 +5,9 @@ export default function EventCard({ event }) {
   const statusLabel = status === "ongoing" ? "Ongoing" : status === "upcoming" ? "Upcoming" : "Completed";
   const statusClass =
     status === "upcoming"
-      ? "!bg-emerald-100 !text-emerald-700 dark:!bg-emerald-500/20 dark:!text-emerald-200"
+      ? "!border-white/30 !bg-[#101010] !text-white"
       : status === "ongoing"
-        ? "!bg-amber-100 !text-amber-700 dark:!bg-amber-500/20 dark:!text-amber-200"
+        ? "!border-white/40 !bg-[#161616] !text-white"
         : "";
 
   return (
@@ -23,8 +23,8 @@ export default function EventCard({ event }) {
       <h3 className="mt-4 text-2xl font-semibold">
         <VariableText label={event.title} />
       </h3>
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-300">{event.event_date}</p>
-      <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
+      <p className="mt-2 text-sm text-white">{event.event_date}</p>
+      <p className="mt-4 text-sm leading-6 text-white">
         <VariableText label={event.description || "Details will be shared with the club community."} radius={85} />
       </p>
       {event.resource_url ? (

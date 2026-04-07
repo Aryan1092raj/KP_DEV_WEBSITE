@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import kpLogo from "../../assets/kp-logo.png";
-import { TeamGridFallback } from "../../components/common/BoneyardFallbacks";
+import { TeamPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";
 import CircularGallery from "../../components/public/CircularGallery";
@@ -24,7 +24,7 @@ const fixtureMembers = [
     id: "fixture-member-2",
     name: "Isha Verma",
     role: "Backend Lead",
-    bio: "Owns API design, data modeling, and reliability in club services.",
+    bio: "Owns platform architecture, data quality, and service reliability.",
     batch: "2022",
     github_url: "#",
     linkedin_url: "#",
@@ -102,48 +102,45 @@ export default function TeamPage() {
   );
 
   return (
-    <div className="page-shell space-y-6">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          <VariableText label="Core team" />
-        </p>
-        <h1 className="mt-3 text-4xl font-bold">
-          <VariableText label="The builders behind Kamand Prompt" />
-        </h1>
-      </div>
+    <div className="page-shell">
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
 
-      <section className="section-card !p-0">
-        <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
-          <CircularGallery
-            bend={1}
-            borderRadius={0.05}
-            items={galleryItems}
-            scrollEase={0.05}
-            scrollSpeed={2}
-            textColor="#ffffff"
-          />
-        </div>
-      </section>
-
       {!showError ? (
         <Skeleton
-          fallback={<TeamGridFallback />}
-          fixture={
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {fixtureMembers.map((member) => (
-                <MemberCard key={member.id} member={member} />
-              ))}
-            </div>
-          }
+          fallback={<TeamPageFallback />}
+          fixture={<TeamPageFallback />}
           loading={boneyardBuildMode || loading}
           name="team-grid"
         >
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {(data ?? []).map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
+          <div className="space-y-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+                <VariableText label="Core team" />
+              </p>
+              <h1 className="mt-3 text-4xl font-bold">
+                <VariableText label="The builders behind Kamand Prompt" />
+              </h1>
+            </div>
+
+            <section className="section-card !p-0">
+              <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
+                <CircularGallery
+                  bend={1}
+                  borderRadius={0.05}
+                  items={galleryItems}
+                  scrollEase={0.05}
+                  scrollSpeed={2}
+                  textColor="#ffffff"
+                />
+              </div>
+            </section>
+
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {membersToRender.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
           </div>
         </Skeleton>
       ) : null}

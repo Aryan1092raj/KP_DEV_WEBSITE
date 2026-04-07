@@ -1,6 +1,6 @@
 import { Skeleton } from "boneyard-js/react";
 
-import { CardGridFallback } from "../../components/common/BoneyardFallbacks";
+import { ProjectsPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";
 import ProjectCard from "../../components/public/ProjectCard";
@@ -65,35 +65,32 @@ export default function ProjectsPage() {
   const showError = Boolean(error) && !boneyardBuildMode;
 
   return (
-    <div className="page-shell space-y-6">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          <VariableText label="Projects showcase" />
-        </p>
-        <h1 className="mt-3 text-4xl font-bold">
-          <VariableText label="Full build archive from the club database" />
-        </h1>
-      </div>
+    <div className="page-shell">
 
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
 
       {!showError ? (
         <Skeleton
-          fallback={<CardGridFallback columns="lg:grid-cols-2" count={4} />}
-          fixture={
-            <div className="grid gap-5 lg:grid-cols-2">
-              {fixtureProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          }
+          fallback={<ProjectsPageFallback />}
+          fixture={<ProjectsPageFallback />}
           loading={boneyardBuildMode || loading}
           name="projects-grid"
         >
-          <div className="grid gap-5 lg:grid-cols-2">
-            {(data ?? []).map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+          <div className="space-y-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+                <VariableText label="Projects showcase" />
+              </p>
+              <h1 className="mt-3 text-4xl font-bold">
+                <VariableText label="Build archive from across the club" />
+              </h1>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              {(boneyardBuildMode ? fixtureProjects : data ?? []).map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
           </div>
         </Skeleton>
       ) : null}

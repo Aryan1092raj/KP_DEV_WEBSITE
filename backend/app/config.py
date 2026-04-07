@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     supabase_url: str = Field(..., alias="SUPABASE_URL")
     supabase_anon_key: str = Field(..., alias="SUPABASE_ANON_KEY")
     supabase_jwt_secret: str = Field(..., alias="SUPABASE_JWT_SECRET")
+    admin_rate_limit_requests: int = Field(default=120, alias="ADMIN_RATE_LIMIT_REQUESTS")
+    admin_rate_limit_window_seconds: int = Field(default=60, alias="ADMIN_RATE_LIMIT_WINDOW_SECONDS")
 
     model_config = SettingsConfigDict(
         env_file=".env",

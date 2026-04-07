@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.png";
+import { useAuth } from "../../hooks/useAuth";
 import VariableText from "../common/VariableText";
 
 const links = [
@@ -15,6 +16,18 @@ const links = [
 ];
 
 export default function AdminSidebar({ onLogout }) {
+  const { user } = useAuth();
+
+  const lastLogin = user?.last_sign_in_at
+    ? new Date(user.last_sign_in_at).toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "Not available";
+
   return (
     <aside className="border-b border-slate-200/80 bg-white/85 p-6 dark:border-white/10 dark:bg-white/5 lg:min-h-screen lg:border-b-0 lg:border-r">
       <div className="flex items-center justify-between gap-3 lg:block">
@@ -28,6 +41,12 @@ export default function AdminSidebar({ onLogout }) {
           <h2 className="mt-2 text-2xl font-semibold">
             <VariableText label="KP Control Room" />
           </h2>
+          <p className="mt-3 text-xs uppercase tracking-[0.2em]">
+            <VariableText label="Last login" radius={85} />
+          </p>
+          <p className="mt-1 text-sm">
+            <VariableText label={lastLogin} radius={85} />
+          </p>
         </div>
       </div>
 

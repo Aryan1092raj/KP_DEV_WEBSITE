@@ -1,6 +1,11 @@
+from collections import defaultdict, deque
+from threading import Lock
+from time import time
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from postgrest.exceptions import APIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -27,6 +32,9 @@ app = FastAPI(
     description="Official KP Dev Cell website API built with FastAPI and Supabase.",
 )
 
+_admin_request_buckets: dict[str, deque[float]] = defaultdict(deque)
+_admin_rate_lock = Lock()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -39,6 +47,34 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(APIError, postgrest_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
+
+
+@app.middleware("http")
+async def admin_rate_limit_middleware(request, call_next):
+    if request.url.path.startswith("/api/admin"):
+        client_ip = request.client.host if request.client else "unknown"
+        now = time()
+        window_seconds = settings.admin_rate_limit_window_seconds
+        request_limit = settings.admin_rate_limit_requests
+
+        with _admin_rate_lock:
+            bucket = _admin_request_buckets[client_ip]
+            while bucket and (now - bucket[0]) > window_seconds:
+                bucket.popleft()
+
+            if len(bucket) >= request_limit:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "error": True,
+                        "code": "RATE_LIMITED",
+                        "message": "Too many admin requests. Please retry shortly.",
+                    },
+                )
+
+            bucket.append(now)
+
+    return await call_next(request)
 
 for router in (
     contact_messages.public_router,

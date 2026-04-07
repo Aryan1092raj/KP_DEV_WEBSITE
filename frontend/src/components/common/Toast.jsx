@@ -1,30 +1,77 @@
 import { useEffect } from "react";
 
 export default function Toast({ toast, onClose }) {
+  const type = toast?.type || "success";
+  const isLoading = type === "loading";
+
   useEffect(() => {
     if (!toast) {
       return undefined;
     }
 
-    const timeout = window.setTimeout(onClose, 3200);
+    if (isLoading) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(onClose, toast.duration ?? 4200);
     return () => window.clearTimeout(timeout);
-  }, [toast, onClose]);
+  }, [toast, onClose, isLoading]);
 
   if (!toast) {
     return null;
   }
 
-  const tone =
-    toast.type === "error"
-      ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200"
-      : "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200";
+  const variants = {
+    success: {
+      shell: "allow-accent border-emerald-500/35 bg-emerald-950/28 text-emerald-100",
+      icon: "allow-accent text-emerald-300",
+      symbol: "✓",
+      live: "polite",
+    },
+    error: {
+      shell: "allow-accent border-rose-500/45 bg-rose-950/30 text-rose-100",
+      icon: "allow-accent text-rose-300",
+      symbol: "!",
+      live: "assertive",
+    },
+    loading: {
+      shell: "allow-accent border-white/20 bg-[#111111] text-white",
+      icon: "allow-accent text-white",
+      symbol: null,
+      live: "polite",
+    },
+  };
+
+  const selected = variants[type] || variants.success;
 
   return (
     <div className="fixed right-4 top-4 z-50">
-      <div className={`min-w-[280px] rounded-2xl border px-4 py-3 shadow-soft ${tone}`}>
+      <div
+        aria-live={selected.live}
+        role="status"
+        className={`min-w-[300px] rounded-2xl border px-4 py-3 shadow-soft ${selected.shell}`}
+      >
         <div className="flex items-start justify-between gap-4">
-          <p className="text-sm font-medium">{toast.message}</p>
-          <button className="text-xs uppercase tracking-[0.2em]" onClick={onClose} type="button">
+          <p className="allow-accent flex items-center gap-2 text-sm font-medium">
+            {isLoading ? (
+              <span
+                aria-hidden="true"
+                className="allow-accent h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              />
+            ) : (
+              <span aria-hidden="true" className={selected.icon}>
+                {selected.symbol}
+              </span>
+            )}
+            {toast.message}
+          </p>
+          <button
+            aria-label="Close notification"
+            className="allow-accent flex items-center gap-1 text-xs uppercase tracking-[0.2em] text-rose-400 hover:text-rose-300"
+            onClick={onClose}
+            type="button"
+          >
+            <span aria-hidden="true">✕</span>
             Close
           </button>
         </div>

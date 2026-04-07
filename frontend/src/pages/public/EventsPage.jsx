@@ -155,68 +155,36 @@ export default function EventsPage() {
   }, [boneyardBuildMode]);
 
   return (
-    <div className="page-shell space-y-8">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          <VariableText label="Events and sessions" />
-        </p>
-        <h1 className="mt-3 text-4xl font-bold">
-          <VariableText label="Workshops, talks, hackathons, and club sessions" />
-        </h1>
-      </div>
+    <div className="page-shell">
 
       {showError ? <ErrorMessage message={error} onRetry={load} /> : null}
 
       {!showError ? (
         <Skeleton
           fallback={<EventsPageFallback />}
-          fixture={
-            <>
-              <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">
-                  <VariableText label="Upcoming" />
-                </h2>
-                <div className="grid gap-5 lg:grid-cols-2">
-                  {fixtureUpcomingEvents.map((event) => (
-                    <EventCard event={event} key={event.id} />
-                  ))}
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">
-                  <VariableText label="Ongoing" />
-                </h2>
-                <div className="grid gap-5 lg:grid-cols-2">
-                  {fixtureOngoingEvents.map((event) => (
-                    <EventCard event={event} key={event.id} />
-                  ))}
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">
-                  <VariableText label="All events" />
-                </h2>
-                <div className="grid gap-5 lg:grid-cols-2">
-                  {fixtureAllEvents.map((event) => (
-                    <EventCard event={event} key={event.id} />
-                  ))}
-                </div>
-              </section>
-            </>
-          }
+          fixture={<EventsPageFallback />}
           loading={boneyardBuildMode || loading}
           name="events-page"
         >
-          <>
+          <div className="space-y-8">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+                <VariableText label="Events and sessions" />
+              </p>
+              <h1 className="mt-3 text-4xl font-bold">
+                <VariableText label="Workshops, talks, hackathons, and club sessions" />
+              </h1>
+            </div>
+
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold">
                 <VariableText label="Upcoming" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {normalizedUpcoming.length ? (
-                  normalizedUpcoming.map((event) => <EventCard event={event} key={event.id} />)
+                {(boneyardBuildMode ? fixtureUpcomingEvents : normalizedUpcoming).length ? (
+                  (boneyardBuildMode ? fixtureUpcomingEvents : normalizedUpcoming).map((event) => (
+                    <EventCard event={event} key={event.id} />
+                  ))
                 ) : (
                   <div className="section-card text-sm text-slate-600 dark:text-slate-300">
                     No upcoming event is marked right now.
@@ -230,8 +198,10 @@ export default function EventsPage() {
                 <VariableText label="Ongoing" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {ongoing.length ? (
-                  ongoing.map((event) => <EventCard event={event} key={event.id} />)
+                {(boneyardBuildMode ? fixtureOngoingEvents : ongoing).length ? (
+                  (boneyardBuildMode ? fixtureOngoingEvents : ongoing).map((event) => (
+                    <EventCard event={event} key={event.id} />
+                  ))
                 ) : (
                   <div className="section-card text-sm text-slate-600 dark:text-slate-300">
                     No ongoing event right now.
@@ -245,12 +215,12 @@ export default function EventsPage() {
                 <VariableText label="All events" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {normalizedAllEvents.map((event) => (
+                {(boneyardBuildMode ? fixtureAllEvents : normalizedAllEvents).map((event) => (
                   <EventCard event={event} key={event.id} />
                 ))}
               </div>
             </section>
-          </>
+          </div>
         </Skeleton>
       ) : null}
     </div>

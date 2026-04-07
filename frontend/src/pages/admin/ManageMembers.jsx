@@ -1,13 +1,31 @@
 import { useState } from "react";
+import { Skeleton } from "boneyard-js/react";
 
 import MemberForm from "../../components/admin/MemberForm";
+import { AdminCrudPageFallback } from "../../components/common/BoneyardFallbacks";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
-import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
+
+const fixtureMembers = [
+  {
+    id: "fixture-member-1",
+    name: "Aarav Sharma",
+    role: "Coordinator",
+    batch: "2023",
+    is_active: true,
+  },
+  {
+    id: "fixture-member-2",
+    name: "Riya Kapoor",
+    role: "Design Lead",
+    batch: "2022",
+    is_active: false,
+  },
+];
 
 function getRequestErrorMessage(requestError, fallbackMessage) {
   if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
@@ -27,6 +45,10 @@ export default function ManageMembers() {
   const [toast, setToast] = useState(null);
   const [deletingMember, setDeletingMember] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const boneyardBuildMode =
+    typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
+  const showError = Boolean(error) && !boneyardBuildMode;
+  const members = boneyardBuildMode || loading || !(data ?? []).length ? fixtureMembers : data ?? [];
 
   async function handleSave(payload) {
     setSaving(true);
@@ -95,49 +117,55 @@ export default function ManageMembers() {
         </button>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <MemberForm
-          initialData={activeMember}
-          loading={saving}
-          onCancel={() => setActiveMember(null)}
-          onSubmit={handleSave}
-        />
+      {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
+      {!showError ? (
+        <Skeleton
+          fallback={<AdminCrudPageFallback listItems={5} />}
+          fixture={<AdminCrudPageFallback listItems={5} />}
+          loading={boneyardBuildMode || loading}
+          name="admin-manage-members"
+        >
+          <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <MemberForm
+              initialData={activeMember}
+              loading={saving}
+              onCancel={() => setActiveMember(null)}
+              onSubmit={handleSave}
+            />
 
-        <div className="admin-card">
-          <h2 className="text-2xl font-semibold">
-            <VariableText label="All members" />
-          </h2>
-          {loading ? <LoadingSpinner label="Loading members..." /> : null}
-          {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
-          {!loading && !error ? (
-            <div className="mt-4 space-y-3">
-              {data?.map((member) => (
-                <div
-                  key={member.id}
-                  className="rounded-2xl border border-slate-200/80 p-4 dark:border-white/10"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <p className="font-semibold">{member.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-300">
-                        {member.role} • {member.batch} • {member.is_active ? "Active" : "Alumni"}
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveMember(member)} type="button">
-                        <VariableText label="Edit" radius={85} />
-                      </button>
-                      <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingMember(member)} type="button">
-                        <VariableText label="Delete" radius={85} />
-                      </button>
+            <div className="admin-card">
+              <h2 className="text-2xl font-semibold">
+                <VariableText label="All members" />
+              </h2>
+              <div className="mt-4 space-y-3">
+                {members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="rounded-2xl border border-slate-200/80 p-4 dark:border-white/10"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="font-semibold">{member.name}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-300">
+                          {member.role} • {member.batch} • {member.is_active ? "Active" : "Alumni"}
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveMember(member)} type="button">
+                          <VariableText label="Edit" radius={85} />
+                        </button>
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingMember(member)} type="button">
+                          <VariableText label="Delete" radius={85} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        </Skeleton>
+      ) : null}
     </div>
   );
 }

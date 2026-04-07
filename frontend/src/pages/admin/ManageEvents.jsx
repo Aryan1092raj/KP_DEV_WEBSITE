@@ -1,13 +1,31 @@
 import { useState } from "react";
+import { Skeleton } from "boneyard-js/react";
 
 import EventForm from "../../components/admin/EventForm";
+import { AdminCrudPageFallback } from "../../components/common/BoneyardFallbacks";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
-import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { eventService } from "../../services/eventService";
+
+const fixtureEvents = [
+  {
+    id: "fixture-event-1",
+    title: "Frontend systems workshop",
+    event_date: "2026-04-15",
+    event_type: "Workshop",
+    is_upcoming: true,
+  },
+  {
+    id: "fixture-event-2",
+    title: "Backend review session",
+    event_date: "2026-03-30",
+    event_type: "Session",
+    is_upcoming: false,
+  },
+];
 
 function getRequestErrorMessage(requestError, fallbackMessage) {
   if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
@@ -27,6 +45,10 @@ export default function ManageEvents() {
   const [toast, setToast] = useState(null);
   const [deletingEvent, setDeletingEvent] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const boneyardBuildMode =
+    typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
+  const showError = Boolean(error) && !boneyardBuildMode;
+  const events = boneyardBuildMode || loading || !(data ?? []).length ? fixtureEvents : data ?? [];
 
   async function handleSave(payload) {
     setSaving(true);
@@ -95,46 +117,52 @@ export default function ManageEvents() {
         </button>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <EventForm
-          initialData={activeEvent}
-          loading={saving}
-          onCancel={() => setActiveEvent(null)}
-          onSubmit={handleSave}
-        />
+      {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
+      {!showError ? (
+        <Skeleton
+          fallback={<AdminCrudPageFallback listItems={4} />}
+          fixture={<AdminCrudPageFallback listItems={4} />}
+          loading={boneyardBuildMode || loading}
+          name="admin-manage-events"
+        >
+          <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+            <EventForm
+              initialData={activeEvent}
+              loading={saving}
+              onCancel={() => setActiveEvent(null)}
+              onSubmit={handleSave}
+            />
 
-        <div className="admin-card">
-          <h2 className="text-2xl font-semibold">
-            <VariableText label="Event list" />
-          </h2>
-          {loading ? <LoadingSpinner label="Loading events..." /> : null}
-          {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
-          {!loading && !error ? (
-            <div className="mt-4 space-y-3">
-              {data?.map((event) => (
-                <div key={event.id} className="rounded-2xl border border-slate-200/80 p-4 dark:border-white/10">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <p className="font-semibold">{event.title}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-300">
-                        {event.event_date} • {event.event_type} • {event.is_upcoming ? "Upcoming" : "Completed"}
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveEvent(event)} type="button">
-                        <VariableText label="Edit" radius={85} />
-                      </button>
-                      <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingEvent(event)} type="button">
-                        <VariableText label="Delete" radius={85} />
-                      </button>
+            <div className="admin-card">
+              <h2 className="text-2xl font-semibold">
+                <VariableText label="Event list" />
+              </h2>
+              <div className="mt-4 space-y-3">
+                {events.map((event) => (
+                  <div key={event.id} className="rounded-2xl border border-slate-200/80 p-4 dark:border-white/10">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold">{event.title}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-300">
+                          {event.event_date} • {event.event_type} • {event.is_upcoming ? "Upcoming" : "Completed"}
+                        </p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveEvent(event)} type="button">
+                          <VariableText label="Edit" radius={85} />
+                        </button>
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingEvent(event)} type="button">
+                          <VariableText label="Delete" radius={85} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        </Skeleton>
+      ) : null}
     </div>
   );
 }
