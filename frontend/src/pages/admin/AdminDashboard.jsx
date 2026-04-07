@@ -146,7 +146,7 @@ export default function AdminDashboard() {
                         className="mt-1 inline-block text-sm text-ember underline-offset-4 hover:underline"
                         href={`mailto:${message.email}`}
                       >
-                        {message.email}
+                        <VariableText label={message.email} radius={85} />
                       </a>
                     </div>
                     <span className="chip">
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
                     </span>
                   </div>
                   <p className="mt-3 line-clamp-3 text-sm text-slate-600 dark:text-slate-300">
-                    {message.message}
+                    <VariableText label={message.message} radius={85} />
                   </p>
                 </div>
               ))

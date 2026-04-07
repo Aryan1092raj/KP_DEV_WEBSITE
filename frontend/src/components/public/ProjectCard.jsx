@@ -15,7 +15,7 @@ export default function ProjectCard({ project }) {
         {project.year ? <span className="chip">{project.year}</span> : null}
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-        {project.description}
+        <VariableText label={project.description} radius={85} />
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         {project.tech_stack.map((item) => (
@@ -33,12 +33,12 @@ export default function ProjectCard({ project }) {
       <div className="mt-6 flex flex-wrap gap-3">
         {project.github_url ? (
           <a className="btn-secondary !px-4 !py-2" href={project.github_url} rel="noreferrer" target="_blank">
-            GitHub
+            <VariableText label="GitHub" radius={85} />
           </a>
         ) : null}
         {project.live_url ? (
           <a className="btn-primary !px-4 !py-2" href={project.live_url} rel="noreferrer" target="_blank">
-            Live demo
+            <VariableText label="Live demo" radius={85} />
           </a>
         ) : null}
       </div>

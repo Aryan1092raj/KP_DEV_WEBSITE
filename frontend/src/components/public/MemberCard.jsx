@@ -44,18 +44,20 @@ export default function MemberCard({ member }) {
           </p>
         </div>
       </div>
-      <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">{member.bio || "KP core contributor"}</p>
+      <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+        <VariableText label={member.bio || "KP core contributor"} radius={85} />
+      </p>
       <div className="mt-5 flex items-center justify-between text-sm text-slate-500 dark:text-slate-300">
         <span>{member.batch}</span>
         <div className="flex gap-3">
           {member.github_url ? (
             <a href={member.github_url} rel="noreferrer" target="_blank">
-              GitHub
+              <VariableText label="GitHub" radius={85} />
             </a>
           ) : null}
           {member.linkedin_url ? (
             <a href={member.linkedin_url} rel="noreferrer" target="_blank">
-              LinkedIn
+              <VariableText label="LinkedIn" radius={85} />
             </a>
           ) : null}
         </div>

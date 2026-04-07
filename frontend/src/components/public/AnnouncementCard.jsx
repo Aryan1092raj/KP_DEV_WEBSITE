@@ -10,7 +10,7 @@ export default function AnnouncementCard({ announcement }) {
         <VariableText label={announcement.title} />
       </h3>
       <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-        {announcement.body}
+        <VariableText label={announcement.body} radius={85} />
       </p>
       <p className="mt-5 text-xs uppercase tracking-[0.24em] text-slate-400">
         <VariableText label={announcement.published_at || announcement.created_at} radius={85} />
