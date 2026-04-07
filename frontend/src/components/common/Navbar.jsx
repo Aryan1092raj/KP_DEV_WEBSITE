@@ -1,7 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.png";
-import ThemeToggle from "./ThemeToggle";
 
 const links = [
   { to: "/", label: "Home" },
@@ -12,7 +11,7 @@ const links = [
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar({ darkMode, onToggleTheme, authenticated }) {
+export default function Navbar({ authenticated }) {
   return (
     <header className="sticky top-0 z-40 border-b border-white/50 bg-dune/80 backdrop-blur dark:border-white/10 dark:bg-ink/70">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
@@ -45,7 +44,6 @@ export default function Navbar({ darkMode, onToggleTheme, authenticated }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle darkMode={darkMode} onToggle={onToggleTheme} />
           <Link className="btn-primary !px-4 !py-2" to={authenticated ? "/admin" : "/admin/login"}>
             {authenticated ? "Dashboard" : "Admin login"}
           </Link>

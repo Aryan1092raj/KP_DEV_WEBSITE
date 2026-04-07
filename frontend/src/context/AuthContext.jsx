@@ -112,7 +112,7 @@ export function AuthProvider({ children }) {
       } catch {
         // Ignore sign-out errors here; local auth state has already been cleared.
       }
-      navigate("/admin/login", { replace: true });
+      navigate("/", { replace: true });
     });
 
     return () => setUnauthorizedHandler(null);
@@ -147,7 +147,7 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     clearAuthState();
-    navigate("/admin/login", { replace: true });
+    navigate("/", { replace: true });
     try {
       await supabase.auth.signOut();
     } catch {

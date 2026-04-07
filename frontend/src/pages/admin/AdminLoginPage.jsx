@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import Toast from "../../components/common/Toast";
 import { useAuth } from "../../hooks/useAuth";
@@ -46,6 +46,11 @@ export default function AdminLoginPage() {
   return (
     <div className="page-shell">
       <Toast onClose={() => setToast(null)} toast={toast} />
+      <div className="mb-5">
+        <Link className="btn-secondary !px-4 !py-2" to="/">
+          &larr; Back to main page
+        </Link>
+      </div>
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_0.9fr]">
         <section className="section-card bg-ink text-white dark:bg-white/5">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-orange-300">
