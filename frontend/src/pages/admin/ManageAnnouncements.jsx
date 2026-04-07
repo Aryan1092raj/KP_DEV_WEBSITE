@@ -5,6 +5,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { announcementService } from "../../services/announcementService";
 
@@ -74,12 +75,14 @@ export default function ManageAnnouncements() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            Announcements
+            <VariableText label="Announcements" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">Create drafts or publish club updates</h1>
+          <h1 className="mt-3 text-4xl font-bold">
+            <VariableText label="Create drafts or publish club updates" />
+          </h1>
         </div>
         <button className="btn-primary" onClick={() => setActiveAnnouncement(null)} type="button">
-          New announcement
+          <VariableText label="New announcement" radius={85} />
         </button>
       </div>
 
@@ -92,7 +95,9 @@ export default function ManageAnnouncements() {
         />
 
         <div className="admin-card">
-          <h2 className="text-2xl font-semibold">Announcement list</h2>
+          <h2 className="text-2xl font-semibold">
+            <VariableText label="Announcement list" />
+          </h2>
           {loading ? <LoadingSpinner label="Loading announcements..." /> : null}
           {error ? <ErrorMessage message={error} onRetry={refetch} /> : null}
           {!loading && !error ? (
@@ -108,10 +113,10 @@ export default function ManageAnnouncements() {
                     </div>
                     <div className="flex gap-3">
                       <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveAnnouncement(announcement)} type="button">
-                        Edit
+                        <VariableText label="Edit" radius={85} />
                       </button>
                       <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingAnnouncement(announcement)} type="button">
-                        Delete
+                        <VariableText label="Delete" radius={85} />
                       </button>
                     </div>
                   </div>

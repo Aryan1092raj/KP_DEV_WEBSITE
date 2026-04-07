@@ -3,6 +3,7 @@ import { useState } from "react";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import Toast from "../../components/common/Toast";
+import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { applicationService } from "../../services/applicationService";
 
@@ -34,9 +35,11 @@ export default function ViewApplications() {
       <Toast onClose={() => setToast(null)} toast={toast} />
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          Join applications
+          <VariableText label="Join applications" radius={85} />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">Review, accept, or reject club applicants</h1>
+        <h1 className="mt-3 text-4xl font-bold">
+          <VariableText label="Review, accept, or reject club applicants" />
+        </h1>
       </div>
 
       {loading ? <LoadingSpinner label="Loading applications..." /> : null}
@@ -70,7 +73,10 @@ export default function ViewApplications() {
                     onClick={() => updateStatus(application.id, status)}
                     type="button"
                   >
-                    {pendingId === application.id ? "Updating..." : `Mark ${status}`}
+                    <VariableText
+                      label={pendingId === application.id ? "Updating..." : `Mark ${status}`}
+                      radius={85}
+                    />
                   </button>
                 ))}
               </div>

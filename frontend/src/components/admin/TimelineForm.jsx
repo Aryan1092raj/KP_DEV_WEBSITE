@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import VariableText from "../common/VariableText";
+
 const emptyTimeline = {
   year: "",
   title: "",
@@ -30,7 +32,9 @@ export default function TimelineForm({ initialData, onSubmit, onCancel, loading 
 
   return (
     <form className="admin-card space-y-4" onSubmit={submit}>
-      <h3 className="text-2xl font-semibold">{initialData ? "Edit milestone" : "Add milestone"}</h3>
+      <h3 className="text-2xl font-semibold">
+        <VariableText label={initialData ? "Edit milestone" : "Add milestone"} />
+      </h3>
       <div className="grid gap-4 sm:grid-cols-2">
         <label>
           <span className="label">Year</span>
@@ -42,19 +46,23 @@ export default function TimelineForm({ initialData, onSubmit, onCancel, loading 
         </label>
       </div>
       <label>
-        <span className="label">Title</span>
+        <span className="label">
+          <VariableText label="Title" radius={85} />
+        </span>
         <input className="input" name="title" onChange={handleChange} value={form.title} />
       </label>
       <label>
-        <span className="label">Description</span>
+        <span className="label">
+          <VariableText label="Description" radius={85} />
+        </span>
         <textarea className="input min-h-[110px]" name="description" onChange={handleChange} value={form.description} />
       </label>
       <div className="flex flex-wrap gap-3">
         <button className="btn-primary" disabled={loading} type="submit">
-          {loading ? "Saving..." : initialData ? "Update milestone" : "Create milestone"}
+          <VariableText label={loading ? "Saving..." : initialData ? "Update milestone" : "Create milestone"} radius={85} />
         </button>
         <button className="btn-secondary" onClick={onCancel} type="button">
-          Cancel
+          <VariableText label="Cancel" radius={85} />
         </button>
       </div>
     </form>
