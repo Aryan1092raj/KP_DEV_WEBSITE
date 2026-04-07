@@ -1,0 +1,114 @@
+.kp-bounceCardsContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.kp-bounce-card {
+  position: absolute;
+  width: clamp(170px, 24vw, 250px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 16px 40px rgba(4, 12, 24, 0.28),
+    0 6px 18px rgba(4, 12, 24, 0.2);
+  background: linear-gradient(150deg, #f6f8fb 0%, #e2e8f0 100%);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.kp-bounce-card:hover {
+  z-index: 50 !important;
+}
+
+.kp-bounce-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kp-bounce-card-link {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #f8fafc 0%, #e2e8f0 100%);
+  color: #0f172a;
+  text-decoration: none;
+}
+
+.kp-bounce-cover {
+  height: 48%;
+  background: #0f172a;
+}
+
+.kp-bounce-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 12px;
+}
+
+.kp-bounce-content--full {
+  background: linear-gradient(160deg, #f8fafc 0%, #dbeafe 100%);
+  padding-top: 14px;
+}
+
+.kp-bounce-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f97316;
+}
+
+.kp-bounce-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.kp-bounce-subtitle {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #475569;
+}
+
+.kp-bounce-description {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #334155;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kp-bounce-cta {
+  margin-top: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 640px) {
+  .kp-bounce-card {
+    width: clamp(130px, 34vw, 180px);
+    border-width: 3px;
+    border-radius: 18px;
+  }
+}
