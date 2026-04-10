@@ -21,7 +21,13 @@ function readStoredAdminToken() {
   if (typeof window === "undefined") {
     return null;
   }
-  return window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+
+  const sessionToken = window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+  if (sessionToken) {
+    return sessionToken;
+  }
+
+  return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
 function persistAdminToken(token) {
@@ -31,10 +37,12 @@ function persistAdminToken(token) {
 
   if (token) {
     window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+    window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
     return;
   }
 
   window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
 export function AuthProvider({ children }) {
