@@ -6,9 +6,9 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 
 ## Tech Stack
 
-- Frontend: React, Vite, Tailwind CSS, Axios, Supabase JS
+- Frontend: React, Vite, Tailwind CSS, Axios, TanStack Query
 - Backend: FastAPI, Pydantic, Supabase Python client, python-jose
-- Database/Auth: Supabase Postgres + Supabase Auth
+- Database/Auth: Supabase Postgres + Supabase Auth with backend-issued admin session cookies
 - Infra: Docker, Docker Compose, Nginx
 
 ## Quick Start
@@ -16,7 +16,7 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 1. Copy env templates:
 	 - `backend/.env.example` -> `backend/.env`
 	 - `frontend/.env.example` -> `frontend/.env`
-2. Fill real Supabase/API values.
+2. Fill real API and Supabase values.
 3. Run: `docker compose up --build`
 4. Open:
 	 - Frontend: `http://localhost:3000`
@@ -25,9 +25,30 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 ## Runtime Notes
 
 - Public pages read dynamic content from backend APIs.
-- Admin pages require authenticated users with admin role metadata.
-- Backend keeps RLS behavior by using anon-key flow for data access.
+- Admin login is mediated by FastAPI, which issues an `HttpOnly` session cookie after verifying Supabase credentials and admin role metadata.
+- Backend data access is anchored to a server credential path via `SUPABASE_SERVICE_ROLE_KEY` when configured, with a local-development fallback to the anon key.
+- Admin requests revalidate the user against Supabase Auth on the backend, so role revocations take effect without waiting for the browser to refresh.
+- Frontend runtime only needs `VITE_API_BASE_URL`; Supabase project URL and anon key are no longer shipped to the browser bundle.
 - Backend uptime is handled by an external cron job that pings `/health`.
+
+## Supabase SQL Editor Order (Local Workflow)
+
+These SQL files are intentionally local-only and ignored by git. Run them manually in Supabase SQL Editor in this order:
+
+1. `supabase/applications.sql`
+2. `supabase/contact_messages.sql`
+3. `supabase/seed_public_content.sql`
+
+What each file does:
+
+- `supabase/applications.sql`: creates `public.applications` table and RLS policies for public submit + admin read/update.
+- `supabase/contact_messages.sql`: creates `public.contact_messages` table and RLS policies for public submit + admin read.
+- `supabase/seed_public_content.sql`: resets and seeds public content tables, then applies core RLS policies for `team_members`, `projects`, `project_members`, `events`, `timeline`, and `announcements`.
+
+Important:
+
+- `supabase/seed_public_content.sql` deletes existing rows from public content tables before reseeding.
+- Re-run `supabase/seed_public_content.sql` only when you intentionally want a content reset.
 
 ## Committed File Inventory
 
@@ -53,14 +74,16 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 - `backend/app/main.py`: FastAPI app setup, middleware, router mounting.
 	- Classes/Functions: `root`, `health`
 - `backend/app/db/client.py`: Supabase/PostgREST client helpers.
-	- Classes/Functions: `get_supabase`, `get_postgrest_client`
+	- Classes/Functions: `get_supabase`, `get_auth_supabase`, `get_postgrest_client`
 - `backend/app/exceptions/handlers.py`: API error payload and common raise helpers.
 	- Classes/Functions: `error_payload`, `raise_not_found`, `raise_conflict`
-- `backend/app/middleware/auth.py`: Admin auth utilities.
-	- Classes/Functions: `_extract_role`, `_error`, `verify_admin`
+- `backend/app/middleware/auth.py`: Admin session cookie and authorization helpers.
+	- Classes/Functions: `_extract_role`, `_extract_user_id`, `_extract_email`, `_error`, `build_admin_session`, `set_admin_session_cookie`, `clear_admin_session_cookie`, `create_admin_session_for_user`, `verify_admin`
 
 ### Backend Models
 
+- `backend/app/models/auth.py`: Admin auth request/session schemas.
+	- Classes/Functions: `AdminLoginRequest`, `AdminUserResponse`, `AdminSessionResponse`
 - `backend/app/models/announcement.py`: Announcement schemas.
 	- Classes/Functions: `AnnouncementBase`, `AnnouncementCreate`, `AnnouncementUpdate`, `AnnouncementResponse`
 - `backend/app/models/application.py`: Application schemas.
@@ -78,6 +101,8 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 
 ### Backend Routers
 
+- `backend/app/routers/admin_auth.py`: Backend-admin auth endpoints.
+	- Classes/Functions: `login`, `get_session`, `logout`
 - `backend/app/routers/announcements.py`: Public/admin announcement endpoints.
 	- Classes/Functions: `_prepare_announcement_payload`, `list_announcements`, `list_announcements_admin`, `create_announcement`, `update_announcement`, `delete_announcement`
 - `backend/app/routers/applications.py`: Application submit and admin review endpoints.
@@ -131,20 +156,20 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 ### Frontend Context, Hooks, Lib
 
 - `frontend/src/context/AuthContext.jsx`: Auth provider and auth state sync.
-	- Classes/Functions: `AuthProvider`, `useAuthContext`, `getUserRole`, `clearAuthState`
+	- Classes/Functions: `AuthProvider`, `useAuthContext`, `isAdminUser`, `clearAuthState`
 - `frontend/src/context/ProximityContext.jsx`: Shared proximity container context.
 	- Classes/Functions: `ProximityContainerProvider`, `useProximityContainer`
 - `frontend/src/hooks/useAuth.js`: Hook wrapper over auth context.
 	- Classes/Functions: `useAuth`
 - `frontend/src/hooks/useFetch.js`: Generic async data hook.
 	- Classes/Functions: `useFetch`
-- `frontend/src/lib/api.js`: Axios client, token setter, unauthorized handler.
-	- Classes/Functions: `setAccessToken`, `setUnauthorizedHandler`, `extractError`
-- `frontend/src/lib/supabase.js`: Supabase client setup.
-	- Classes/Functions: none (client export)
+- `frontend/src/lib/api.js`: Axios client and unauthorized handler plumbing.
+	- Classes/Functions: `setUnauthorizedHandler`, `extractError`
 
 ### Frontend Services
 
+- `frontend/src/services/adminAuthService.js`: Admin auth/session API service.
+	- Methods: `getSession`, `login`, `logout`
 - `frontend/src/services/announcementService.js`: Announcement API service.
 	- Methods: `getPublished`, `getAdminAll`, `create`, `update`, `remove`
 - `frontend/src/services/applicationService.js`: Application API service.

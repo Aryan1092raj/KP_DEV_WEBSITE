@@ -1,10 +1,14 @@
 import logging
+from datetime import datetime, timedelta, timezone
 
-from fastapi import HTTPException, Security
-from fastapi import Request
+from jose import JWTError, jwt
+
+from fastapi import HTTPException, Request, Response, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.config import settings
 from app.db.client import get_supabase
+from app.models.auth import AdminSessionResponse, AdminUserResponse
 
 security_scheme = HTTPBearer(auto_error=False)
 logger = logging.getLogger("kp.auth")
@@ -16,15 +20,124 @@ def _error(message: str, code: str) -> dict[str, object]:
 
 def _extract_role(user: object) -> str | None:
     app_metadata = getattr(user, "app_metadata", None) or {}
-    user_metadata = getattr(user, "user_metadata", None) or {}
 
     if isinstance(app_metadata, dict) and app_metadata.get("role"):
         return app_metadata.get("role")
 
-    if isinstance(user_metadata, dict):
-        return user_metadata.get("role")
+    return None
+
+
+def _extract_user_id(user: object) -> str | None:
+    user_id = getattr(user, "id", None)
+    return str(user_id) if user_id else None
+
+
+def _extract_email(user: object) -> str | None:
+    email = getattr(user, "email", None)
+    return str(email) if email else None
+
+
+def build_admin_session(user: object, expires_at: datetime) -> AdminSessionResponse:
+    role = _extract_role(user)
+    user_id = _extract_user_id(user)
+
+    if role != "admin" or not user_id:
+        raise ValueError("Admin session can only be created for admin users")
+
+    return AdminSessionResponse(
+        expires_at=expires_at,
+        user=AdminUserResponse(
+            id=user_id,
+            email=_extract_email(user),
+            role=role,
+        ),
+    )
+
+
+def set_admin_session_cookie(response: Response, session: AdminSessionResponse) -> None:
+    payload = {
+        "sub": session.user.id,
+        "email": session.user.email,
+        "role": session.user.role,
+        "iat": int(datetime.now(timezone.utc).timestamp()),
+        "exp": int(session.expires_at.timestamp()),
+    }
+    token = jwt.encode(payload, settings.session_signing_secret, algorithm="HS256")
+    response.set_cookie(
+        key=settings.admin_session_cookie_name,
+        value=token,
+        max_age=settings.admin_session_max_age_seconds,
+        expires=session.expires_at,
+        httponly=True,
+        secure=settings.secure_cookies,
+        samesite=settings.session_cookie_samesite,
+        path="/",
+    )
+
+
+def clear_admin_session_cookie(response: Response) -> None:
+    response.delete_cookie(
+        key=settings.admin_session_cookie_name,
+        httponly=True,
+        secure=settings.secure_cookies,
+        samesite=settings.session_cookie_samesite,
+        path="/",
+    )
+
+
+def create_admin_session_for_user(user: object) -> AdminSessionResponse:
+    expires_at = datetime.now(timezone.utc) + timedelta(
+        seconds=settings.admin_session_max_age_seconds
+    )
+    return build_admin_session(user, expires_at)
+
+
+def _read_admin_session_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None,
+) -> str | None:
+    if credentials is not None and credentials.credentials:
+        return credentials.credentials
+
+    cookie_token = request.cookies.get(settings.admin_session_cookie_name)
+    if cookie_token:
+        return cookie_token
 
     return None
+
+
+def _decode_admin_session(token: str) -> AdminSessionResponse:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.session_signing_secret,
+            algorithms=["HS256"],
+        )
+    except JWTError as exc:
+        raise HTTPException(
+            status_code=401,
+            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
+        ) from exc
+
+    role = payload.get("role")
+    user_id = payload.get("sub")
+    expires_at_raw = payload.get("exp")
+
+    if role != "admin" or not user_id or not expires_at_raw:
+        raise HTTPException(
+            status_code=401,
+            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
+        )
+
+    expires_at = datetime.fromtimestamp(expires_at_raw, tz=timezone.utc)
+    return AdminSessionResponse(
+        expires_at=expires_at,
+        user=AdminUserResponse(
+            id=str(user_id),
+            email=payload.get("email"),
+            role=role,
+        ),
+    )
 
 
 async def verify_admin(
@@ -33,29 +146,40 @@ async def verify_admin(
 ) -> dict[str, object]:
     client_ip = request.client.host if request.client else "unknown"
 
-    if credentials is None:
+    token = _read_admin_session_token(request, credentials)
+    if token is None:
         logger.warning("admin_auth_failed_missing_token ip=%s path=%s", client_ip, request.url.path)
         raise HTTPException(
             status_code=401,
-            detail=_error("Authorization token is required", "MISSING_TOKEN"),
+            detail=_error("Admin session is required", "MISSING_SESSION"),
         )
 
-    token = credentials.credentials
     try:
-        user_response = get_supabase().auth.get_user(token)
-        user = getattr(user_response, "user", None)
+        session = _decode_admin_session(token)
     except Exception as exc:
         logger.warning("admin_auth_failed_invalid_token ip=%s path=%s", client_ip, request.url.path)
+        if isinstance(exc, HTTPException):
+            raise
         raise HTTPException(
             status_code=401,
-            detail=_error("Token is invalid or has expired", "INVALID_TOKEN"),
+            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
+        ) from exc
+
+    try:
+        user_response = get_supabase().auth.admin.get_user_by_id(session.user.id)
+        user = getattr(user_response, "user", None)
+    except Exception as exc:
+        logger.warning("admin_auth_failed_user_lookup ip=%s path=%s", client_ip, request.url.path)
+        raise HTTPException(
+            status_code=401,
+            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
         ) from exc
 
     if user is None:
-        logger.warning("admin_auth_failed_empty_user ip=%s path=%s", client_ip, request.url.path)
+        logger.warning("admin_auth_failed_missing_user ip=%s path=%s", client_ip, request.url.path)
         raise HTTPException(
             status_code=401,
-            detail=_error("Token is invalid or has expired", "INVALID_TOKEN"),
+            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
         )
 
     role = _extract_role(user)
@@ -69,4 +193,9 @@ async def verify_admin(
             ),
         )
 
-    return {"token": token, "user": user}
+    refreshed_session = build_admin_session(user, session.expires_at)
+    return {
+        "token": token,
+        "user": refreshed_session.user.model_dump(),
+        "session": refreshed_session,
+    }

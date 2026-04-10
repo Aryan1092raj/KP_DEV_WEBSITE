@@ -12,13 +12,15 @@ from app.models.timeline import TimelineCreate, TimelineResponse, TimelineUpdate
 public_router = APIRouter(prefix="/api", tags=["Timeline"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Timeline"])
 
+TIMELINE_COLUMNS = "id,year,title,description,sort_order,created_at"
+
 
 @public_router.get("/timeline", response_model=list[TimelineResponse])
 def list_timeline() -> list[dict]:
     response = (
         get_supabase()
         .table("timeline")
-        .select("*")
+        .select(TIMELINE_COLUMNS)
         .order("year")
         .order("sort_order")
         .execute()
@@ -31,7 +33,7 @@ def list_timeline_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
         get_postgrest_client(admin["token"])
         .table("timeline")
-        .select("*")
+        .select(TIMELINE_COLUMNS)
         .order("year")
         .order("sort_order")
         .execute()
@@ -68,7 +70,12 @@ def update_timeline_entry(
         if timeline_payload:
             response = db.table("timeline").update(timeline_payload).eq("id", str(timeline_id)).execute()
         else:
-            response = db.table("timeline").select("*").eq("id", str(timeline_id)).execute()
+            response = (
+                db.table("timeline")
+                .select(TIMELINE_COLUMNS)
+                .eq("id", str(timeline_id))
+                .execute()
+            )
     except APIError as exc:
         raise_conflict(exc, "Unable to update timeline entry")
     if not response.data:

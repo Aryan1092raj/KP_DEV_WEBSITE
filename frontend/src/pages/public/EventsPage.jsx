@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "boneyard-js/react";
 
 import { EventsPageFallback } from "../../components/common/BoneyardFallbacks";
@@ -69,14 +70,47 @@ const fixtureAllEvents = [
   },
 ];
 
+const REFRESH_COOLDOWN_MS = 60_000;
+
 export default function EventsPage() {
-  const [upcoming, setUpcoming] = useState([]);
-  const [allEvents, setAllEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
-  const showError = Boolean(error) && !boneyardBuildMode;
+  const lastRefreshRef = useRef(0);
+
+  const {
+    data: allEvents = [],
+    error: allEventsError,
+    isLoading: allEventsLoading,
+    refetch: refetchAllEvents,
+  } = useQuery({
+    queryKey: ["events", "all"],
+    queryFn: eventService.getAll,
+    enabled: !boneyardBuildMode,
+    staleTime: 60_000,
+    gcTime: 300_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    data: upcoming = [],
+    error: upcomingError,
+    isLoading: upcomingLoading,
+    refetch: refetchUpcoming,
+  } = useQuery({
+    queryKey: ["events", "upcoming"],
+    queryFn: eventService.getUpcoming,
+    enabled: !boneyardBuildMode,
+    staleTime: 60_000,
+    gcTime: 300_000,
+    refetchOnWindowFocus: false,
+  });
+
+  const loading = !boneyardBuildMode && (allEventsLoading || upcomingLoading);
+  const errorMessage =
+    !boneyardBuildMode
+      ? allEventsError?.message || upcomingError?.message || ""
+      : "";
+  const showError = Boolean(errorMessage);
 
   const todayIso = new Date().toISOString().slice(0, 10);
 
@@ -108,33 +142,29 @@ export default function EventsPage() {
     () => normalizedAllEvents.filter((event) => event.is_ongoing),
     [normalizedAllEvents],
   );
+  const pageLoading = boneyardBuildMode || loading;
+  const upcomingToRender = pageLoading ? fixtureUpcomingEvents : normalizedUpcoming;
+  const ongoingToRender = pageLoading ? fixtureOngoingEvents : ongoing;
+  const allEventsToRender = pageLoading ? fixtureAllEvents : normalizedAllEvents;
 
-  async function load() {
-    setLoading(true);
-    setError("");
-    try {
-      const [all, next] = await Promise.all([
-        eventService.getAll(),
-        eventService.getUpcoming(),
-      ]);
-      setAllEvents(all);
-      setUpcoming(next);
-    } catch (requestError) {
-      setError(requestError.message || "Unable to load events.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const load = () => {
+    lastRefreshRef.current = Date.now();
+    void Promise.all([refetchAllEvents(), refetchUpcoming()]);
+  };
 
   useEffect(() => {
     if (boneyardBuildMode) {
       return;
     }
 
-    load();
-
     const refresh = () => {
-      load();
+      const now = Date.now();
+      if (now - lastRefreshRef.current < REFRESH_COOLDOWN_MS) {
+        return;
+      }
+
+      lastRefreshRef.current = now;
+      void Promise.all([refetchAllEvents(), refetchUpcoming()]);
     };
 
     const handleVisibilityChange = () => {
@@ -145,26 +175,23 @@ export default function EventsPage() {
 
     window.addEventListener("focus", refresh);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    const intervalId = window.setInterval(refresh, 30000);
 
     return () => {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.clearInterval(intervalId);
     };
-  }, [boneyardBuildMode]);
+  }, [boneyardBuildMode, refetchAllEvents, refetchUpcoming]);
 
   return (
     <div className="page-shell">
-
-      {showError ? <ErrorMessage message={error} onRetry={load} /> : null}
+      {showError ? <ErrorMessage message={errorMessage} onRetry={load} /> : null}
 
       {!showError ? (
         <Skeleton
           fallback={<EventsPageFallback />}
           fixture={<EventsPageFallback />}
-          loading={boneyardBuildMode || loading}
-          name="events-page"
+          loading={pageLoading}
+          name={boneyardBuildMode ? "events-page" : undefined}
         >
           <div className="space-y-8">
             <div>
@@ -181,8 +208,8 @@ export default function EventsPage() {
                 <VariableText label="Upcoming" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {(boneyardBuildMode ? fixtureUpcomingEvents : normalizedUpcoming).length ? (
-                  (boneyardBuildMode ? fixtureUpcomingEvents : normalizedUpcoming).map((event) => (
+                {upcomingToRender.length ? (
+                  upcomingToRender.map((event) => (
                     <EventCard event={event} key={event.id} />
                   ))
                 ) : (
@@ -198,8 +225,8 @@ export default function EventsPage() {
                 <VariableText label="Ongoing" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {(boneyardBuildMode ? fixtureOngoingEvents : ongoing).length ? (
-                  (boneyardBuildMode ? fixtureOngoingEvents : ongoing).map((event) => (
+                {ongoingToRender.length ? (
+                  ongoingToRender.map((event) => (
                     <EventCard event={event} key={event.id} />
                   ))
                 ) : (
@@ -215,7 +242,7 @@ export default function EventsPage() {
                 <VariableText label="All events" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
-                {(boneyardBuildMode ? fixtureAllEvents : normalizedAllEvents).map((event) => (
+                {allEventsToRender.map((event) => (
                   <EventCard event={event} key={event.id} />
                 ))}
               </div>

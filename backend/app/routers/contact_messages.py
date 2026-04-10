@@ -10,6 +10,8 @@ from app.models.contact import ContactMessageCreate, ContactMessageResponse
 public_router = APIRouter(prefix="/api", tags=["Contact"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Contact"])
 
+CONTACT_MESSAGE_COLUMNS = "id,name,email,message,created_at"
+
 
 @public_router.post(
     "/contact",
@@ -30,7 +32,7 @@ def list_contact_messages(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
         get_postgrest_client(admin["token"])
         .table("contact_messages")
-        .select("*")
+        .select(CONTACT_MESSAGE_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )

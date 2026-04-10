@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Skeleton } from "boneyard-js/react";
 
+import { ContactPageFallback } from "../../components/common/BoneyardFallbacks";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
 import { contactService } from "../../services/contactService";
@@ -85,6 +87,16 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
   const [copied, setCopied] = useState(false);
+  const boneyardBuildMode =
+    typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
+  const formToRender = boneyardBuildMode
+    ? {
+        name: "Aarav Sharma",
+        email: "aarav@example.com",
+        message:
+          "Wanted to ask about the next build sprint and how new contributors can get involved.",
+      }
+    : form;
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -127,188 +139,194 @@ export default function ContactPage() {
   return (
     <div className="page-shell space-y-8">
       <Toast onClose={() => setToast(null)} toast={toast} />
-      <div className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-          <VariableText label="./JOIN.SH" radius={85} />
-        </p>
-        <h1 className="text-4xl font-bold sm:text-5xl">
-          <VariableText label="Contact us" />
-        </h1>
-        <p className="max-w-2xl text-base text-white">
-          <span className="font-mono text-white">$ ./contact.sh --init</span>
-          {" "}
-          <VariableText
-            label="Use the terminal-style contact panel below to write to Kamand Prompt, reach the coordinator, or jump directly to the official socials."
-            radius={85}
-          />
-        </p>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <TerminalPanel title="message.sh" className="min-h-[620px]">
-          <form className="space-y-7" onSubmit={handleSubmit}>
-            <label className="block">
-              <span className="mb-3 block font-mono text-lg text-white">$ name</span>
-              <input
-                autoComplete="name"
-                className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
-                name="name"
-                onChange={handleChange}
-                placeholder="your_name"
-                required
-                value={form.name}
+      <Skeleton
+        fallback={<ContactPageFallback />}
+        loading={boneyardBuildMode}
+        name={boneyardBuildMode ? "contact-page" : undefined}
+      >
+        <div className="space-y-8">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+              <VariableText label="Get in touch" radius={85} />
+            </p>
+            <h1 className="text-4xl font-bold sm:text-5xl">
+              <VariableText label="Contact us" />
+            </h1>
+            <p className="max-w-2xl text-base text-white">
+              <VariableText
+                label="Reach out to Kamand Prompt for collaborations, questions, event details, or general club updates. You can send a message here or use the direct contact links."
+                radius={85}
               />
-            </label>
+            </p>
+          </div>
 
-            <label className="block">
-              <span className="mb-3 block font-mono text-lg text-white">$ email</span>
-              <input
-                autoComplete="email"
-                className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
-                name="email"
-                onChange={handleChange}
-                placeholder="your@email.com"
-                required
-                type="email"
-                value={form.email}
-              />
-            </label>
+          <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+            <TerminalPanel title="Message" className="min-h-[620px]">
+              <form className="space-y-7" onSubmit={handleSubmit}>
+                <label className="block">
+                  <span className="mb-3 block text-lg font-semibold text-white">Name</span>
+                  <input
+                    autoComplete="name"
+                    className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
+                    name="name"
+                    onChange={handleChange}
+                    placeholder="Your name"
+                    required
+                    value={formToRender.name}
+                  />
+                </label>
 
-            <label className="block">
-              <span className="mb-3 block font-mono text-lg text-white">$ message</span>
-              <textarea
-                autoComplete="off"
-                className="min-h-[180px] w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
-                name="message"
-                onChange={handleChange}
-                placeholder="your_message..."
-                required
-                value={form.message}
-              />
-            </label>
+                <label className="block">
+                  <span className="mb-3 block text-lg font-semibold text-white">Email</span>
+                  <input
+                    autoComplete="email"
+                    className="w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
+                    name="email"
+                    onChange={handleChange}
+                    placeholder="your@email.com"
+                    required
+                    type="email"
+                    value={formToRender.email}
+                  />
+                </label>
 
-            <button
-              disabled={!isReady || isSubmitting}
-              className={`flex w-full items-center justify-center gap-3 rounded-[14px] border border-[var(--kp-border)] px-5 py-4 font-mono text-2xl font-semibold uppercase tracking-[0.18em] transition ${
-                isReady && !isSubmitting
-                  ? "bg-[var(--kp-elevated)] text-white hover:opacity-90"
-                  : "cursor-not-allowed bg-[var(--kp-elevated)] text-white opacity-60"
-              }`}
-              type="submit"
-            >
-              {isSubmitting ? (
-                <span
-                  aria-hidden="true"
-                  className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                />
-              ) : null}
-              <span>{isSubmitting ? "$ ./SENDING.SH" : "$ ./SEND.SH"}</span>
-              <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path d="M21 3 10 14" stroke="currentColor" strokeWidth="1.8" />
-                <path d="m21 3-7 18-4-7-7-4 18-7Z" stroke="currentColor" strokeWidth="1.8" />
-              </svg>
-            </button>
+                <label className="block">
+                  <span className="mb-3 block text-lg font-semibold text-white">Message</span>
+                  <textarea
+                    autoComplete="off"
+                    className="min-h-[180px] w-full rounded-[14px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-5 py-4 text-lg text-white outline-none transition placeholder:text-white/60 focus:border-white"
+                    name="message"
+                    onChange={handleChange}
+                    placeholder="Tell us how we can help"
+                    required
+                    value={formToRender.message}
+                  />
+                </label>
 
-            <div className="space-y-2 text-sm text-white">
-              <p>
-                <VariableText label="Your message is delivered to the club contact inbox." radius={85} />
-              </p>
-              <p>
-                <VariableText label="You can also email" radius={85} />{" "}
-                <a
-                  className="text-white underline-offset-4 hover:underline"
-                  href="mailto:pc@iitmandi.ac.in"
-                >
-                  <VariableText label="pc@iitmandi.ac.in" radius={85} />
-                </a>{" "}
-                <VariableText label="directly or" radius={85} />{" "}
                 <button
-                  className="text-white underline-offset-4 hover:underline"
-                  onClick={copyEmailAddress}
-                  type="button"
+                  disabled={!isReady || isSubmitting}
+                  className={`flex w-full items-center justify-center gap-3 rounded-[14px] border border-[var(--kp-border)] px-5 py-4 text-lg font-semibold transition ${
+                    isReady && !isSubmitting
+                      ? "bg-[var(--kp-elevated)] text-white hover:opacity-90"
+                      : "cursor-not-allowed bg-[var(--kp-elevated)] text-white opacity-60"
+                  }`}
+                  type="submit"
                 >
-                  <VariableText label="copy the email" radius={85} />
+                  {isSubmitting ? (
+                    <span
+                      aria-hidden="true"
+                      className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    />
+                  ) : null}
+                  <span>{isSubmitting ? "Sending..." : "Send message"}</span>
+                  <svg aria-hidden="true" className="h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path d="M21 3 10 14" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="m21 3-7 18-4-7-7-4 18-7Z" stroke="currentColor" strokeWidth="1.8" />
+                  </svg>
                 </button>
-                .
-              </p>
-              {copied ? (
-                <p className="text-white">
-                  <VariableText label="Email copied to clipboard." radius={85} />
-                </p>
-              ) : null}
-            </div>
-          </form>
-        </TerminalPanel>
 
-        <div className="space-y-6">
-          <TerminalPanel title="$ CAT CONTACT.TXT">
-            <div className="space-y-4">
-              <ContactInfoCard
-                href="mailto:pc@iitmandi.ac.in"
-                icon={
-                  <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
-                    <path d="M4 6.75h16v10.5H4z" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="m4 8 8 6 8-6" stroke="currentColor" strokeWidth="1.5" />
-                  </svg>
-                }
-                label="EMAIL"
-                value="pc@iitmandi.ac.in"
-              />
-              <ContactInfoCard
-                href="tel:+919418539191"
-                icon={
-                  <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
-                    <path d="M7.25 4.75h2.5l1.25 4-1.75 1.75a14 14 0 0 0 4.5 4.5l1.75-1.75 4 1.25v2.5c0 .83-.67 1.5-1.5 1.5C10.04 19 5 13.96 5 7.75c0-.83.67-1.5 1.5-1.5Z" stroke="currentColor" strokeWidth="1.5" />
-                  </svg>
-                }
-                label="PHONE"
-                value="+91 94185 39191"
-              />
-            </div>
-          </TerminalPanel>
+                <div className="space-y-2 text-sm text-white">
+                  <p>
+                    <VariableText label="Your message is delivered to the club contact inbox." radius={85} />
+                  </p>
+                  <p>
+                    <VariableText label="You can also email" radius={85} />{" "}
+                    <a
+                      className="text-white underline-offset-4 hover:underline"
+                      href="mailto:pc@iitmandi.ac.in"
+                    >
+                      <VariableText label="pc@iitmandi.ac.in" radius={85} />
+                    </a>{" "}
+                    <VariableText label="directly or" radius={85} />{" "}
+                    <button
+                      className="text-white underline-offset-4 hover:underline"
+                      onClick={copyEmailAddress}
+                      type="button"
+                    >
+                      <VariableText label="copy the email" radius={85} />
+                    </button>
+                    .
+                  </p>
+                  {copied ? (
+                    <p className="text-white">
+                      <VariableText label="Email copied to clipboard." radius={85} />
+                    </p>
+                  ) : null}
+                </div>
+              </form>
+            </TerminalPanel>
 
-          <TerminalPanel title="$ WHOAMI --COORDINATOR">
-            <div className="flex items-center gap-5 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
-              <div className="flex h-20 w-20 items-center justify-center border border-[var(--kp-border)] bg-[var(--kp-elevated)] font-mono text-2xl font-bold text-white">
-                HJ
-              </div>
-              <div>
-                <p className="text-4xl font-bold uppercase tracking-[0.05em] text-white">
-                  HARSHIT_JAIN
-                </p>
-                <p className="mt-1 font-mono text-xl uppercase tracking-[0.12em] text-white">
-                  COORDINATOR
-                </p>
-                <a
-                  className="mt-3 inline-block font-mono text-2xl text-white hover:text-white"
-                  href="tel:+919418539191"
-                >
-                  <VariableText label="+91 94185 39191" radius={85} />
-                </a>
-              </div>
-            </div>
-          </TerminalPanel>
+            <div className="space-y-6">
+              <TerminalPanel title="Contact details">
+                <div className="space-y-4">
+                  <ContactInfoCard
+                    href="mailto:pc@iitmandi.ac.in"
+                    icon={
+                      <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
+                        <path d="M4 6.75h16v10.5H4z" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="m4 8 8 6 8-6" stroke="currentColor" strokeWidth="1.5" />
+                      </svg>
+                    }
+                    label="EMAIL"
+                    value="pc@iitmandi.ac.in"
+                  />
+                  <ContactInfoCard
+                    href="tel:+919418539191"
+                    icon={
+                      <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
+                        <path d="M7.25 4.75h2.5l1.25 4-1.75 1.75a14 14 0 0 0 4.5 4.5l1.75-1.75 4 1.25v2.5c0 .83-.67 1.5-1.5 1.5C10.04 19 5 13.96 5 7.75c0-.83.67-1.5 1.5-1.5Z" stroke="currentColor" strokeWidth="1.5" />
+                      </svg>
+                    }
+                    label="PHONE"
+                    value="+91 94185 39191"
+                  />
+                </div>
+              </TerminalPanel>
 
-          <TerminalPanel title="$ LS /SOCIALS">
-            <div className="grid gap-4 sm:grid-cols-3">
-              {socialLinks.map((item) => (
-                <a
-                  key={item.label}
-                  className="flex flex-col items-center justify-center gap-5 border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-8 text-center text-white transition hover:opacity-90"
-                  href={item.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {item.icon}
-                  <span className="font-mono text-xl uppercase tracking-[0.12em]">
-                    <VariableText label={item.label} radius={85} />
-                  </span>
-                </a>
-              ))}
+              <TerminalPanel title="Coordinator">
+                <div className="flex items-center gap-5 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
+                  <div className="flex h-20 w-20 items-center justify-center border border-[var(--kp-border)] bg-[var(--kp-elevated)] font-mono text-2xl font-bold text-white">
+                    HJ
+                  </div>
+                  <div>
+                    <p className="text-4xl font-bold uppercase tracking-[0.05em] text-white">
+                      HARSHIT_JAIN
+                    </p>
+                    <p className="mt-1 font-mono text-xl uppercase tracking-[0.12em] text-white">
+                      COORDINATOR
+                    </p>
+                    <a
+                      className="mt-3 inline-block font-mono text-2xl text-white hover:text-white"
+                      href="tel:+919418539191"
+                    >
+                      <VariableText label="+91 94185 39191" radius={85} />
+                    </a>
+                  </div>
+                </div>
+              </TerminalPanel>
+
+              <TerminalPanel title="Social links">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {socialLinks.map((item) => (
+                    <a
+                      key={item.label}
+                      className="flex flex-col items-center justify-center gap-5 border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-8 text-center text-white transition hover:opacity-90"
+                      href={item.href}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      {item.icon}
+                      <span className="font-mono text-xl uppercase tracking-[0.12em]">
+                        <VariableText label={item.label} radius={85} />
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </TerminalPanel>
             </div>
-          </TerminalPanel>
+          </div>
         </div>
-      </div>
+      </Skeleton>
     </div>
   );
 }

@@ -16,6 +16,8 @@ from app.models.application import (
 public_router = APIRouter(prefix="/api", tags=["Applications"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Applications"])
 
+APPLICATION_COLUMNS = "id,name,email,branch,batch,why_join,skills,status,submitted_at"
+
 
 @public_router.post(
     "/apply",
@@ -36,7 +38,7 @@ def list_applications(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
         get_postgrest_client(admin["token"])
         .table("applications")
-        .select("*")
+        .select(APPLICATION_COLUMNS)
         .order("submitted_at", desc=True)
         .execute()
     )

@@ -1,10 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "boneyard-js/react";
 
 import { ProjectsPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";
 import ProjectCard from "../../components/public/ProjectCard";
-import { useFetch } from "../../hooks/useFetch";
 import { projectService } from "../../services/projectService";
 
 const fixtureProjects = [
@@ -59,22 +59,36 @@ const fixtureProjects = [
 ];
 
 export default function ProjectsPage() {
-  const { data, error, loading, refetch } = useFetch(projectService.getAll);
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
-  const showError = Boolean(error) && !boneyardBuildMode;
+  const {
+    data,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["projects"],
+    queryFn: projectService.getAll,
+    enabled: !boneyardBuildMode,
+    staleTime: 120_000,
+    gcTime: 300_000,
+    refetchOnWindowFocus: false,
+  });
+  const loading = boneyardBuildMode || isLoading;
+  const projectsToRender = loading ? fixtureProjects : data ?? [];
+  const errorMessage = !boneyardBuildMode && error ? error.message || "Unable to load projects." : "";
+  const showError = Boolean(errorMessage);
 
   return (
     <div className="page-shell">
-
-      {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
+      {showError ? <ErrorMessage message={errorMessage} onRetry={refetch} /> : null}
 
       {!showError ? (
         <Skeleton
           fallback={<ProjectsPageFallback />}
           fixture={<ProjectsPageFallback />}
           loading={boneyardBuildMode || loading}
-          name="projects-grid"
+          name={boneyardBuildMode ? "projects-grid" : undefined}
         >
           <div className="space-y-6">
             <div>
@@ -87,7 +101,7 @@ export default function ProjectsPage() {
             </div>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              {(boneyardBuildMode ? fixtureProjects : data ?? []).map((project) => (
+              {projectsToRender.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
             </div>
