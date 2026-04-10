@@ -25,3 +25,7 @@ class AdminSessionResponse(BaseModel):
     authenticated: bool = True
     expires_at: datetime
     user: AdminUserResponse
+
+
+class AdminLoginResponse(AdminSessionResponse):
+    access_token: str
