@@ -1,268 +1,273 @@
 # KP Dev Cell Official Website
 
-Production-grade implementation of the `ARCHITECTURE.md` system for Kamand Prompt, the official programming club of IIT Mandi.
+Official website and admin panel for Kamand Prompt, IIT Mandi.
 
-## Stack
+This README is synced to committed files only (`git ls-files`) and includes a simple file-by-file map with function/component names.
 
-- Frontend: React + Vite + Tailwind CSS + Axios + Supabase JS Auth
-- Backend: FastAPI + Pydantic + `supabase-py` + `python-jose`
-- Data/Auth: PostgreSQL on Supabase + Supabase Auth
-- Infra: Docker + Docker Compose + Nginx
+## Tech Stack
 
-## Setup
+- Frontend: React, Vite, Tailwind CSS, Axios, Supabase JS
+- Backend: FastAPI, Pydantic, Supabase Python client, python-jose
+- Database/Auth: Supabase Postgres + Supabase Auth
+- Infra: Docker, Docker Compose, Nginx
 
-1. Fill `backend/.env` from `backend/.env.example` and `frontend/.env` from `frontend/.env.example` with your real Supabase project values.
-2. Ensure your Supabase admin users have `app_metadata.role = "admin"` in Supabase Auth. The app also accepts `user_metadata.role` as a backward-compatible fallback.
-3. Run `docker compose up --build` from the repo root.
-4. Open `http://localhost:3000` for the app and `http://localhost:8000/docs` for FastAPI docs.
+## Quick Start
 
-## Environment Scope
+1. Copy env templates:
+	 - `backend/.env.example` -> `backend/.env`
+	 - `frontend/.env.example` -> `frontend/.env`
+2. Fill real Supabase/API values.
+3. Run: `docker compose up --build`
+4. Open:
+	 - Frontend: `http://localhost:3000`
+	 - Backend docs: `http://localhost:8000/docs`
 
-- `backend/.env`: Required for backend runtime in Docker Compose (`docker-compose.yml` uses `env_file: ./backend/.env`).
-- `frontend/.env`: Required for frontend build/runtime variables (Vite `VITE_*`).
-- Root `.env`: Not used by current Docker Compose or runtime code paths in this repository, so it is intentionally removed to avoid confusion.
+## Runtime Notes
 
-## Keep Backend Running (Cron)
+- Public pages read dynamic content from backend APIs.
+- Admin pages require authenticated users with admin role metadata.
+- Backend keeps RLS behavior by using anon-key flow for data access.
+- Backend uptime is handled by an external cron job that pings `/health`.
 
-This repo now includes a GitHub Actions cron workflow at `.github/workflows/backend-keepalive.yml`.
+## Committed File Inventory
 
-1. In your GitHub repository settings, add a secret named `BACKEND_HEALTHCHECK_URL`.
-2. Set it to your deployed backend health URL (example: `https://your-backend-domain.up.railway.app/health`).
-3. The workflow runs every 10 minutes and sends a health ping.
+### Root and Infra
 
-Notes:
-- This is the recommended way to keep request-driven deployments warm.
-- Locally, Docker Compose now uses `restart: unless-stopped` for the backend service.
+- `.dockerignore`: Root Docker ignore rules. Functions: none.
+- `.gitignore`: Git ignore rules for local/build/secrets. Functions: none.
+- `README.md`: Project guide and file map. Functions: none.
+- `docker-compose.yml`: Runs backend + frontend containers together. Functions: none.
+- `package-lock.json`: Root npm lockfile. Functions: none.
 
-## System Notes
+### Backend Infra
 
-- Public pages load all dynamic content through FastAPI; there is no hardcoded showcase data in React pages.
-- Admin routes require a Supabase JWT and `app_metadata.role === "admin"`; `user_metadata.role` is accepted only as a fallback for older users.
-- The frontend uses Supabase session persistence with auto-refresh enabled, and `AuthContext` syncs session/user state for guarded routes.
-- The backend uses the Supabase anon key so RLS remains in force instead of being bypassed by a service role.
-- Backend admin APIs include in-app request rate limiting and failed-auth logging for hardening.
+- `backend/.dockerignore`: Backend Docker ignore rules. Functions: none.
+- `backend/.env.example`: Backend env template. Functions: none.
+- `backend/Dockerfile`: Backend container build and startup command. Functions: none.
+- `backend/requirements.txt`: Python dependency list. Functions: none.
 
-## File Inventory
+### Backend Core
 
-### Root / Infrastructure
+- `backend/app/config.py`: App settings model.
+	- Classes/Functions: `Settings`
+- `backend/app/main.py`: FastAPI app setup, middleware, router mounting.
+	- Classes/Functions: `root`, `health`
+- `backend/app/db/client.py`: Supabase/PostgREST client helpers.
+	- Classes/Functions: `get_supabase`, `get_postgrest_client`
+- `backend/app/exceptions/handlers.py`: API error payload and common raise helpers.
+	- Classes/Functions: `error_payload`, `raise_not_found`, `raise_conflict`
+- `backend/app/middleware/auth.py`: Admin auth utilities.
+	- Classes/Functions: `_extract_role`, `_error`, `verify_admin`
 
-- `ARCHITECTURE.md`: Canonical architecture contract for the full stack; input is product/system requirements; output is implementation constraints followed by this repository.
-- `docker-compose.yml`: Orchestrates `backend` and `frontend`; input is service build contexts and `backend/.env`; output is the local multi-container topology; connects React/Nginx to FastAPI.
-- `supabase/seed_public_content.sql`: Supabase-ready SQL seed for verified public club data; input is confirmed Kamand Prompt public information; output is starter project records and manual templates for missing data; used in Supabase SQL Editor to bootstrap real content safely.
-- `supabase/contact_messages.sql`: Supabase SQL for the public contact inbox table and RLS policies; input is contact submissions from the website; output is persisted `contact_messages` rows with public insert and admin-only read access; run this in Supabase before using the contact form.
-- `cmd.txt`: Local command reference for common run/debug workflows; input is developer setup choices; output is quick operational commands for Docker and local runs.
-- `.gitignore`: Hides `.env`, build output, caches, and local tooling files; input is generated artifacts; output is a clean repo state; protects secrets and runtime noise.
-- `.dockerignore`: Filters noisy root files from Docker contexts where applicable; input is local dev artifacts; output is smaller build contexts; complements containerized builds.
-- `.github/workflows/backend-keepalive.yml`: Scheduled health-ping workflow; input is `BACKEND_HEALTHCHECK_URL` GitHub secret; output is periodic backend keepalive requests to reduce cold starts.
-- `package-lock.json`: Root lockfile used by workspace-level npm operations; input is resolved package graph; output is deterministic installs at root scope.
-- `README.md`: Setup, runtime notes, and per-file documentation; input is the built repo structure; output is evaluator-facing guidance; explains how all layers fit.
+### Backend Models
 
-### Backend
+- `backend/app/models/announcement.py`: Announcement schemas.
+	- Classes/Functions: `AnnouncementBase`, `AnnouncementCreate`, `AnnouncementUpdate`, `AnnouncementResponse`
+- `backend/app/models/application.py`: Application schemas.
+	- Classes/Functions: `ApplicationCreate`, `ApplicationStatusUpdate`, `ApplicationResponse`
+- `backend/app/models/contact.py`: Contact message schemas.
+	- Classes/Functions: `ContactMessageCreate`, `ContactMessageResponse`
+- `backend/app/models/event.py`: Event schemas.
+	- Classes/Functions: `EventBase`, `EventCreate`, `EventUpdate`, `EventResponse`
+- `backend/app/models/member.py`: Member schemas and photo validators.
+	- Classes/Functions: `MemberBase`, `MemberCreate`, `MemberUpdate`, `MemberResponse`, `normalize_photo_value`, `validate_photo_value`
+- `backend/app/models/project.py`: Project and contributor schemas.
+	- Classes/Functions: `ProjectBase`, `ProjectCreate`, `ProjectUpdate`, `ProjectResponse`, `ProjectContributorBase`, `ProjectContributorCreate`, `ProjectContributorResponse`
+- `backend/app/models/timeline.py`: Timeline schemas.
+	- Classes/Functions: `TimelineBase`, `TimelineCreate`, `TimelineUpdate`, `TimelineResponse`
 
-- `backend/Dockerfile`: Builds the FastAPI service on Python 3.11; input is `requirements.txt` plus backend source; output is a Uvicorn-ready container; used by Compose.
-- `backend/.dockerignore`: Excludes caches, env files, and virtualenv folders from backend image builds; input is backend build context noise; output is a smaller Docker context; keeps backend container builds lean.
-- `backend/requirements.txt`: Pins backend dependencies; input is Python package requirements; output is a reproducible environment; supports FastAPI, Supabase, JWT, and validation.
-- `backend/.env.example`: Documents required backend env vars; input is deployment configuration; output is a copyable template; drives FastAPI, CORS, and Supabase connectivity.
-- `backend/app/main.py`: Initializes FastAPI, CORS, exception handlers, health route, and all routers; input is requests plus imported routers; output is the ASGI app; central backend entrypoint.
-- `backend/app/config.py`: Defines `Settings`; input is `backend/.env`; output is shared typed config (including admin rate-limit knobs); imported by app startup, auth, and Supabase client helpers.
-- `backend/app/db/client.py`: Exposes `get_supabase()` and `get_postgrest_client()`; input is backend settings and optional caller JWT; output is cached or request-scoped database clients; keeps backend DB access consistent and RLS-aware.
-- `backend/app/middleware/auth.py`: Defines `verify_admin()`; input is Bearer credentials; output is decoded JWT metadata or 401/403 JSON with failed-auth logging; guards every admin route.
-- `backend/app/exceptions/handlers.py`: Defines `error_payload()`, `raise_not_found()`, `raise_conflict()`, and global handlers; input is FastAPI/validation/PostgREST errors; output is structured JSON errors; standardizes backend failure behavior.
+### Backend Routers
 
-#### Backend Models
+- `backend/app/routers/announcements.py`: Public/admin announcement endpoints.
+	- Classes/Functions: `_prepare_announcement_payload`, `list_announcements`, `list_announcements_admin`, `create_announcement`, `update_announcement`, `delete_announcement`
+- `backend/app/routers/applications.py`: Application submit and admin review endpoints.
+	- Classes/Functions: `create_application`, `list_applications`, `update_application_status`
+- `backend/app/routers/contact_messages.py`: Contact submit and admin inbox endpoints.
+	- Classes/Functions: `create_contact_message`, `list_contact_messages`
+- `backend/app/routers/events.py`: Public/admin event endpoints.
+	- Classes/Functions: `list_events`, `list_upcoming_events`, `list_events_admin`, `create_event`, `update_event`, `delete_event`
+- `backend/app/routers/members.py`: Public/admin member endpoints.
+	- Classes/Functions: `list_members`, `list_members_admin`, `create_member`, `update_member`, `delete_member`
+- `backend/app/routers/projects.py`: Public/admin project endpoints.
+	- Classes/Functions: `_serialize_projects`, `_replace_project_contributors`, `list_projects`, `list_featured_projects`, `list_projects_admin`, `create_project`, `update_project`, `delete_project`
+- `backend/app/routers/timeline.py`: Public/admin timeline endpoints.
+	- Classes/Functions: `list_timeline`, `list_timeline_admin`, `create_timeline_entry`, `update_timeline_entry`, `delete_timeline_entry`
 
-- `backend/app/models/member.py`: Defines `MemberCreate`, `MemberUpdate`, and `MemberResponse`; input is member payloads; output is validated API contracts; used by member CRUD routes.
-- `backend/app/models/project.py`: Defines project status, contributor models, `ProjectCreate`, `ProjectUpdate`, and `ProjectResponse`; input is project CRUD payloads; output is validated project plus contributor shapes; used by project routes and admin forms.
-- `backend/app/models/event.py`: Defines `EventCreate`, `EventUpdate`, and `EventResponse`; input is event forms; output is validated event records; used by public and admin event endpoints.
-- `backend/app/models/timeline.py`: Defines `TimelineCreate`, `TimelineUpdate`, and `TimelineResponse`; input is milestone payloads; output is validated timeline data; used by timeline routes and public history rendering.
-- `backend/app/models/announcement.py`: Defines `AnnouncementCreate`, `AnnouncementUpdate`, and `AnnouncementResponse`; input is draft/publish payloads; output is validated announcement records; used by announcement routes.
-- `backend/app/models/application.py`: Defines `ApplicationCreate`, `ApplicationStatusUpdate`, and `ApplicationResponse`; input is join-form submissions and admin status changes; output is validated application contracts; used by public apply and admin review flows.
-- `backend/app/models/contact.py`: Defines `ContactMessageCreate` and `ContactMessageResponse`; input is public contact-form submissions; output is validated contact message contracts; used by the contact API route.
+### Frontend Infra
 
-#### Backend Routers
+- `frontend/.dockerignore`: Frontend Docker ignore rules. Functions: none.
+- `frontend/.env.example`: Frontend env template. Functions: none.
+- `frontend/Dockerfile`: Frontend build + Nginx runtime image. Functions: none.
+- `frontend/boneyard.config.json`: Boneyard capture config. Functions: none.
+- `frontend/index.html`: SPA HTML shell. Functions: none.
+- `frontend/nginx.conf`: SPA routing fallback config. Functions: none.
+- `frontend/package-lock.json`: Frontend npm lockfile. Functions: none.
+- `frontend/package.json`: Frontend scripts + dependencies. Functions: none.
+- `frontend/postcss.config.js`: PostCSS plugins config. Functions: none.
+- `frontend/tailwind.config.js`: Tailwind scan/theme config. Functions: none.
+- `frontend/vite.config.js`: Vite config. Functions: none.
 
-- `backend/app/routers/members.py`: Implements public member reads and admin member CRUD; input is `/api/members` requests and protected admin payloads; output is member JSON plus delete flags; powers team pages and admin member management.
-- `backend/app/routers/projects.py`: Implements public project reads, featured reads, admin project CRUD, and project-member linking; input is project payloads plus contributor arrays; output is project JSON enriched with contributor snapshots; powers showcase and admin project management.
-- `backend/app/routers/events.py`: Implements public event reads, upcoming reads, and admin event CRUD; input is event payloads; output is event JSON; powers events page and admin event management.
-- `backend/app/routers/timeline.py`: Implements public milestone reads and admin timeline CRUD; input is milestone payloads; output is ordered timeline JSON; powers public history and admin milestone management.
-- `backend/app/routers/announcements.py`: Implements public published announcement reads and admin draft/publish CRUD; input is announcement payloads; output is announcement JSON with publish timestamps; powers homepage/public notices and admin publishing.
-- `backend/app/routers/applications.py`: Implements public `POST /api/apply` and admin application review/status updates; input is application forms and status payloads; output is stored application JSON; powers recruitment and admin decision flow.
-- `backend/app/routers/contact_messages.py`: Implements public `POST /api/contact` and admin `GET /api/admin/contact-messages`; input is public contact payloads plus protected admin reads; output is stored contact-message JSON and inbox lists; powers both the website contact page and the admin contact inbox.
+### Frontend Entry and Assets
 
-### Frontend
+- `frontend/src/main.jsx`: React bootstrap entry.
+	- Classes/Functions: none (top-level mount)
+- `frontend/src/App.jsx`: Main route tree and app layouts.
+	- Classes/Functions: `PublicLayout`, `AdminLayout`, `AppRoutes`, `App`
+- `frontend/src/index.css`: Global styles and design tokens. Functions: none.
+- `frontend/src/assets/kp-logo.png`: Brand logo asset. Functions: none.
 
-- `frontend/Dockerfile`: Multi-stage React build plus Nginx runtime; input is frontend source and `package.json`; output is a small static-serving image; used by Compose.
-- `frontend/.dockerignore`: Excludes `node_modules`, `dist`, and local env files from frontend image builds; input is generated frontend artifacts; output is a smaller Docker context; keeps image builds predictable.
-- `frontend/nginx.conf`: Configures SPA fallback with `try_files`; input is incoming browser paths; output is `index.html` for client-side routes; required for refresh/deep-link support.
-- `frontend/.env.example`: Documents frontend runtime/build env vars; input is API and Supabase public values; output is a copyable template; feeds Vite and the auth client.
-- `frontend/.env`: Local frontend env file for this workspace; input is local API and Supabase values; output is Vite config at build/dev time; keeps runtime config in the expected folder.
-- `frontend/index.html`: Browser shell and metadata; input is Vite bundle output; output is the root mount point and SEO metadata; hosts the React app.
-- `frontend/package.json`: Declares frontend dependencies and scripts; input is package metadata; output is reproducible installs and build commands; drives local and Docker builds.
-- `frontend/package-lock.json`: Lockfile generated from `npm install`; input is resolved npm dependencies; output is deterministic frontend installs; used by Docker and local builds.
-- `frontend/boneyard.config.json`: Configures responsive bone capture output for `boneyard-js`; input is local dev-server snapshot settings; output is generated skeleton files under `src/bones`; used to extract UI-matched loading screens from the real app.
-- `frontend/vite.config.js`: Configures the Vite dev/build pipeline; input is React plugin settings; output is frontend bundling behavior; used in dev and production builds.
-- `frontend/tailwind.config.js`: Enables Tailwind scanning and theme tokens; input is project file globs and custom colors; output is generated utility classes; styles the React UI.
-- `frontend/postcss.config.js`: Wires Tailwind and Autoprefixer into CSS processing; input is CSS build steps; output is compiled stylesheet transforms; part of the Vite build chain.
-- `frontend/src/main.jsx`: Mounts React into `#root`; input is `App.jsx`; output is the running SPA inside `BrowserRouter`; frontend bootstrap.
-- `frontend/src/assets/kp-logo.png`: Primary logo used in navbar/footer/admin UI; input is exported brand image; output is consistent in-app identity visuals.
-- `frontend/src/bones/registry.js`: Initializes the `boneyard-js` registry import path; input is generated or registered bones; output is globally available skeleton layouts; imported once at app startup.
-- `frontend/src/bones/home-hero.bones.json`: Skeleton contract for homepage hero loading shape; input is captured hero DOM; output is reusable loading scaffold for home hero region.
-- `frontend/src/bones/home-stats.bones.json`: Skeleton contract for homepage stats loading shape; input is captured stats DOM; output is reusable loading scaffold for stat cards.
-- `frontend/src/bones/home-projects-preview.bones.json`: Skeleton contract for homepage project preview loading shape; input is captured project preview DOM; output is reusable loading scaffold for featured projects.
-- `frontend/src/bones/home-team-preview.bones.json`: Skeleton contract for homepage team preview loading shape; input is captured team preview DOM; output is reusable loading scaffold for featured members.
-- `frontend/src/bones/home-timeline-announcements.bones.json`: Skeleton contract for homepage timeline/announcement loading shape; input is captured timeline + announcement DOM; output is reusable loading scaffold for these sections.
-- `frontend/src/bones/projects-grid.bones.json`: Skeleton contract for projects page grid loading shape; input is captured projects grid DOM; output is reusable loading scaffold for project-list loading.
-- `frontend/src/bones/team-grid.bones.json`: Skeleton contract for team page grid loading shape; input is captured team grid DOM; output is reusable loading scaffold for team-list loading.
-- `frontend/src/bones/events-page.bones.json`: Skeleton contract for events page loading shape; input is captured events DOM; output is reusable loading scaffold for events loading states.
-- `frontend/src/App.jsx`: Declares public/admin route trees, layouts, theme state, and protected admin area; input is current route and auth state; output is routed page rendering; central frontend entrypoint.
-- `frontend/src/index.css`: Defines Tailwind layers, shared classes, theme styling, and design tokens; input is Tailwind processing; output is the app stylesheet; shared by all pages and components.
+### Frontend Bones
 
-#### Frontend Auth / Library / Hooks
+- `frontend/src/bones/registry.js`: Boneyard registry setup. Functions: none.
+- `frontend/src/bones/events-page.bones.json`: Events skeleton shape. Functions: none.
+- `frontend/src/bones/home-hero.bones.json`: Home hero skeleton shape. Functions: none.
+- `frontend/src/bones/home-projects-preview.bones.json`: Home projects skeleton shape. Functions: none.
+- `frontend/src/bones/home-stats.bones.json`: Home stats skeleton shape. Functions: none.
+- `frontend/src/bones/home-team-preview.bones.json`: Home team skeleton shape. Functions: none.
+- `frontend/src/bones/home-timeline-announcements.bones.json`: Home timeline/announcement skeleton shape. Functions: none.
+- `frontend/src/bones/projects-grid.bones.json`: Projects grid skeleton shape. Functions: none.
+- `frontend/src/bones/team-grid.bones.json`: Team grid skeleton shape. Functions: none.
 
-- `frontend/src/context/AuthContext.jsx`: Provides `AuthProvider`, `login`, `logout`, and in-memory session state; input is Supabase auth events and login credentials; output is shared auth/session context; integrates Axios interceptors with route protection.
-- `frontend/src/lib/supabase.js`: Creates the frontend Supabase client; input is `VITE_SUPABASE_*` env vars; output is a configured auth client with session persistence and auto-refresh; used only for frontend auth.
-- `frontend/src/lib/api.js`: Creates the shared Axios instance plus request/response interceptors; input is API base URL and current access token; output is authenticated HTTP requests and normalized errors; used by every service file.
-- `frontend/src/hooks/useAuth.js`: Thin hook over `AuthContext`; input is provider state; output is auth helpers; consumed by routes, layouts, and login/logout actions.
-- `frontend/src/hooks/useFetch.js`: Generic loading/error/data hook with `refetch`; input is any async fetcher; output is request state and refresh control; used by public and admin pages.
+### Frontend Context, Hooks, Lib
 
-#### Frontend Services
+- `frontend/src/context/AuthContext.jsx`: Auth provider and auth state sync.
+	- Classes/Functions: `AuthProvider`, `useAuthContext`, `getUserRole`, `clearAuthState`
+- `frontend/src/context/ProximityContext.jsx`: Shared proximity container context.
+	- Classes/Functions: `ProximityContainerProvider`, `useProximityContainer`
+- `frontend/src/hooks/useAuth.js`: Hook wrapper over auth context.
+	- Classes/Functions: `useAuth`
+- `frontend/src/hooks/useFetch.js`: Generic async data hook.
+	- Classes/Functions: `useFetch`
+- `frontend/src/lib/api.js`: Axios client, token setter, unauthorized handler.
+	- Classes/Functions: `setAccessToken`, `setUnauthorizedHandler`, `extractError`
+- `frontend/src/lib/supabase.js`: Supabase client setup.
+	- Classes/Functions: none (client export)
 
-- `frontend/src/services/memberService.js`: Wraps member API calls; input is member CRUD payloads; output is parsed Axios JSON; consumed by team pages and admin member screens.
-- `frontend/src/services/projectService.js`: Wraps project API calls; input is project CRUD payloads; output is project JSON; consumed by home/projects pages and admin project management.
-- `frontend/src/services/eventService.js`: Wraps event API calls; input is event CRUD payloads; output is event JSON; consumed by events pages and admin event management.
-- `frontend/src/services/timelineService.js`: Wraps timeline API calls; input is milestone CRUD payloads; output is ordered milestone JSON; consumed by home page and admin timeline management.
-- `frontend/src/services/announcementService.js`: Wraps published/admin announcement API calls; input is announcement CRUD payloads; output is announcement JSON; consumed by home page and admin announcement management.
-- `frontend/src/services/applicationService.js`: Wraps public application submission and admin review calls; input is application forms or status payloads; output is application JSON; consumed by apply and applications pages.
-- `frontend/src/services/contactService.js`: Wraps public contact submission and admin inbox fetch calls; input is contact payloads or admin session state; output is stored contact-message JSON and inbox lists; consumed by the contact page and admin contact inbox.
+### Frontend Services
 
-#### Frontend Common Components
+- `frontend/src/services/announcementService.js`: Announcement API service.
+	- Methods: `getPublished`, `getAdminAll`, `create`, `update`, `remove`
+- `frontend/src/services/applicationService.js`: Application API service.
+	- Methods: `submit`, `getAdminAll`, `updateStatus`
+- `frontend/src/services/contactService.js`: Contact API service.
+	- Methods: `submit`, `getAdminAll`
+- `frontend/src/services/eventService.js`: Event API service.
+	- Methods: `getAll`, `getUpcoming`, `getAdminAll`, `create`, `update`, `remove`
+- `frontend/src/services/memberService.js`: Member API service.
+	- Methods: `getAll`, `getAdminAll`, `create`, `update`, `remove`
+- `frontend/src/services/projectService.js`: Project API service.
+	- Methods: `getAll`, `getFeatured`, `getAdminAll`, `create`, `update`, `remove`
+- `frontend/src/services/timelineService.js`: Timeline API service.
+	- Methods: `getAll`, `getAdminAll`, `create`, `update`, `remove`
 
-- `frontend/src/components/common/Navbar.jsx`: Public site header and nav; input is route state, auth presence, and theme toggle props; output is top-level navigation UI; shared across public pages.
-- `frontend/src/components/common/Particles.jsx`: Renders the OGL-based particle background globally across public and admin routes; input is particle count/spread/speed/theme color props; output is a full-screen animated canvas background.
-- `frontend/src/components/common/Particles.css`: Defines container/canvas sizing for the OGL particle background; input is global background layout; output is proper full-screen canvas behavior.
-- `frontend/src/components/common/VariableProximity.jsx`: Core motion-based variable-font interpolation component; input is mouse position and typography settings; output is proximity-reactive text rendering.
-- `frontend/src/components/common/VariableProximity.css`: Styling for variable proximity text behavior; input is text animation config styles; output is smooth variable-font transitions.
-- `frontend/src/components/common/VariableText.jsx`: Project-wide wrapper around `VariableProximity`; input is label text and optional radius/falloff; output is consistent dynamic typography across UI surfaces.
-- `frontend/src/components/common/BounceCards.jsx`: Animated GSAP card-stack component for clickable project/event highlights; input is card data (title, badge, description, links, optional image); output is interactive stacked showcase cards.
-- `frontend/src/components/common/BounceCards.css`: Styling layer for BounceCards layout, typography, and hover presentation; input is card-stack design tokens; output is polished interactive card visuals.
-- `frontend/src/components/common/Antigravity.jsx`: Legacy three.js background component retained for experimentation; input is particle-field props; output is an alternative animated scene that is currently not mounted in `App.jsx`.
-- `frontend/src/components/common/Footer.jsx`: Public site footer; input is static club/contact copy; output is footer UI; closes the public layout.
-- `frontend/src/components/common/LoadingSpinner.jsx`: Shared loading view; input is a label; output is a spinner block; used anywhere async data is pending.
-- `frontend/src/components/common/BoneyardFallbacks.jsx`: Shared DOM fixtures and fallbacks for `boneyard-js` capture; input is page loading state; output is layout-shaped skeleton placeholders for public pages; used by homepage, projects, team, and events screens.
-- `frontend/src/components/common/SkeletonCard.jsx`: Shared skeleton placeholder; input is line count; output is a loading card; used on the homepage.
-- `frontend/src/components/common/ErrorMessage.jsx`: Shared error state UI; input is an error message and optional retry callback; output is retryable error feedback; used by public and admin pages.
-- `frontend/src/components/common/ConfirmModal.jsx`: Shared delete confirmation dialog; input is open state, copy, and callbacks; output is a modal confirmation flow; required before destructive admin actions.
-- `frontend/src/components/common/Toast.jsx`: Shared success/error toast; input is toast state and close callback; output is timed transient feedback; used by forms and admin actions.
-- `frontend/src/components/common/ThemeToggle.jsx`: Shared dark/light mode button; input is theme state and toggle callback; output is a theme switch control; used in public and admin layouts.
+### Frontend Common Components
 
-#### Frontend Public Components
+- `frontend/src/components/common/BoneyardFallbacks.jsx`: Loading fallback UI blocks.
+	- Classes/Functions: `BoneBlock`, `StatsFallback`, `CardGridFallback`, `HomeHeroFallback`, `TimelineAnnouncementFallback`, `ProjectsPageFallback`, `TeamGridFallback`, `EventsPageFallback`, `TeamPageFallback`, `AdminLoginFallback`, `AdminDashboardFallback`, `AdminCrudPageFallback`, `AdminApplicationsFallback`, `AdminContactMessagesFallback`
+- `frontend/src/components/common/ConfirmModal.jsx`: Confirm dialog.
+	- Classes/Functions: `ConfirmModal`
+- `frontend/src/components/common/ErrorMessage.jsx`: Error view with retry option.
+	- Classes/Functions: `ErrorMessage`
+- `frontend/src/components/common/Footer.jsx`: Site footer.
+	- Classes/Functions: `Footer`
+- `frontend/src/components/common/LoadingSpinner.jsx`: Spinner component.
+	- Classes/Functions: `SpinnerView`, `LoadingSpinner`
+- `frontend/src/components/common/Navbar.jsx`: Site navbar.
+	- Classes/Functions: `Navbar`
+- `frontend/src/components/common/Particles.css`: Particle background styles. Functions: none.
+- `frontend/src/components/common/Particles.jsx`: Animated particle background.
+	- Classes/Functions: `Particles`, `hexToRgb`, `handlePointerMove`, `resize`, `update`
+- `frontend/src/components/common/Toast.jsx`: Toast messages.
+	- Classes/Functions: `Toast`
+- `frontend/src/components/common/VariableProximity.css`: Variable text effect styles. Functions: none.
+- `frontend/src/components/common/VariableProximity.jsx`: Proximity-based variable text engine.
+	- Classes/Functions: `calculateDistance`, `calculateFalloff`, `parseSettings`, `useAnimationFrame`, `useMousePositionRef`, `updatePosition`
+- `frontend/src/components/common/VariableText.jsx`: Wrapper around VariableProximity.
+	- Classes/Functions: `VariableText`
 
-- `frontend/src/components/public/HeroSection.jsx`: Homepage hero and CTA block; input is computed live stats; output is the homepage lead section; fed by `HomePage`.
-- `frontend/src/components/public/CircularGallery.jsx`: OGL-powered circular media gallery used for team visuals; input is member image/text items and interaction state; output is animated radial gallery rendering.
-- `frontend/src/components/public/CircularGallery.css`: Styling for circular gallery wrapper and responsiveness; input is gallery layout tokens; output is stable viewport-aware gallery presentation.
-- `frontend/src/components/public/Lanyard.jsx`: Three.js/R3F-based hanging card visual module; input is logo texture, physics settings, and pointer interaction; output is an interactive lanyard visual.
-- `frontend/src/components/public/Lanyard.css`: Layout styles for lanyard container and sizing; input is lanyard viewport constraints; output is responsive lanyard placement.
-- `frontend/src/components/public/ProjectCard.jsx`: Project presentation card; input is one project record; output is project summary UI with links and contributors; used on home and projects pages.
-- `frontend/src/components/public/MemberCard.jsx`: Team presentation card; input is one member record; output is member profile UI; used on home and team pages.
-- `frontend/src/components/public/EventCard.jsx`: Event/session presentation card; input is one event record; output is event summary UI; used on events pages.
-- `frontend/src/components/public/TimelineItem.jsx`: Timeline milestone item; input is one milestone record; output is chronological history UI; used on the homepage.
-- `frontend/src/components/public/StatsBar.jsx`: Live stats strip; input is derived counts; output is stat cards; used on the homepage.
-- `frontend/src/components/public/AnnouncementCard.jsx`: Announcement presentation card; input is one published announcement; output is announcement UI; used on the homepage.
+### Frontend Public Components
 
-#### Frontend Admin Components
+- `frontend/src/components/public/AnnouncementCard.jsx`: Announcement card UI.
+	- Classes/Functions: `AnnouncementCard`
+- `frontend/src/components/public/CircularGallery.css`: Circular gallery styles. Functions: none.
+- `frontend/src/components/public/CircularGallery.jsx`: Circular media gallery.
+	- Classes/Functions: `CircularGallery`, `createTextTexture`, `debounce`, `distance`, `lerp`, `fov`, `radius`, `autoBind`
+- `frontend/src/components/public/EventCard.jsx`: Event card UI.
+	- Classes/Functions: `EventCard`
+- `frontend/src/components/public/HeroSection.jsx`: Homepage hero.
+	- Classes/Functions: `HeroSection`
+- `frontend/src/components/public/Lanyard.css`: Lanyard styles. Functions: none.
+- `frontend/src/components/public/Lanyard.jsx`: Interactive lanyard visual.
+	- Classes/Functions: `Lanyard`, `Band`, `handleResize`
+- `frontend/src/components/public/MemberCard.jsx`: Team member card.
+	- Classes/Functions: `MemberCard`
+- `frontend/src/components/public/ProjectCard.jsx`: Project card UI.
+	- Classes/Functions: `ProjectCard`
+- `frontend/src/components/public/StatsBar.jsx`: Stats strip.
+	- Classes/Functions: `StatsBar`
+- `frontend/src/components/public/TimelineItem.jsx`: Timeline item UI.
+	- Classes/Functions: `TimelineItem`
 
-- `frontend/src/components/admin/AdminSidebar.jsx`: Admin navigation rail with logout and theme controls; input is theme/logout props; output is admin navigation UI; shared by all protected admin routes.
-- `frontend/src/components/admin/MemberForm.jsx`: Member CRUD form; input is optional member initial data and submit callbacks; output is normalized member payloads; used by `ManageMembers`.
-- `frontend/src/components/admin/ProjectForm.jsx`: Project CRUD form with contributor editing; input is project initial data, active members list, and callbacks; output is project plus contributor payloads; used by `ManageProjects`.
-- `frontend/src/components/admin/EventForm.jsx`: Event CRUD form; input is event initial data and callbacks; output is event payloads; used by `ManageEvents`.
-- `frontend/src/components/admin/TimelineForm.jsx`: Timeline CRUD form; input is milestone initial data and callbacks; output is milestone payloads; used by `ManageTimeline`.
-- `frontend/src/components/admin/AnnouncementForm.jsx`: Announcement CRUD form; input is announcement initial data and callbacks; output is draft/publish payloads; used by `ManageAnnouncements`.
+### Frontend Admin Components
 
-#### Frontend Public Pages
+- `frontend/src/components/admin/AdminSidebar.jsx`: Admin sidebar.
+	- Classes/Functions: `AdminSidebar`
+- `frontend/src/components/admin/AnnouncementForm.jsx`: Announcement create/update form.
+	- Classes/Functions: `AnnouncementForm`, `handleChange`, `submit`
+- `frontend/src/components/admin/EventForm.jsx`: Event create/update form.
+	- Classes/Functions: `EventForm`, `handleChange`, `normalizeUrl`, `submit`
+- `frontend/src/components/admin/MemberForm.jsx`: Member create/update form.
+	- Classes/Functions: `MemberForm`, `handleChange`, `normalizeUrl`, `handlePhotoUpload`, `clearPhoto`, `submit`
+- `frontend/src/components/admin/ProjectForm.jsx`: Project create/update form with contributors.
+	- Classes/Functions: `ProjectForm`, `updateField`, `addContributor`, `removeContributor`, `updateContributor`, `submit`
+- `frontend/src/components/admin/TimelineForm.jsx`: Timeline create/update form.
+	- Classes/Functions: `TimelineForm`, `handleChange`, `submit`
 
-- `frontend/src/pages/public/HomePage.jsx`: Loads featured projects, active members, milestones, and published announcements in parallel; input is service-layer API data; output is the complete homepage; connects multiple public endpoints into one view.
-- `frontend/src/pages/public/ProjectsPage.jsx`: Loads all projects; input is `projectService.getAll()`; output is the public project archive page; uses `ProjectCard`.
-- `frontend/src/pages/public/TeamPage.jsx`: Loads all active members; input is `memberService.getAll()`; output is the public team page; uses `MemberCard`.
-- `frontend/src/pages/public/EventsPage.jsx`: Loads all events plus upcoming events; input is event service calls; output is the public events page; uses `EventCard`.
-- `frontend/src/pages/public/ApplyPage.jsx`: Handles the join application form; input is applicant form state; output is `POST /api/apply` submissions plus toast feedback; connects public recruitment UI to backend persistence.
-- `frontend/src/pages/public/ContactPage.jsx`: Terminal-style public contact page; input is visitor name/email/message plus direct contact links; output is `POST /api/contact` submissions with success/error feedback; connects website inquiries to Supabase persistence.
-- `frontend/src/pages/public/NotFound.jsx`: Custom SPA 404 page; input is unmatched routes; output is a user-facing error page with a route back home; catches bad client-side paths.
+### Frontend Public Pages
 
-#### Frontend Admin Pages
+- `frontend/src/pages/public/ApplyPage.jsx`: Public application page.
+	- Classes/Functions: `ApplyPage`, `handleChange`
+- `frontend/src/pages/public/ContactPage.jsx`: Public contact page.
+	- Classes/Functions: `ContactPage`, `TerminalPanel`, `ContactInfoCard`, `handleChange`
+- `frontend/src/pages/public/EventsPage.jsx`: Public events page.
+	- Classes/Functions: `EventsPage`, `refresh`, `handleVisibilityChange`
+- `frontend/src/pages/public/HomePage.jsx`: Public home page.
+	- Classes/Functions: `HomePage`, `isBoneyardBuildMode`
+- `frontend/src/pages/public/NotFound.jsx`: SPA not-found page.
+	- Classes/Functions: `NotFound`
+- `frontend/src/pages/public/ProjectsPage.jsx`: Public projects page.
+	- Classes/Functions: `ProjectsPage`
+- `frontend/src/pages/public/TeamPage.jsx`: Public team page.
+	- Classes/Functions: `TeamPage`, `isValidImageSource`
 
-- `frontend/src/pages/admin/AdminLoginPage.jsx`: Hardened admin login entrypoint for Supabase email/password auth; input is credentials and validation state; output is authenticated admin session redirect with lock icon, security messaging, inline validation, show-password toggle, loading spinner, failed-attempt feedback, cooldown lockout, and captcha challenge.
-- `frontend/src/pages/admin/AdminDashboard.jsx`: Loads summary metrics for members, projects, events, milestones, announcements, and applications; input is parallel admin service calls; output is the admin overview; surfaces system state quickly.
-- `frontend/src/pages/admin/ManageMembers.jsx`: Member CRUD screen with toasts and confirm-before-delete; input is member form actions; output is create/update/delete calls and refreshed lists; manages the team dataset.
-- `frontend/src/pages/admin/ManageProjects.jsx`: Project CRUD screen with contributor selection; input is project form state and active members; output is project mutations and refreshed lists; manages showcase content plus junction-table links.
-- `frontend/src/pages/admin/ManageEvents.jsx`: Event CRUD screen; input is event form state; output is event mutations and refreshed lists; manages the events dataset.
-- `frontend/src/pages/admin/ManageTimeline.jsx`: Timeline CRUD screen; input is milestone form state; output is milestone mutations and refreshed lists; manages public club history.
-- `frontend/src/pages/admin/ManageAnnouncements.jsx`: Announcement CRUD screen for drafts and published posts; input is announcement form state; output is announcement mutations and refreshed lists; manages public communications.
-- `frontend/src/pages/admin/ViewApplications.jsx`: Application review screen; input is admin status changes; output is application status updates and refreshed lists; manages recruitment decisions.
-- `frontend/src/pages/admin/ViewContactMessages.jsx`: Contact inbox screen; input is admin-authenticated message fetches; output is a readable list of saved contact submissions with reply links; manages public website inquiries.
+### Frontend Admin Pages
 
-#### Frontend Routing
+- `frontend/src/pages/admin/AdminDashboard.jsx`: Admin dashboard with summary metrics.
+	- Classes/Functions: `AdminDashboard`
+- `frontend/src/pages/admin/AdminLoginPage.jsx`: Admin sign-in page.
+	- Classes/Functions: `AdminLoginPage`, `validate`, `syncAutofillState`, `syncNow`, `handleBlur`, `handleChange`, `handleVisibility`
+- `frontend/src/pages/admin/ManageAnnouncements.jsx`: Admin announcement management.
+	- Classes/Functions: `ManageAnnouncements`
+- `frontend/src/pages/admin/ManageEvents.jsx`: Admin event management.
+	- Classes/Functions: `ManageEvents`, `getRequestErrorMessage`
+- `frontend/src/pages/admin/ManageMembers.jsx`: Admin member management.
+	- Classes/Functions: `ManageMembers`, `getRequestErrorMessage`
+- `frontend/src/pages/admin/ManageProjects.jsx`: Admin project management.
+	- Classes/Functions: `ManageProjects`
+- `frontend/src/pages/admin/ManageTimeline.jsx`: Admin timeline management.
+	- Classes/Functions: `ManageTimeline`
+- `frontend/src/pages/admin/ViewApplications.jsx`: Admin application review page.
+	- Classes/Functions: `ViewApplications`
+- `frontend/src/pages/admin/ViewContactMessages.jsx`: Admin contact inbox page.
+	- Classes/Functions: `ViewContactMessages`, `formatDate`
 
-- `frontend/src/router/ProtectedRoute.jsx`: Redirects unauthenticated or non-admin users to `/admin/login`; input is `AuthContext` session state; output is either protected content or a redirect; enforces frontend portal access.
+### Frontend Routing
 
-## Verification
+- `frontend/src/router/ProtectedRoute.jsx`: Route guard for admin pages.
+	- Classes/Functions: `ProtectedRoute`
 
-- Frontend production bundle verified with `npm run build` inside `frontend/`.
-- Backend import and route registration verified with `python` from `backend/`.
-- FastAPI smoke checks verified `200 /health`, `401` missing token, `401` invalid token, `403` non-admin token, and `422` invalid admin payload with a valid admin token.
-- `docker compose config` verified the new Compose topology. Building images requires a running Docker daemon plus real Supabase credentials.
-- Global particles are rendered from `frontend/src/App.jsx` at app-shell level, so they stay active for both public and admin routes.
-- Black/Charcoal connected theme is centralized in `frontend/src/index.css`, so admin and public cards/options share the same visual language.
+## Verification Notes
 
-## Admin Login Security UX
-
-- Page title updated to: `Admin Panel Access - IIT Mandi`.
-- Subtle access footer added: `Authorized access only` and `© IIT Mandi`.
-- Lock icon and explicit `Secure login via Supabase` signal added.
-- Inline form validation added for invalid email and empty password.
-- Show-password toggle and loading spinner on submit added.
-- Failed login feedback now includes attempts remaining.
-- Cooldown lockout after repeated failures added on UI.
-- Captcha challenge appears after repeated failed attempts.
-- Last-login display added in the admin sidebar after authentication.
-
-## Backend Hardening Notes
-
-- Admin API rate limiting middleware added in `backend/app/main.py`.
-- Failed admin-auth attempts are logged in `backend/app/middleware/auth.py`.
-- Rate-limit settings are configurable with:
-	- `ADMIN_RATE_LIMIT_REQUESTS`
-	- `ADMIN_RATE_LIMIT_WINDOW_SECONDS`
-- RLS remains enforced through Supabase + anon-key access pattern.
-
-## Variable Proximity Typography (Global Text Effect)
-
-This repository now includes a motion-based variable-font text system that reacts to cursor proximity across the app.
-
-- Installed package: `motion` (`npm install motion` in `frontend/`).
-- Core component: `frontend/src/components/common/VariableProximity.jsx`.
-- Styling: `frontend/src/components/common/VariableProximity.css`.
-- App-wide wrapper: `frontend/src/components/common/VariableText.jsx`.
-- Global container context: `frontend/src/context/ProximityContext.jsx`.
-- App integration point: `frontend/src/App.jsx` (provides a shared container ref for proximity calculations).
-
-Default settings used by `VariableText`:
-
-- `fromFontVariationSettings`: `'wght' 400, 'opsz' 9`
-- `toFontVariationSettings`: `'wght' 1000, 'opsz' 40`
-- `radius`: `100`
-- `falloff`: `gaussian`
-
-Usage example:
-
-```jsx
-import VariableText from "../../components/common/VariableText";
-
-<h1 className="text-4xl font-bold">
-	<VariableText label="Workshops, talks, hackathons, and club sessions" />
-</h1>
-```
-
-Notes:
-
-- The effect is intentionally applied to major UI text surfaces (headings, labels, CTA text, and card titles) across shared components and pages for broad consistency.
-- Global body text also uses `Roboto Flex` with variable font settings via `frontend/src/index.css`.
+- Inventory aligned to committed files only (`git ls-files`).
+- Deleted/untracked files are intentionally not documented here.
+- If new files are added, update this README section in the same commit.
