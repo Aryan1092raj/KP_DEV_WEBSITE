@@ -17,6 +17,8 @@ from app.models.announcement import (
 public_router = APIRouter(prefix="/api", tags=["Announcements"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Announcements"])
 
+ANNOUNCEMENT_COLUMNS = "id,title,body,author,is_published,published_at,created_at,updated_at"
+
 
 def _prepare_announcement_payload(payload: dict) -> dict:
     if payload.get("is_published") and not payload.get("published_at"):
@@ -32,7 +34,7 @@ def list_announcements() -> list[dict]:
     response = (
         get_supabase()
         .table("announcements")
-        .select("*")
+        .select(ANNOUNCEMENT_COLUMNS)
         .eq("is_published", True)
         .order("published_at", desc=True)
         .order("created_at", desc=True)
@@ -46,7 +48,7 @@ def list_announcements_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
         get_postgrest_client(admin["token"])
         .table("announcements")
-        .select("*")
+        .select(ANNOUNCEMENT_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )
@@ -93,7 +95,7 @@ def update_announcement(
         else:
             response = (
                 db.table("announcements")
-                .select("*")
+                .select(ANNOUNCEMENT_COLUMNS)
                 .eq("id", str(announcement_id))
                 .execute()
             )

@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict, deque
 from threading import Lock
 from time import time
@@ -5,6 +6,7 @@ from time import time
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from postgrest.exceptions import APIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -17,6 +19,7 @@ from app.exceptions.handlers import (
     validation_exception_handler,
 )
 from app.routers import (
+    admin_auth,
     announcements,
     applications,
     contact_messages,
@@ -32,8 +35,22 @@ app = FastAPI(
     description="Official KP Dev Cell website API built with FastAPI and Supabase.",
 )
 
+logger = logging.getLogger("kp.security")
 _admin_request_buckets: dict[str, deque[float]] = defaultdict(deque)
 _admin_rate_lock = Lock()
+_public_submission_request_buckets: dict[str, deque[float]] = defaultdict(deque)
+_public_submission_rate_lock = Lock()
+_public_submission_paths = frozenset({"/api/contact", "/api/apply"})
+
+if settings.is_production and not settings.supabase_service_role_key:
+    raise RuntimeError(
+        "SUPABASE_SERVICE_ROLE_KEY must be configured when ENVIRONMENT=production."
+    )
+
+if not settings.supabase_service_role_key:
+    logger.warning(
+        "SUPABASE_SERVICE_ROLE_KEY is not configured; falling back to SUPABASE_ANON_KEY."
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,6 +59,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
@@ -76,7 +95,37 @@ async def admin_rate_limit_middleware(request, call_next):
 
     return await call_next(request)
 
+
+@app.middleware("http")
+async def public_submission_rate_limit_middleware(request, call_next):
+    if request.method == "POST" and request.url.path in _public_submission_paths:
+        client_ip = request.client.host if request.client else "unknown"
+        bucket_key = f"{request.url.path}:{client_ip}"
+        now = time()
+        window_seconds = settings.public_submission_rate_limit_window_seconds
+        request_limit = settings.public_submission_rate_limit_requests
+
+        with _public_submission_rate_lock:
+            bucket = _public_submission_request_buckets[bucket_key]
+            while bucket and (now - bucket[0]) > window_seconds:
+                bucket.popleft()
+
+            if len(bucket) >= request_limit:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "error": True,
+                        "code": "RATE_LIMITED",
+                        "message": "Too many submission attempts. Please retry later.",
+                    },
+                )
+
+            bucket.append(now)
+
+    return await call_next(request)
+
 for router in (
+    admin_auth.router,
     contact_messages.public_router,
     contact_messages.admin_router,
     members.public_router,

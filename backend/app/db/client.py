@@ -7,13 +7,15 @@ from app.config import settings
 
 @lru_cache(maxsize=1)
 def get_supabase() -> Client:
+    return create_client(settings.supabase_url, settings.supabase_database_key)
+
+
+@lru_cache(maxsize=1)
+def get_auth_supabase() -> Client:
     return create_client(settings.supabase_url, settings.supabase_anon_key)
 
 
 def get_postgrest_client(token: str | None = None):
-    # Use a fresh Supabase client for authenticated PostgREST requests so the
-    # official header/session wiring stays consistent with supabase-py.
-    supabase = create_client(settings.supabase_url, settings.supabase_anon_key)
-    if token:
-        supabase.postgrest.auth(token)
-    return supabase.postgrest
+    # Table access is intentionally anchored to the backend credential so the
+    # API layer, not caller-controlled PostgREST tokens, defines data access.
+    return get_supabase().postgrest

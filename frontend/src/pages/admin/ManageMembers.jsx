@@ -10,23 +10,6 @@ import VariableText from "../../components/common/VariableText";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 
-const fixtureMembers = [
-  {
-    id: "fixture-member-1",
-    name: "Aarav Sharma",
-    role: "Coordinator",
-    batch: "2023",
-    is_active: true,
-  },
-  {
-    id: "fixture-member-2",
-    name: "Riya Kapoor",
-    role: "Design Lead",
-    batch: "2022",
-    is_active: false,
-  },
-];
-
 function getRequestErrorMessage(requestError, fallbackMessage) {
   if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
     const firstIssue = requestError.details[0];
@@ -48,7 +31,7 @@ export default function ManageMembers() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const members = boneyardBuildMode || loading || !(data ?? []).length ? fixtureMembers : data ?? [];
+  const members = Array.isArray(data) ? data : [];
 
   async function handleSave(payload) {
     setSaving(true);
@@ -138,6 +121,11 @@ export default function ManageMembers() {
                 <VariableText label="All members" />
               </h2>
               <div className="mt-4 space-y-3">
+                {members.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-300">
+                    No members found. Create your first member from the form.
+                  </p>
+                ) : null}
                 {members.map((member) => (
                   <div
                     key={member.id}

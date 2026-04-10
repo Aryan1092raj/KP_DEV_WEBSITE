@@ -1,30 +1,40 @@
-import { useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 
 import AdminSidebar from "./components/admin/AdminSidebar";
 import Footer from "./components/common/Footer";
+import LoadingSpinner from "./components/common/LoadingSpinner";
 import Navbar from "./components/common/Navbar";
 import Particles from "./components/common/Particles";
 import { AuthProvider } from "./context/AuthContext";
 import { ProximityContainerProvider } from "./context/ProximityContext";
 import { useAuth } from "./hooks/useAuth";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminLoginPage from "./pages/admin/AdminLoginPage";
-import ManageAnnouncements from "./pages/admin/ManageAnnouncements";
-import ManageEvents from "./pages/admin/ManageEvents";
-import ManageMembers from "./pages/admin/ManageMembers";
-import ManageProjects from "./pages/admin/ManageProjects";
-import ManageTimeline from "./pages/admin/ManageTimeline";
-import ViewContactMessages from "./pages/admin/ViewContactMessages";
-import ViewApplications from "./pages/admin/ViewApplications";
-import ApplyPage from "./pages/public/ApplyPage";
-import ContactPage from "./pages/public/ContactPage";
-import EventsPage from "./pages/public/EventsPage";
-import HomePage from "./pages/public/HomePage";
-import NotFound from "./pages/public/NotFound";
-import ProjectsPage from "./pages/public/ProjectsPage";
-import TeamPage from "./pages/public/TeamPage";
 import ProtectedRoute from "./router/ProtectedRoute";
+
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
+const ManageAnnouncements = lazy(() => import("./pages/admin/ManageAnnouncements"));
+const ManageEvents = lazy(() => import("./pages/admin/ManageEvents"));
+const ManageMembers = lazy(() => import("./pages/admin/ManageMembers"));
+const ManageProjects = lazy(() => import("./pages/admin/ManageProjects"));
+const ManageTimeline = lazy(() => import("./pages/admin/ManageTimeline"));
+const ViewContactMessages = lazy(() => import("./pages/admin/ViewContactMessages"));
+const ViewApplications = lazy(() => import("./pages/admin/ViewApplications"));
+const ApplyPage = lazy(() => import("./pages/public/ApplyPage"));
+const ContactPage = lazy(() => import("./pages/public/ContactPage"));
+const EventsPage = lazy(() => import("./pages/public/EventsPage"));
+const HomePage = lazy(() => import("./pages/public/HomePage"));
+const NotFound = lazy(() => import("./pages/public/NotFound"));
+const ProjectsPage = lazy(() => import("./pages/public/ProjectsPage"));
+const TeamPage = lazy(() => import("./pages/public/TeamPage"));
+
+function RouteLoadingFallback() {
+  return (
+    <div className="page-shell">
+      <LoadingSpinner label="Loading page..." />
+    </div>
+  );
+}
 
 function PublicLayout() {
   const { session, isAdmin } = useAuth();
@@ -53,39 +63,41 @@ function AdminLayout() {
 
 function AppRoutes() {
   return (
-    <Routes>
-      <Route element={<PublicLayout />}>
-        <Route element={<HomePage />} path="/" />
-        <Route element={<ProjectsPage />} path="/projects" />
-        <Route element={<TeamPage />} path="/team" />
-        <Route element={<EventsPage />} path="/events" />
-        <Route element={<ApplyPage />} path="/apply" />
-        <Route element={<ContactPage />} path="/contact" />
-      </Route>
+    <Suspense fallback={<RouteLoadingFallback />}>
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route element={<HomePage />} path="/" />
+          <Route element={<ProjectsPage />} path="/projects" />
+          <Route element={<TeamPage />} path="/team" />
+          <Route element={<EventsPage />} path="/events" />
+          <Route element={<ApplyPage />} path="/apply" />
+          <Route element={<ContactPage />} path="/contact" />
+        </Route>
 
-      <Route element={<AdminLoginPage />} path="/admin/login" />
+        <Route element={<AdminLoginPage />} path="/admin/login" />
 
-      <Route
-        element={
-          <ProtectedRoute>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-        path="/admin"
-      >
-        <Route element={<AdminDashboard />} index />
-        <Route element={<ManageMembers />} path="members" />
-        <Route element={<ManageProjects />} path="projects" />
-        <Route element={<ManageEvents />} path="events" />
-        <Route element={<ManageTimeline />} path="timeline" />
-        <Route element={<ManageAnnouncements />} path="announcements" />
-        <Route element={<ViewApplications />} path="applications" />
-        <Route element={<ViewContactMessages />} path="contact-messages" />
-      </Route>
+        <Route
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+          path="/admin"
+        >
+          <Route element={<AdminDashboard />} index />
+          <Route element={<ManageMembers />} path="members" />
+          <Route element={<ManageProjects />} path="projects" />
+          <Route element={<ManageEvents />} path="events" />
+          <Route element={<ManageTimeline />} path="timeline" />
+          <Route element={<ManageAnnouncements />} path="announcements" />
+          <Route element={<ViewApplications />} path="applications" />
+          <Route element={<ViewContactMessages />} path="contact-messages" />
+        </Route>
 
-      <Route element={<Navigate replace to="/" />} path="/home" />
-      <Route element={<NotFound />} path="*" />
-    </Routes>
+        <Route element={<Navigate replace to="/" />} path="/home" />
+        <Route element={<NotFound />} path="*" />
+      </Routes>
+    </Suspense>
   );
 }
 

@@ -193,6 +193,104 @@ export function TeamPageFallback() {
   );
 }
 
+export function ApplyPageFallback() {
+  return (
+    <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="section-card space-y-4">
+        <BoneBlock className="h-4 w-40" />
+        <BoneBlock className="h-10 w-72 max-w-full" />
+        <BoneBlock className="h-4 w-full" />
+        <BoneBlock className="h-4 w-5/6" />
+      </div>
+
+      <div className="section-card space-y-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="space-y-3">
+            <BoneBlock className="h-4 w-24" />
+            <BoneBlock className="h-11 w-full rounded-xl" />
+          </div>
+        ))}
+        <div className="space-y-3">
+          <BoneBlock className="h-4 w-40" />
+          <BoneBlock className="min-h-[150px] w-full rounded-xl" />
+        </div>
+        <div className="space-y-3">
+          <BoneBlock className="h-4 w-36" />
+          <BoneBlock className="min-h-[110px] w-full rounded-xl" />
+        </div>
+        <BoneBlock className="h-11 w-52 rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+export function ContactPageFallback() {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-3">
+        <BoneBlock className="h-4 w-28" />
+        <BoneBlock className="h-12 w-64 max-w-full" />
+        <BoneBlock className="h-5 w-full max-w-2xl" />
+        <BoneBlock className="h-5 w-4/5 max-w-xl" />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <section className="overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] p-5 shadow-soft sm:p-7">
+          <div className="space-y-7">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="space-y-3">
+                <BoneBlock className="h-6 w-28" />
+                <BoneBlock className="h-14 w-full rounded-[14px]" />
+              </div>
+            ))}
+            <div className="space-y-3">
+              <BoneBlock className="h-6 w-36" />
+              <BoneBlock className="min-h-[180px] w-full rounded-[14px]" />
+            </div>
+            <BoneBlock className="h-14 w-full rounded-[14px]" />
+            <div className="space-y-2">
+              <BoneBlock className="h-4 w-full" />
+              <BoneBlock className="h-4 w-5/6" />
+              <BoneBlock className="h-4 w-1/3" />
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-6">
+          <section className="overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] p-5 shadow-soft sm:p-7">
+            <div className="space-y-4">
+              <BoneBlock className="h-20 w-full rounded-[22px]" />
+              <BoneBlock className="h-20 w-full rounded-[22px]" />
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] p-5 shadow-soft sm:p-7">
+            <div className="flex items-center gap-5 rounded-[22px] border border-[var(--kp-border)] px-4 py-5">
+              <BoneBlock className="h-20 w-20 rounded-none" />
+              <div className="flex-1 space-y-3">
+                <BoneBlock className="h-8 w-48" />
+                <BoneBlock className="h-5 w-32" />
+                <BoneBlock className="h-6 w-40" />
+              </div>
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] p-5 shadow-soft sm:p-7">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="space-y-4 border border-[var(--kp-border)] px-4 py-8">
+                  <BoneBlock className="mx-auto h-7 w-7 rounded-full" />
+                  <BoneBlock className="mx-auto h-6 w-24" />
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AdminDashboardFallback() {
   return (
     <div className="space-y-6">

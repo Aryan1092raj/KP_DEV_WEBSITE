@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Skeleton } from "boneyard-js/react";
 
@@ -52,63 +52,6 @@ const projectFixture = [
     contributors: [{ member_name: "Applied ML" }],
     github_url: "#",
     live_url: null,
-  },
-];
-
-const memberFixture = [
-  {
-    id: "fixture-home-member-1",
-    name: "Aarav Sharma",
-    role: "Coordinator",
-    bio: "Leads systems initiatives and keeps major build tracks moving.",
-    batch: "2023",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-home-member-2",
-    name: "Isha Verma",
-    role: "Backend Lead",
-    bio: "Owns platform architecture, data quality, and service reliability.",
-    batch: "2022",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-home-member-3",
-    name: "Rohit Menon",
-    role: "Frontend Lead",
-    bio: "Builds expressive interfaces with strong interaction and motion design.",
-    batch: "2024",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-home-member-4",
-    name: "Nisha Rao",
-    role: "ML Engineer",
-    bio: "Develops evaluation pipelines for applied AI and prompt workflows.",
-    batch: "2023",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-home-member-5",
-    name: "Kabir Singh",
-    role: "Infra Engineer",
-    bio: "Maintains local-dev and deployment paths for club platforms.",
-    batch: "2022",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-home-member-6",
-    name: "Diya Kapoor",
-    role: "Community Ops",
-    bio: "Runs events, communication loops, and contributor onboarding.",
-    batch: "2024",
-    github_url: "#",
-    linkedin_url: "#",
   },
 ];
 
@@ -167,52 +110,98 @@ function isBoneyardBuildMode() {
   return typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
 }
 
+async function fetchHomeData() {
+  const [projects, members, timeline, announcements] = await Promise.all([
+    projectService.getFeatured(),
+    memberService.getAll(),
+    timelineService.getAll(),
+    announcementService.getPublished(),
+  ]);
+
+  return { announcements, members, projects, timeline };
+}
+
+const EMPTY_HOME_DATA = {
+  announcements: [],
+  members: [],
+  projects: [],
+  timeline: [],
+};
+
+function HomeProjectsPreviewFixture() {
+  return (
+    <div className="grid gap-5 lg:grid-cols-2">
+      {projectFixture.map((project) => (
+        <ProjectCard key={project.id} project={project} />
+      ))}
+    </div>
+  );
+}
+
+function HomeTimelineAnnouncementsFixture() {
+  return (
+    <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="section-card space-y-6">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+            <VariableText label="Club timeline" />
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold">
+            <VariableText label="Milestones that shaped KP" />
+          </h2>
+        </div>
+        {timelineFixture.map((item) => (
+          <TimelineItem item={item} key={item.id} />
+        ))}
+      </div>
+
+      <div className="space-y-5">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+            <VariableText label="Announcements" />
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold">
+            <VariableText label="What the club is saying this week" />
+          </h2>
+        </div>
+        <div className="grid gap-5">
+          {announcementFixture.map((announcement) => (
+            <AnnouncementCard announcement={announcement} key={announcement.id} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomePage() {
-  const [data, setData] = useState({
-    announcements: [],
-    members: [],
-    projects: [],
-    timeline: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const boneyardBuildMode = isBoneyardBuildMode();
+  const {
+    data = EMPTY_HOME_DATA,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["home"],
+    queryFn: fetchHomeData,
+    enabled: !boneyardBuildMode,
+    staleTime: 120_000,
+    gcTime: 300_000,
+    refetchOnWindowFocus: false,
+  });
 
-  async function load() {
-    setLoading(true);
-    setError("");
+  const errorMessage =
+    !boneyardBuildMode && error ? error.message || "Unable to load the homepage." : "";
+  const loading = boneyardBuildMode || isLoading;
 
-    try {
-      const [projects, members, timeline, announcements] = await Promise.all([
-        projectService.getFeatured(),
-        memberService.getAll(),
-        timelineService.getAll(),
-        announcementService.getPublished(),
-      ]);
-
-      setData({ announcements, members, projects, timeline });
-    } catch (requestError) {
-      setError(requestError.message || "Unable to load the homepage.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (boneyardBuildMode) {
-      return;
-    }
-    load();
-  }, [boneyardBuildMode]);
-
-  if (loading || boneyardBuildMode) {
+  if (loading) {
     return (
       <div className="page-shell space-y-6">
         <Skeleton
           fallback={<HomeHeroFallback />}
           fixture={<HeroSection stats={statsFixture} />}
           loading
-          name="home-hero"
+          name={boneyardBuildMode ? "home-hero" : undefined}
         >
           <HeroSection stats={statsFixture} />
         </Skeleton>
@@ -220,86 +209,42 @@ export default function HomePage() {
           fallback={<StatsFallback />}
           fixture={<StatsBar stats={statsFixture} />}
           loading
-          name="home-stats"
+          name={boneyardBuildMode ? "home-stats" : undefined}
         >
           <StatsBar stats={statsFixture} />
         </Skeleton>
         <Skeleton
           fallback={<CardGridFallback columns="lg:grid-cols-2" count={2} />}
-          fixture={
-            <div className="grid gap-5 lg:grid-cols-2">
-              {projectFixture.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          }
+          fixture={<HomeProjectsPreviewFixture />}
           loading
-          name="home-projects-preview"
+          name={boneyardBuildMode ? "home-projects-preview" : undefined}
         >
-          <CardGridFallback columns="lg:grid-cols-2" count={2} />
+          <HomeProjectsPreviewFixture />
         </Skeleton>
         <Skeleton
           fallback={<TeamGridFallback />}
-          fixture={
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {memberFixture.map((member) => (
-                <MemberCard key={member.id} member={member} />
-              ))}
-            </div>
-          }
+          fixture={<TeamGridFallback />}
           loading
-          name="home-team-preview"
+          name={boneyardBuildMode ? "home-team-preview" : undefined}
         >
           <TeamGridFallback />
         </Skeleton>
         <Skeleton
           fallback={<TimelineAnnouncementFallback />}
-          fixture={
-            <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <div className="section-card space-y-6">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-                    <VariableText label="Club timeline" />
-                  </p>
-                  <h2 className="mt-2 text-3xl font-semibold">
-                    <VariableText label="Milestones that shaped KP" />
-                  </h2>
-                </div>
-                {timelineFixture.map((item) => (
-                  <TimelineItem item={item} key={item.id} />
-                ))}
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-                    <VariableText label="Announcements" />
-                  </p>
-                  <h2 className="mt-2 text-3xl font-semibold">
-                    <VariableText label="What the club is saying this week" />
-                  </h2>
-                </div>
-                <div className="grid gap-5">
-                  {announcementFixture.map((announcement) => (
-                    <AnnouncementCard announcement={announcement} key={announcement.id} />
-                  ))}
-                </div>
-              </div>
-            </section>
-          }
+          fixture={<HomeTimelineAnnouncementsFixture />}
           loading
-          name="home-timeline-announcements"
+          name={boneyardBuildMode ? "home-timeline-announcements" : undefined}
         >
-          <TimelineAnnouncementFallback />
+          <HomeTimelineAnnouncementsFixture />
         </Skeleton>
       </div>
     );
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="page-shell">
-        <ErrorMessage message={error} onRetry={load} />
+        <ErrorMessage message={errorMessage} onRetry={refetch} />
       </div>
     );
   }

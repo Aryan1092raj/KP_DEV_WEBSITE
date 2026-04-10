@@ -11,11 +11,6 @@ import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 import { projectService } from "../../services/projectService";
 
-const fixtureMembers = [
-  { id: "fixture-member-1", name: "Aarav Sharma" },
-  { id: "fixture-member-2", name: "Riya Kapoor" },
-];
-
 const fixtureProjects = [
   {
     id: "fixture-project-1",
@@ -46,11 +41,11 @@ export default function ManageProjects() {
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const projects = boneyardBuildMode || loading || !(data ?? []).length ? fixtureProjects : data ?? [];
-  const contributorOptions = members.length ? members : fixtureMembers;
+  const contributorOptions = members;
 
   useEffect(() => {
     if (boneyardBuildMode) {
-      setMembers(fixtureMembers);
+      setMembers([]);
       setMembersLoading(false);
       return;
     }

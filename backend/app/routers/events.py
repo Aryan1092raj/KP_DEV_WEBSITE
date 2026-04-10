@@ -12,10 +12,14 @@ from app.models.event import EventCreate, EventResponse, EventUpdate
 public_router = APIRouter(prefix="/api", tags=["Events"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Events"])
 
+EVENT_COLUMNS = "id,title,description,event_date,event_type,resource_url,is_upcoming,created_at"
+
 
 @public_router.get("/events", response_model=list[EventResponse])
 def list_events() -> list[dict]:
-    response = get_supabase().table("events").select("*").order("event_date").execute()
+    response = (
+        get_supabase().table("events").select(EVENT_COLUMNS).order("event_date").execute()
+    )
     return response.data or []
 
 
@@ -24,7 +28,7 @@ def list_upcoming_events() -> list[dict]:
     response = (
         get_supabase()
         .table("events")
-        .select("*")
+        .select(EVENT_COLUMNS)
         .eq("is_upcoming", True)
         .order("event_date")
         .execute()
@@ -35,7 +39,11 @@ def list_upcoming_events() -> list[dict]:
 @admin_router.get("/events", response_model=list[EventResponse])
 def list_events_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"]).table("events").select("*").order("event_date").execute()
+        get_postgrest_client(admin["token"])
+        .table("events")
+        .select(EVENT_COLUMNS)
+        .order("event_date")
+        .execute()
     )
     return response.data or []
 
@@ -66,7 +74,7 @@ def update_event(
         if event_payload:
             response = db.table("events").update(event_payload).eq("id", str(event_id)).execute()
         else:
-            response = db.table("events").select("*").eq("id", str(event_id)).execute()
+            response = db.table("events").select(EVENT_COLUMNS).eq("id", str(event_id)).execute()
     except APIError as exc:
         raise_conflict(exc, "Unable to update event")
     if not response.data:

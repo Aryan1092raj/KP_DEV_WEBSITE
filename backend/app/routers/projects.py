@@ -12,13 +12,19 @@ from app.models.project import ProjectCreate, ProjectResponse, ProjectUpdate
 public_router = APIRouter(prefix="/api", tags=["Projects"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Projects"])
 
+PROJECT_COLUMNS = (
+    "id,title,description,tech_stack,github_url,live_url,thumbnail_url,"
+    "year,is_featured,status,created_at"
+)
+PROJECT_MEMBER_COLUMNS = "project_id,member_id,role"
+
 
 def _serialize_projects(projects: list[dict], token: str | None = None) -> list[dict]:
     if not projects:
         return []
 
     db = get_postgrest_client(token) if token else get_supabase()
-    contributors_response = db.table("project_members").select("*").execute()
+    contributors_response = db.table("project_members").select(PROJECT_MEMBER_COLUMNS).execute()
     members_response = db.table("team_members").select("id,name,role,photo_url").execute()
     contributors = contributors_response.data or []
     members = members_response.data or []
@@ -73,7 +79,11 @@ def _replace_project_contributors(
 @public_router.get("/projects", response_model=list[ProjectResponse])
 def list_projects() -> list[dict]:
     response = (
-        get_supabase().table("projects").select("*").order("created_at", desc=True).execute()
+        get_supabase()
+        .table("projects")
+        .select(PROJECT_COLUMNS)
+        .order("created_at", desc=True)
+        .execute()
     )
     return _serialize_projects(response.data or [])
 
@@ -83,7 +93,7 @@ def list_featured_projects() -> list[dict]:
     response = (
         get_supabase()
         .table("projects")
-        .select("*")
+        .select(PROJECT_COLUMNS)
         .eq("is_featured", True)
         .order("created_at", desc=True)
         .execute()
@@ -96,7 +106,7 @@ def list_projects_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
         get_postgrest_client(admin["token"])
         .table("projects")
-        .select("*")
+        .select(PROJECT_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )
@@ -136,7 +146,12 @@ def update_project(
                 raise_not_found("Project")
             updated = response.data[0]
         else:
-            lookup = db.table("projects").select("*").eq("id", str(project_id)).execute()
+            lookup = (
+                db.table("projects")
+                .select(PROJECT_COLUMNS)
+                .eq("id", str(project_id))
+                .execute()
+            )
             if not lookup.data:
                 raise_not_found("Project")
             updated = lookup.data[0]

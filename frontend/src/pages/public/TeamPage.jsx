@@ -10,63 +10,6 @@ import MemberCard from "../../components/public/MemberCard";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 
-const fixtureMembers = [
-  {
-    id: "fixture-member-1",
-    name: "Aarav Sharma",
-    role: "Coordinator",
-    bio: "Leads systems initiatives and keeps major build tracks moving.",
-    batch: "2023",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-member-2",
-    name: "Isha Verma",
-    role: "Backend Lead",
-    bio: "Owns platform architecture, data quality, and service reliability.",
-    batch: "2022",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-member-3",
-    name: "Rohit Menon",
-    role: "Frontend Lead",
-    bio: "Builds expressive interfaces with strong interaction and motion design.",
-    batch: "2024",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-member-4",
-    name: "Nisha Rao",
-    role: "ML Engineer",
-    bio: "Develops evaluation pipelines for applied AI and prompt workflows.",
-    batch: "2023",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-member-5",
-    name: "Kabir Singh",
-    role: "Infra Engineer",
-    bio: "Maintains local-dev and deployment paths for club platforms.",
-    batch: "2022",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-  {
-    id: "fixture-member-6",
-    name: "Diya Kapoor",
-    role: "Community Ops",
-    bio: "Runs events, communication loops, and contributor onboarding.",
-    batch: "2024",
-    github_url: "#",
-    linkedin_url: "#",
-  },
-];
-
 function isValidImageSource(value) {
   if (typeof value !== "string") {
     return false;
@@ -89,7 +32,7 @@ export default function TeamPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const membersToRender = boneyardBuildMode || loading || !(data ?? []).length ? fixtureMembers : data ?? [];
+  const membersToRender = Array.isArray(data) ? data : [];
 
   const galleryItems = useMemo(
     () =>
@@ -103,7 +46,6 @@ export default function TeamPage() {
 
   return (
     <div className="page-shell">
-
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
 
       {!showError ? (
@@ -111,7 +53,7 @@ export default function TeamPage() {
           fallback={<TeamPageFallback />}
           fixture={<TeamPageFallback />}
           loading={boneyardBuildMode || loading}
-          name="team-grid"
+          name={boneyardBuildMode ? "team-grid" : undefined}
         >
           <div className="space-y-6">
             <div>
@@ -124,16 +66,22 @@ export default function TeamPage() {
             </div>
 
             <section className="section-card !p-0">
-              <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
-                <CircularGallery
-                  bend={1}
-                  borderRadius={0.05}
-                  items={galleryItems}
-                  scrollEase={0.05}
-                  scrollSpeed={2}
-                  textColor="#ffffff"
-                />
-              </div>
+              {membersToRender.length > 0 ? (
+                <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
+                  <CircularGallery
+                    bend={1}
+                    borderRadius={0.05}
+                    items={galleryItems}
+                    scrollEase={0.05}
+                    scrollSpeed={2}
+                    textColor="#ffffff"
+                  />
+                </div>
+              ) : (
+                <div className="p-8 text-sm text-slate-600 dark:text-slate-300">
+                  Team members will appear here once published from admin.
+                </div>
+              )}
             </section>
 
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
