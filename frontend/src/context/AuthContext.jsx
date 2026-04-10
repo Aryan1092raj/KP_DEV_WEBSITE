@@ -7,13 +7,34 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { setUnauthorizedHandler } from "../lib/api";
+import { setAccessToken, setUnauthorizedHandler } from "../lib/api";
 import { adminAuthService } from "../services/adminAuthService";
 
 const AuthContext = createContext(null);
+const ADMIN_TOKEN_STORAGE_KEY = "kp_admin_access_token";
 
 function isAdminUser(user) {
   return user?.role === "admin";
+}
+
+function readStoredAdminToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
+}
+
+function persistAdminToken(token) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (token) {
+    window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
+    return;
+  }
+
+  window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
 export function AuthProvider({ children }) {
@@ -23,6 +44,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   function clearAuthState() {
+    setAccessToken(null);
+    persistAdminToken(null);
     startTransition(() => {
       setSession(null);
       setUser(null);
@@ -32,6 +55,11 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let active = true;
+    const storedToken = readStoredAdminToken();
+
+    if (storedToken) {
+      setAccessToken(storedToken);
+    }
 
     adminAuthService
       .getSession()
@@ -75,6 +103,8 @@ export function AuthProvider({ children }) {
 
   async function login(credentials) {
     const nextSession = await adminAuthService.login(credentials);
+    setAccessToken(nextSession.access_token);
+    persistAdminToken(nextSession.access_token);
     startTransition(() => {
       setSession(nextSession);
       setUser(nextSession.user);

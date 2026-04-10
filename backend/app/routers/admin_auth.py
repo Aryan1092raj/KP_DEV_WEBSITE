@@ -4,17 +4,18 @@ from gotrue.errors import AuthApiError
 from app.db.client import get_auth_supabase
 from app.middleware.auth import (
     clear_admin_session_cookie,
+    create_admin_session_token,
     create_admin_session_for_user,
     set_admin_session_cookie,
     verify_admin,
 )
-from app.models.auth import AdminLoginRequest, AdminSessionResponse
+from app.models.auth import AdminLoginRequest, AdminLoginResponse, AdminSessionResponse
 
 router = APIRouter(prefix="/api/admin", tags=["Admin Auth"])
 
 
-@router.post("/login", response_model=AdminSessionResponse)
-def login(payload: AdminLoginRequest, response: Response) -> AdminSessionResponse:
+@router.post("/login", response_model=AdminLoginResponse)
+def login(payload: AdminLoginRequest, response: Response) -> AdminLoginResponse:
     try:
         auth_response = get_auth_supabase().auth.sign_in_with_password(
             {"email": payload.email, "password": payload.password}
@@ -54,7 +55,12 @@ def login(payload: AdminLoginRequest, response: Response) -> AdminSessionRespons
         ) from exc
 
     set_admin_session_cookie(response, session)
-    return session
+    return AdminLoginResponse(
+        authenticated=session.authenticated,
+        expires_at=session.expires_at,
+        user=session.user,
+        access_token=create_admin_session_token(session),
+    )
 
 
 @router.get("/session", response_model=AdminSessionResponse)

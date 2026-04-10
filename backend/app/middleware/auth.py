@@ -54,7 +54,7 @@ def build_admin_session(user: object, expires_at: datetime) -> AdminSessionRespo
     )
 
 
-def set_admin_session_cookie(response: Response, session: AdminSessionResponse) -> None:
+def create_admin_session_token(session: AdminSessionResponse) -> str:
     payload = {
         "sub": session.user.id,
         "email": session.user.email,
@@ -62,7 +62,11 @@ def set_admin_session_cookie(response: Response, session: AdminSessionResponse) 
         "iat": int(datetime.now(timezone.utc).timestamp()),
         "exp": int(session.expires_at.timestamp()),
     }
-    token = jwt.encode(payload, settings.session_signing_secret, algorithm="HS256")
+    return jwt.encode(payload, settings.session_signing_secret, algorithm="HS256")
+
+
+def set_admin_session_cookie(response: Response, session: AdminSessionResponse) -> None:
+    token = create_admin_session_token(session)
     response.set_cookie(
         key=settings.admin_session_cookie_name,
         value=token,
