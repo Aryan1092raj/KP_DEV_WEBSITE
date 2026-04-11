@@ -64,9 +64,19 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let active = true;
     const storedToken = readStoredAdminToken();
+    const isAdminPath =
+      typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
+    const shouldProbeSession = Boolean(storedToken) || isAdminPath;
 
     if (storedToken) {
       setAccessToken(storedToken);
+    }
+
+    if (!shouldProbeSession) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
     }
 
     adminAuthService
