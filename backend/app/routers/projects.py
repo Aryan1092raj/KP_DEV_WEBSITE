@@ -19,15 +19,41 @@ PROJECT_COLUMNS = (
 PROJECT_MEMBER_COLUMNS = "project_id,member_id,role"
 
 
-def _serialize_projects(projects: list[dict], token: str | None = None) -> list[dict]:
+def _serialize_projects(projects: list[dict]) -> list[dict]:
     if not projects:
         return []
 
-    db = get_postgrest_client(token) if token else get_supabase()
-    contributors_response = db.table("project_members").select(PROJECT_MEMBER_COLUMNS).execute()
-    members_response = db.table("team_members").select("id,name,role,photo_url").execute()
-    contributors = contributors_response.data or []
-    members = members_response.data or []
+    db = get_supabase()
+    project_ids = [project["id"] for project in projects if project.get("id")]
+
+    contributors: list[dict] = []
+    members: list[dict] = []
+
+    if project_ids:
+        contributors_response = (
+            db.table("project_members")
+            .select(PROJECT_MEMBER_COLUMNS)
+            .in_("project_id", project_ids)
+            .execute()
+        )
+        contributors = contributors_response.data or []
+
+        member_ids = list(
+            {
+                contributor["member_id"]
+                for contributor in contributors
+                if contributor.get("member_id")
+            }
+        )
+        if member_ids:
+            members_response = (
+                db.table("team_members")
+                .select("id,name,role,photo_url")
+                .in_("id", member_ids)
+                .execute()
+            )
+            members = members_response.data or []
+
     member_lookup = {member["id"]: member for member in members}
     project_lookup: dict[str, list[dict]] = {}
 
@@ -58,10 +84,8 @@ def _serialize_projects(projects: list[dict], token: str | None = None) -> list[
     ]
 
 
-def _replace_project_contributors(
-    project_id: str, contributors: list[dict], token: str
-) -> None:
-    db = get_postgrest_client(token)
+def _replace_project_contributors(project_id: str, contributors: list[dict]) -> None:
+    db = get_postgrest_client()
     db.table("project_members").delete().eq("project_id", project_id).execute()
     if contributors:
         db.table("project_members").insert(
@@ -104,13 +128,13 @@ def list_featured_projects() -> list[dict]:
 @admin_router.get("/projects", response_model=list[ProjectResponse])
 def list_projects_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("projects")
         .select(PROJECT_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )
-    return _serialize_projects(response.data or [], admin["token"])
+    return _serialize_projects(response.data or [])
 
 
 @admin_router.post(
@@ -121,14 +145,14 @@ def list_projects_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
 def create_project(payload: ProjectCreate, admin: dict = Depends(verify_admin)) -> dict:
     project_payload = jsonable_encoder(payload, exclude_none=True)
     contributors = project_payload.pop("contributors", [])
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
     try:
         response = db.table("projects").insert(project_payload).execute()
         created = response.data[0]
-        _replace_project_contributors(created["id"], contributors, admin["token"])
+        _replace_project_contributors(created["id"], contributors)
     except APIError as exc:
         raise_conflict(exc, "Unable to create project")
-    return _serialize_projects([created], admin["token"])[0]
+    return _serialize_projects([created])[0]
 
 
 @admin_router.put("/projects/{project_id}", response_model=ProjectResponse)
@@ -137,7 +161,7 @@ def update_project(
 ) -> dict:
     project_payload = jsonable_encoder(payload, exclude_unset=True)
     contributors = project_payload.pop("contributors", None)
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
 
     try:
         if project_payload:
@@ -157,18 +181,18 @@ def update_project(
             updated = lookup.data[0]
 
         if contributors is not None:
-            _replace_project_contributors(str(project_id), contributors, admin["token"])
+            _replace_project_contributors(str(project_id), contributors)
     except APIError as exc:
         raise_conflict(exc, "Unable to update project")
 
-    return _serialize_projects([updated], admin["token"])[0]
+    return _serialize_projects([updated])[0]
 
 
 @admin_router.delete("/projects/{project_id}")
 def delete_project(project_id: UUID, admin: dict = Depends(verify_admin)) -> dict[str, bool]:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("projects")
             .delete()
             .eq("id", str(project_id))

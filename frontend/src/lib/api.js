@@ -2,18 +2,6 @@ import axios from "axios";
 
 let accessToken = null;
 let unauthorizedHandler = null;
-const ADMIN_TOKEN_STORAGE_KEY = "kp_admin_access_token";
-
-function readStoredToken() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return (
-    window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) ||
-    window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY)
-  );
-}
 
 export function setAccessToken(token) {
   accessToken = token;
@@ -44,10 +32,6 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  if (!accessToken) {
-    accessToken = readStoredToken();
-  }
-
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }

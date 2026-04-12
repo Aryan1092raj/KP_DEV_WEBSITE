@@ -31,7 +31,7 @@ def list_timeline() -> list[dict]:
 @admin_router.get("/timeline", response_model=list[TimelineResponse])
 def list_timeline_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("timeline")
         .select(TIMELINE_COLUMNS)
         .order("year")
@@ -50,7 +50,7 @@ def create_timeline_entry(payload: TimelineCreate, admin: dict = Depends(verify_
     timeline_payload = jsonable_encoder(payload, exclude_none=True)
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("timeline")
             .insert(timeline_payload)
             .execute()
@@ -65,7 +65,7 @@ def update_timeline_entry(
     timeline_id: UUID, payload: TimelineUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     timeline_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
     try:
         if timeline_payload:
             response = db.table("timeline").update(timeline_payload).eq("id", str(timeline_id)).execute()
@@ -89,7 +89,7 @@ def delete_timeline_entry(
 ) -> dict[str, bool]:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("timeline")
             .delete()
             .eq("id", str(timeline_id))

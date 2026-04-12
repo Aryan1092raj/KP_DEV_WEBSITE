@@ -39,7 +39,7 @@ def list_upcoming_events() -> list[dict]:
 @admin_router.get("/events", response_model=list[EventResponse])
 def list_events_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("events")
         .select(EVENT_COLUMNS)
         .order("event_date")
@@ -57,7 +57,7 @@ def create_event(payload: EventCreate, admin: dict = Depends(verify_admin)) -> d
     event_payload = jsonable_encoder(payload, exclude_none=True)
     try:
         response = (
-            get_postgrest_client(admin["token"]).table("events").insert(event_payload).execute()
+            get_postgrest_client().table("events").insert(event_payload).execute()
         )
     except APIError as exc:
         raise_conflict(exc, "Unable to create event")
@@ -69,7 +69,7 @@ def update_event(
     event_id: UUID, payload: EventUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     event_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
     try:
         if event_payload:
             response = db.table("events").update(event_payload).eq("id", str(event_id)).execute()
@@ -86,7 +86,7 @@ def update_event(
 def delete_event(event_id: UUID, admin: dict = Depends(verify_admin)) -> dict[str, bool]:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("events")
             .delete()
             .eq("id", str(event_id))

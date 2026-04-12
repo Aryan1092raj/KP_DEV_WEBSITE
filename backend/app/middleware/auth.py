@@ -7,7 +7,6 @@ from fastapi import HTTPException, Request, Response, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.config import settings
-from app.db.client import get_supabase
 from app.models.auth import AdminSessionResponse, AdminUserResponse
 
 security_scheme = HTTPBearer(auto_error=False)
@@ -169,37 +168,8 @@ async def verify_admin(
             detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
         ) from exc
 
-    try:
-        user_response = get_supabase().auth.admin.get_user_by_id(session.user.id)
-        user = getattr(user_response, "user", None)
-    except Exception as exc:
-        logger.warning("admin_auth_failed_user_lookup ip=%s path=%s", client_ip, request.url.path)
-        raise HTTPException(
-            status_code=401,
-            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
-        ) from exc
-
-    if user is None:
-        logger.warning("admin_auth_failed_missing_user ip=%s path=%s", client_ip, request.url.path)
-        raise HTTPException(
-            status_code=401,
-            detail=_error("Admin session is invalid or has expired", "INVALID_SESSION"),
-        )
-
-    role = _extract_role(user)
-    if role != "admin":
-        logger.warning("admin_auth_failed_not_admin ip=%s path=%s", client_ip, request.url.path)
-        raise HTTPException(
-            status_code=403,
-            detail=_error(
-                "You are not authorized to access this resource",
-                "NOT_AUTHORIZED",
-            ),
-        )
-
-    refreshed_session = build_admin_session(user, session.expires_at)
     return {
         "token": token,
-        "user": refreshed_session.user.model_dump(),
-        "session": refreshed_session,
+        "user": session.user.model_dump(),
+        "session": session,
     }

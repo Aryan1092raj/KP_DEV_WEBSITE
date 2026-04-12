@@ -36,7 +36,7 @@ def create_application(payload: ApplicationCreate) -> dict:
 @admin_router.get("/applications", response_model=list[ApplicationResponse])
 def list_applications(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("applications")
         .select(APPLICATION_COLUMNS)
         .order("submitted_at", desc=True)
@@ -56,7 +56,7 @@ def update_application_status(
 ) -> dict:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("applications")
             .update(jsonable_encoder(payload))
             .eq("id", str(application_id))

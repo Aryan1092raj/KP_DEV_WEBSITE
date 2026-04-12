@@ -30,7 +30,7 @@ def create_contact_message(payload: ContactMessageCreate) -> dict:
 @admin_router.get("/contact-messages", response_model=list[ContactMessageResponse])
 def list_contact_messages(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("contact_messages")
         .select(CONTACT_MESSAGE_COLUMNS)
         .order("created_at", desc=True)

@@ -33,6 +33,8 @@ app = FastAPI(
     title="KP Dev Cell API",
     version="3.0.0",
     description="Official KP Dev Cell website API built with FastAPI and Supabase.",
+    docs_url="/docs" if not settings.is_production else None,
+    redoc_url="/redoc" if not settings.is_production else None,
 )
 
 logger = logging.getLogger("kp.security")
@@ -151,4 +153,7 @@ def health() -> dict[str, str]:
 
 @app.get("/", tags=["Health"])
 def root() -> dict[str, str]:
-    return {"service": "KP Dev Cell API", "status": "ok", "docs": "/docs"}
+    payload = {"service": "KP Dev Cell API", "status": "ok"}
+    if app.docs_url:
+        payload["docs"] = app.docs_url
+    return payload
