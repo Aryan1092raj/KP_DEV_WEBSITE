@@ -68,7 +68,7 @@ export default function TeamPage() {
               <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
                 <VariableText label="Core team" />
               </p>
-              <h1 className="page-heading-anim mt-3 text-4xl font-bold">
+              <h1 className="page-heading-anim mt-3 text-3xl font-bold sm:text-4xl">
                 <VariableText label="The builders behind Kamand Prompt" />
               </h1>
             </div>

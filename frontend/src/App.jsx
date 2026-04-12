@@ -109,9 +109,9 @@ function AdminLayout() {
   const { logout } = useAuth();
 
   return (
-    <div className="lg:grid lg:min-h-screen lg:grid-cols-[280px_1fr]">
+    <div className="flex min-h-screen flex-col lg:grid lg:grid-cols-[280px_1fr]">
       <AdminSidebar onLogout={logout} />
-      <main className="p-4 sm:p-6 lg:p-8">
+      <main className="min-w-0 p-4 sm:p-6 lg:p-8">
         <Outlet />
       </main>
     </div>

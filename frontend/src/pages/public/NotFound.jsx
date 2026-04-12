@@ -9,7 +9,7 @@ export default function NotFound() {
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
           <VariableText label="404" radius={80} />
         </p>
-        <h1 className="mt-4 text-5xl font-bold">
+        <h1 className="mt-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
           <VariableText label="That page drifted out of the route map." />
         </h1>
         <p className="mt-4 text-slate-600 dark:text-slate-300">

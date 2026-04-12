@@ -262,7 +262,7 @@ export default function HomePage() {
       <StatsBar stats={stats} />
 
       <section className="space-y-5">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Featured projects" />
@@ -283,7 +283,7 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-5">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Core team" />

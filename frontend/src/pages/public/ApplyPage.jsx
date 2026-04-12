@@ -139,7 +139,7 @@ export default function ApplyPage() {
             <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Join Kamand Prompt" />
             </p>
-            <h1 className="page-heading-anim mt-3 text-4xl font-bold">
+            <h1 className="page-heading-anim mt-3 text-3xl font-bold sm:text-4xl">
               <VariableText label="Apply to build with the club" />
             </h1>
             <p className="page-heading-anim mt-4 text-base text-slate-600 dark:text-slate-300">

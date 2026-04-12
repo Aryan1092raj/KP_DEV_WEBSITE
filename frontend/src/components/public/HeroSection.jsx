@@ -9,7 +9,7 @@ export default function HeroSection({ stats }) {
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white">
           <VariableText label="Official Programming Club" />
         </p>
-        <h1 className="mt-4 max-w-3xl text-5xl font-bold leading-tight">
+        <h1 className="mt-4 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
           <VariableText label="We turn curiosity into code, demos, and deep engineering culture." />
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-white">
@@ -37,7 +37,7 @@ export default function HeroSection({ stats }) {
             <VariableText label="Built from live platform data." />
           </h2>
         </div>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+        <div className="mt-8 grid grid-cols-3 gap-4 lg:grid-cols-1">
           {stats.map((stat) => (
             <div
               key={stat.label}
