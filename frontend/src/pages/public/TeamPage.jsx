@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { animate, onScroll } from "animejs";
 import { Skeleton } from "boneyard-js/react";
 
 import kpLogo from "../../assets/kp-logo.png";
@@ -8,6 +9,7 @@ import VariableText from "../../components/common/VariableText";
 import CircularGallery from "../../components/public/CircularGallery";
 import MemberCard from "../../components/public/MemberCard";
 import { useFetch } from "../../hooks/useFetch";
+import { useOneTimePageHeadingAnimation } from "../../hooks/useOneTimePageHeadingAnimation";
 import { memberService } from "../../services/memberService";
 
 function isValidImageSource(value) {
@@ -28,11 +30,18 @@ function isValidImageSource(value) {
 }
 
 export default function TeamPage() {
+  const scrollContainerRef = useRef(null);
   const { data, error, loading, refetch } = useFetch(memberService.getAll);
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const membersToRender = Array.isArray(data) ? data : [];
+
+  useOneTimePageHeadingAnimation({
+    enabled: !showError && !(boneyardBuildMode || loading),
+    scopeRef: scrollContainerRef,
+    visitTag: "team",
+  });
 
   const galleryItems = useMemo(
     () =>
@@ -44,8 +53,33 @@ export default function TeamPage() {
     [membersToRender],
   );
 
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    const square = container?.querySelector(".square");
+
+    if (!container || !square) {
+      return;
+    }
+
+    const squareAnimation = animate(square, {
+      x: "15rem", 
+      rotate: "1turn",
+      duration: 2000,
+      alternate: true,
+      loop: true,
+      ease: "inOutQuad",
+      autoplay: onScroll({
+        container,
+      }),
+    });
+
+    return () => {
+      squareAnimation?.pause?.();
+    };
+  }, []);
+
   return (
-    <div className="page-shell">
+    <div className="page-shell scroll-container" ref={scrollContainerRef}>
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
 
       {!showError ? (
@@ -57,10 +91,11 @@ export default function TeamPage() {
         >
           <div className="space-y-6">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+              <span className="square team-square" aria-hidden="true" />
+              <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
                 <VariableText label="Core team" />
               </p>
-              <h1 className="mt-3 text-4xl font-bold">
+              <h1 className="page-heading-anim mt-3 text-4xl font-bold">
                 <VariableText label="The builders behind Kamand Prompt" />
               </h1>
             </div>
@@ -69,9 +104,12 @@ export default function TeamPage() {
               {membersToRender.length > 0 ? (
                 <div className="h-[340px] overflow-hidden rounded-[28px] sm:h-[420px]">
                   <CircularGallery
+                    autoPlay
+                    autoPlaySpeed={0.08}
                     bend={1}
                     borderRadius={0.05}
                     items={galleryItems}
+                    pauseOnHover
                     scrollEase={0.05}
                     scrollSpeed={2}
                     textColor="#ffffff"

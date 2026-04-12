@@ -4,7 +4,7 @@ import kpLogo from "../../assets/kp-logo.png";
 import VariableText from "./VariableText";
 
 const links = [
-  { to: "/", label: "Home" },
+  { to: "/", label: "Home", end: true },
   { to: "/projects", label: "Projects" },
   { to: "/team", label: "Team" },
   { to: "/events", label: "Events" },
@@ -12,20 +12,24 @@ const links = [
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar({ authenticated }) {
+export default function Navbar({ authenticated, scrollProgress = 0 }) {
+  const adminButtonClass = authenticated
+    ? "btn-primary !px-4 !py-2"
+    : "btn-primary !px-4 !py-2 !bg-[#2f8cff] !border-[#2f8cff] hover:!border-[#5aa8ff]";
+
   return (
-    <header className="sticky top-0 z-40 border-b border-white/50 bg-dune/80 backdrop-blur dark:border-white/10 dark:bg-ink/70">
+    <header className="kp-nav">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link className="flex items-center gap-3" to="/">
-          <div className="flex h-12 w-[96px] items-center justify-center overflow-hidden rounded-xl border border-slate-300/70 bg-white p-1 shadow-sm dark:border-white/20 dark:bg-white/95">
-            <img alt="Kamand Prompt logo" className="h-full w-full object-contain" src={kpLogo} />
+          <div className="flex h-12 w-[96px] items-center justify-center overflow-hidden">
+            <img alt="Kammand Prompt logo" className="h-full w-full object-contain" src={kpLogo} />
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ember sm:text-sm">
               <VariableText label="IIT Mandi" />
             </p>
-            <p className="text-lg font-semibold">
-              <VariableText label="Kamand Prompt" />
+            <p className="text-xl font-black leading-tight sm:text-[1.55rem]">
+              <VariableText label="Kammand Prompt" />
             </p>
           </div>
         </Link>
@@ -35,10 +39,9 @@ export default function Navbar({ authenticated }) {
             <NavLink
               key={link.to}
               className={({ isActive }) =>
-                `text-sm font-medium transition ${
-                  isActive ? "text-ember" : "text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white"
-                }`
+                `kp-nav-link allow-accent text-sm font-medium transition ${isActive ? "kp-nav-link-active" : "kp-nav-link-idle"}`
               }
+              end={link.end}
               to={link.to}
             >
               <VariableText label={link.label} radius={85} />
@@ -47,11 +50,15 @@ export default function Navbar({ authenticated }) {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link className="btn-primary !px-4 !py-2" to={authenticated ? "/admin" : "/admin/login"}>
+          <Link className={adminButtonClass} to={authenticated ? "/admin" : "/admin/login"}>
             <VariableText label={authenticated ? "Dashboard" : "Admin login"} radius={85} />
           </Link>
         </div>
       </div>
+
+      <span className="kp-nav-progress" aria-hidden="true">
+        <span className="kp-nav-progress-line" style={{ "--scroll-progress": scrollProgress }} />
+      </span>
     </header>
   );
 }

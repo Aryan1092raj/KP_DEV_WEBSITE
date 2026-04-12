@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import { ContactPageFallback } from "../../components/common/BoneyardFallbacks";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useOneTimePageHeadingAnimation } from "../../hooks/useOneTimePageHeadingAnimation";
 import { contactService } from "../../services/contactService";
 
 const socialLinks = [
@@ -11,10 +12,11 @@ const socialLinks = [
     label: "GitHub",
     href: "https://github.com/KamandPrompt",
     icon: (
-      <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
+      <svg aria-hidden="true" className="h-10 w-10" fill="none" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" fill="#ffffff" r="11" />
         <path
           d="M12 2C6.48 2 2 6.58 2 12.24c0 4.53 2.87 8.37 6.84 9.72.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.91-2.78.62-3.37-1.21-3.37-1.21-.45-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.54 1.06 1.54 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.06 1.03-2.79-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.07A9.3 9.3 0 0 1 12 6.89c.85 0 1.71.12 2.52.36 1.91-1.35 2.75-1.07 2.75-1.07.55 1.41.2 2.46.1 2.72.64.73 1.03 1.66 1.03 2.79 0 3.96-2.34 4.82-4.58 5.08.36.32.68.95.68 1.92 0 1.39-.01 2.51-.01 2.85 0 .27.18.59.69.49A10.27 10.27 0 0 0 22 12.24C22 6.58 17.52 2 12 2Z"
-          fill="currentColor"
+          fill="#181717"
         />
       </svg>
     ),
@@ -23,10 +25,19 @@ const socialLinks = [
     label: "Instagram",
     href: "https://www.instagram.com/kamandprompt/",
     icon: (
-      <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
-        <rect x="3.25" y="3.25" width="17.5" height="17.5" rx="4.75" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="12" cy="12" r="4.25" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="17.25" cy="6.75" r="1" fill="currentColor" />
+      <svg aria-hidden="true" className="h-10 w-10" fill="none" viewBox="0 0 24 24">
+        <defs>
+          <linearGradient id="kp-ig-gradient" x1="3" x2="21" y1="21" y2="3">
+            <stop offset="0" stopColor="#feda75" />
+            <stop offset="0.35" stopColor="#fa7e1e" />
+            <stop offset="0.6" stopColor="#d62976" />
+            <stop offset="0.82" stopColor="#962fbf" />
+            <stop offset="1" stopColor="#4f5bd5" />
+          </linearGradient>
+        </defs>
+        <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#kp-ig-gradient)" />
+        <circle cx="12" cy="12" r="4.35" stroke="#ffffff" strokeWidth="1.9" />
+        <circle cx="17.15" cy="6.85" fill="#ffffff" r="1.1" />
       </svg>
     ),
   },
@@ -34,10 +45,11 @@ const socialLinks = [
     label: "LinkedIn",
     href: "https://www.linkedin.com/company/programming-club-iit-mandi/",
     icon: (
-      <svg aria-hidden="true" className="h-7 w-7" fill="none" viewBox="0 0 24 24">
-        <path d="M6.75 9H3.75V20.25H6.75V9Z" fill="currentColor" />
-        <path d="M5.25 3.75A1.88 1.88 0 1 0 5.25 7.5a1.88 1.88 0 0 0 0-3.75Z" fill="currentColor" />
-        <path d="M20.25 13.31c0-3.17-1.69-4.64-3.95-4.64-1.82 0-2.64 1-3.1 1.71V9H10.2c.04.87 0 11.25 0 11.25h3V13.97c0-.34.02-.68.13-.92.27-.68.88-1.38 1.9-1.38 1.34 0 1.88 1.03 1.88 2.55v6.03h3V13.31Z" fill="currentColor" />
+      <svg aria-hidden="true" className="h-10 w-10" fill="none" viewBox="0 0 24 24">
+        <rect x="2" y="2" width="20" height="20" rx="3" fill="#0a66c2" />
+        <path d="M7.3 9.35H4.95V18.7H7.3V9.35Z" fill="#ffffff" />
+        <path d="M6.12 5.3A1.57 1.57 0 1 0 6.12 8.44 1.57 1.57 0 0 0 6.12 5.3Z" fill="#ffffff" />
+        <path d="M18.9 12.96c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.83-2.58 1.43V9.35h-2.49c.03.73 0 9.35 0 9.35h2.5v-5.22c0-.29.02-.57.11-.77.23-.57.73-1.15 1.58-1.15 1.11 0 1.57.86 1.57 2.13v5.01h2.5v-5.74Z" fill="#ffffff" />
       </svg>
     ),
   },
@@ -48,7 +60,10 @@ function TerminalPanel({ title, children, className = "" }) {
     <section
       className={`overflow-hidden rounded-[28px] border border-[var(--kp-border)] bg-[var(--kp-surface)] text-white shadow-soft ${className}`}
     >
-      <div className="border-b border-[var(--kp-border)] px-5 py-4 text-sm uppercase tracking-[0.22em] text-white">
+      <div
+        className="border-b border-[var(--kp-border)] px-5 py-4 text-base font-black uppercase tracking-[0.24em] text-[#f4fbff] sm:text-[1.35rem]"
+        style={{ textShadow: "0 0 16px rgba(158, 214, 255, 0.55), 0 0 2px rgba(255, 255, 255, 0.88)" }}
+      >
         <VariableText label={title} radius={85} />
       </div>
       <div className="p-5 sm:p-7">{children}</div>
@@ -57,6 +72,7 @@ function TerminalPanel({ title, children, className = "" }) {
 }
 
 function ContactInfoCard({ label, value, href, icon }) {
+  const isEmailLink = typeof href === "string" && href.startsWith("mailto:");
   const content = (
     <div className="flex items-center gap-4 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
       <div className="text-white">{icon}</div>
@@ -64,8 +80,8 @@ function ContactInfoCard({ label, value, href, icon }) {
         <p className="text-xs uppercase tracking-[0.24em] text-white">
           <VariableText label={label} radius={85} />
         </p>
-        <p className="mt-1 text-xl font-semibold text-white">
-          <VariableText label={value} radius={85} />
+        <p className={`mt-1 text-xl font-semibold ${isEmailLink ? "allow-accent text-[#b78bff]" : "text-white"}`}>
+          <VariableText className={isEmailLink ? "allow-accent text-[#b78bff]" : ""} label={value} radius={85} />
         </p>
       </div>
     </div>
@@ -83,6 +99,7 @@ function ContactInfoCard({ label, value, href, icon }) {
 }
 
 export default function ContactPage() {
+  const headingScopeRef = useRef(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -97,6 +114,12 @@ export default function ContactPage() {
           "Wanted to ask about the next build sprint and how new contributors can get involved.",
       }
     : form;
+
+  useOneTimePageHeadingAnimation({
+    enabled: !boneyardBuildMode,
+    scopeRef: headingScopeRef,
+    visitTag: "contact",
+  });
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -145,14 +168,14 @@ export default function ContactPage() {
         name={boneyardBuildMode ? "contact-page" : undefined}
       >
         <div className="space-y-8">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+          <div className="space-y-3" ref={headingScopeRef}>
+            <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Get in touch" radius={85} />
             </p>
-            <h1 className="text-4xl font-bold sm:text-5xl">
+            <h1 className="page-heading-anim text-4xl font-bold sm:text-5xl">
               <VariableText label="Contact us" />
             </h1>
-            <p className="max-w-2xl text-base text-white">
+            <p className="page-heading-anim max-w-2xl text-base text-white">
               <VariableText
                 label="Reach out to Kamand Prompt for collaborations, questions, event details, or general club updates. You can send a message here or use the direct contact links."
                 radius={85}
@@ -205,10 +228,10 @@ export default function ContactPage() {
 
                 <button
                   disabled={!isReady || isSubmitting}
-                  className={`flex w-full items-center justify-center gap-3 rounded-[14px] border border-[var(--kp-border)] px-5 py-4 text-lg font-semibold transition ${
+                  className={`contact-send-btn flex w-full items-center justify-center gap-3 rounded-[14px] border border-[var(--kp-border)] px-5 py-4 text-lg font-semibold transition ${
                     isReady && !isSubmitting
-                      ? "bg-[var(--kp-elevated)] text-white hover:opacity-90"
-                      : "cursor-not-allowed bg-[var(--kp-elevated)] text-white opacity-60"
+                      ? ""
+                      : "cursor-not-allowed"
                   }`}
                   type="submit"
                 >
@@ -232,10 +255,10 @@ export default function ContactPage() {
                   <p>
                     <VariableText label="You can also email" radius={85} />{" "}
                     <a
-                      className="text-white underline-offset-4 hover:underline"
+                      className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
                       href="mailto:pc@iitmandi.ac.in"
                     >
-                      <VariableText label="pc@iitmandi.ac.in" radius={85} />
+                      <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
                     </a>{" "}
                     <VariableText label="directly or" radius={85} />{" "}
                     <button
@@ -310,13 +333,15 @@ export default function ContactPage() {
                   {socialLinks.map((item) => (
                     <a
                       key={item.label}
-                      className="flex flex-col items-center justify-center gap-5 border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-8 text-center text-white transition hover:opacity-90"
+                      className="flex flex-col items-center justify-center gap-6 border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-10 text-center text-white transition hover:opacity-90"
                       href={item.href}
                       rel="noreferrer"
                       target="_blank"
                     >
-                      {item.icon}
-                      <span className="font-mono text-xl uppercase tracking-[0.12em]">
+                      <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[var(--kp-border)] bg-[var(--kp-surface)]">
+                        {item.icon}
+                      </span>
+                      <span className="font-mono text-2xl font-black uppercase tracking-[0.14em] sm:text-[2rem]">
                         <VariableText label={item.label} radius={85} />
                       </span>
                     </a>

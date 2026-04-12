@@ -310,6 +310,9 @@ class App {
       font = "bold 30px Space Grotesk",
       scrollSpeed = 2,
       scrollEase = 0.05,
+      autoPlay = true,
+      autoPlaySpeed = 0.06,
+      pauseOnHover = true,
     } = {},
   ) {
     if (!container) {
@@ -320,6 +323,10 @@ class App {
     autoBind(this);
     this.container = container;
     this.scrollSpeed = scrollSpeed;
+    this.autoPlay = autoPlay;
+    this.autoPlaySpeed = autoPlaySpeed;
+    this.pauseOnHover = pauseOnHover;
+    this.isHovering = false;
     this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
     this.onCheckDebounce = debounce(this.onCheck, 200);
 
@@ -410,6 +417,15 @@ class App {
     this.onCheck();
   }
 
+  onHoverStart() {
+    this.isHovering = true;
+    this.scroll.target = this.scroll.current;
+  }
+
+  onHoverEnd() {
+    this.isHovering = false;
+  }
+
   onWheel(event) {
     const delta = event.deltaY || event.wheelDelta || event.detail;
     this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.2;
@@ -444,6 +460,10 @@ class App {
   }
 
   update() {
+    if (this.autoPlay && !this.isDown && !(this.pauseOnHover && this.isHovering)) {
+      this.scroll.target += this.autoPlaySpeed;
+    }
+
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
     const direction = this.scroll.current > this.scroll.last ? "right" : "left";
 
@@ -462,6 +482,8 @@ class App {
     this.boundOnTouchDown = this.onTouchDown;
     this.boundOnTouchMove = this.onTouchMove;
     this.boundOnTouchUp = this.onTouchUp;
+    this.boundOnHoverStart = this.onHoverStart;
+    this.boundOnHoverEnd = this.onHoverEnd;
 
     window.addEventListener("resize", this.boundOnResize);
     this.container.addEventListener("wheel", this.boundOnWheel, { passive: true });
@@ -471,6 +493,11 @@ class App {
     this.container.addEventListener("touchstart", this.boundOnTouchDown, { passive: true });
     this.container.addEventListener("touchmove", this.boundOnTouchMove, { passive: true });
     window.addEventListener("touchend", this.boundOnTouchUp);
+
+    if (this.pauseOnHover) {
+      this.container.addEventListener("mouseenter", this.boundOnHoverStart);
+      this.container.addEventListener("mouseleave", this.boundOnHoverEnd);
+    }
   }
 
   destroy() {
@@ -483,6 +510,11 @@ class App {
     this.container.removeEventListener("touchstart", this.boundOnTouchDown);
     this.container.removeEventListener("touchmove", this.boundOnTouchMove);
     window.removeEventListener("touchend", this.boundOnTouchUp);
+
+    if (this.pauseOnHover) {
+      this.container.removeEventListener("mouseenter", this.boundOnHoverStart);
+      this.container.removeEventListener("mouseleave", this.boundOnHoverEnd);
+    }
 
     if (this.renderer?.gl?.canvas?.parentNode) {
       this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas);
@@ -498,6 +530,9 @@ export default function CircularGallery({
   font = "bold 30px Space Grotesk",
   scrollSpeed = 2,
   scrollEase = 0.05,
+  autoPlay = true,
+  autoPlaySpeed = 0.06,
+  pauseOnHover = true,
 }) {
   const containerRef = useRef(null);
 
@@ -514,12 +549,15 @@ export default function CircularGallery({
       font,
       scrollSpeed,
       scrollEase,
+      autoPlay,
+      autoPlaySpeed,
+      pauseOnHover,
     });
 
     return () => {
       app?.destroy?.();
     };
-  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
+  }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase, autoPlay, autoPlaySpeed, pauseOnHover]);
 
   return <div className="circular-gallery" ref={containerRef} />;
 }

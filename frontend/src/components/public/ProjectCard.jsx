@@ -1,21 +1,19 @@
-import VariableText from "../common/VariableText";
-
 export default function ProjectCard({ project }) {
   return (
     <article className="section-card flex h-full flex-col">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ember">
-            <VariableText label={project.status} radius={85} />
+            {project.status}
           </p>
           <h3 className="mt-2 text-2xl font-semibold">
-            <VariableText label={project.title} />
+            {project.title}
           </h3>
         </div>
         {project.year ? <span className="chip">{project.year}</span> : null}
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-300">
-        <VariableText label={project.description} radius={85} />
+        {project.description}
       </p>
       <div className="mt-5 flex flex-wrap gap-2">
         {project.tech_stack.map((item) => (
@@ -33,12 +31,12 @@ export default function ProjectCard({ project }) {
       <div className="mt-6 flex flex-wrap gap-3">
         {project.github_url ? (
           <a className="btn-secondary !px-4 !py-2" href={project.github_url} rel="noreferrer" target="_blank">
-            <VariableText label="GitHub" radius={85} />
+            GitHub
           </a>
         ) : null}
         {project.live_url ? (
           <a className="btn-primary !px-4 !py-2" href={project.live_url} rel="noreferrer" target="_blank">
-            <VariableText label="Live demo" radius={85} />
+            Live demo
           </a>
         ) : null}
       </div>
