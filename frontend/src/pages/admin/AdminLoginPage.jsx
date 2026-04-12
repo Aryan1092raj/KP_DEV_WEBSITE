@@ -244,21 +244,42 @@ export default function AdminLoginPage() {
       setCaptchaChallenge(createCaptchaChallenge());
       navigate("/admin", { replace: true });
     } catch (requestError) {
-      const nextAttempts = failedAttempts + 1;
-      setFailedAttempts(nextAttempts);
+      const failureCode = requestError?.code;
+      const isCredentialFailure =
+        failureCode === "INVALID_CREDENTIALS" ||
+        failureCode === "NOT_AUTHORIZED";
+
+      const nextAttempts = isCredentialFailure ? failedAttempts + 1 : failedAttempts;
+      if (isCredentialFailure) {
+        setFailedAttempts(nextAttempts);
+      }
       setCaptchaAnswer("");
       setCaptchaChallenge(createCaptchaChallenge());
 
-      if (nextAttempts >= ATTEMPT_LIMIT) {
+      if (isCredentialFailure && nextAttempts >= ATTEMPT_LIMIT) {
         setLockUntil(Date.now() + COOLDOWN_SECONDS * 1000);
       }
 
       const attemptsLeft = Math.max(0, ATTEMPT_LIMIT - nextAttempts);
-      setInlineFeedback(
-        attemptsLeft > 0
-          ? `Login failed. ${attemptsLeft} attempt${attemptsLeft === 1 ? "" : "s"} remaining.`
-          : `Rate limit active. Retry in ${COOLDOWN_SECONDS}s.`
-      );
+      if (failureCode === "SESSION_NOT_PERSISTED") {
+        setInlineFeedback(
+          "Credentials were accepted, but session cookie could not be saved. Allow cookies for this site and verify backend CORS_ORIGIN includes your frontend domain."
+        );
+      } else if (failureCode === "API_ENDPOINT_MISCONFIGURED") {
+        setInlineFeedback(
+          "Frontend API URL is misconfigured. Set VITE_API_BASE_URL to your backend endpoint including /api."
+        );
+      } else if (failureCode === "INVALID_AUTH_PAYLOAD" || failureCode === "SESSION_VALIDATION_FAILED") {
+        setInlineFeedback(
+          "Received an unexpected auth response. Please verify backend deployment and try again."
+        );
+      } else {
+        setInlineFeedback(
+          attemptsLeft > 0
+            ? `Login failed. ${attemptsLeft} attempt${attemptsLeft === 1 ? "" : "s"} remaining.`
+            : `Rate limit active. Retry in ${COOLDOWN_SECONDS}s.`
+        );
+      }
 
       setToast({
         type: "error",
