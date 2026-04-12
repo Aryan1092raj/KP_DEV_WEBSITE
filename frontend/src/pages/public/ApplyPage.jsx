@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import { ApplyPageFallback } from "../../components/common/BoneyardFallbacks";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useOneTimePageHeadingAnimation } from "../../hooks/useOneTimePageHeadingAnimation";
 import { applicationService } from "../../services/applicationService";
 
 const initialForm = {
@@ -26,6 +27,7 @@ const fixtureForm = {
 };
 
 export default function ApplyPage() {
+  const headingScopeRef = useRef(null);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -33,6 +35,12 @@ export default function ApplyPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const formToRender = boneyardBuildMode ? fixtureForm : form;
+
+  useOneTimePageHeadingAnimation({
+    enabled: !boneyardBuildMode,
+    scopeRef: headingScopeRef,
+    visitTag: "apply",
+  });
 
   function validate(nextForm) {
     const errors = {};
@@ -127,14 +135,14 @@ export default function ApplyPage() {
         name={boneyardBuildMode ? "apply-page" : undefined}
       >
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="section-card">
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+          <div className="section-card" ref={headingScopeRef}>
+            <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Join Kamand Prompt" />
             </p>
-            <h1 className="mt-3 text-4xl font-bold">
+            <h1 className="page-heading-anim mt-3 text-4xl font-bold">
               <VariableText label="Apply to build with the club" />
             </h1>
-            <p className="mt-4 text-base text-slate-600 dark:text-slate-300">
+            <p className="page-heading-anim mt-4 text-base text-slate-600 dark:text-slate-300">
               Share your background, motivation, and the kind of work you want to do.
               Applications go directly to the admin dashboard for review.
             </p>
