@@ -20,7 +20,7 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 3. Run: `docker compose up --build`
 4. Open:
 	 - Frontend: `http://localhost:3000`
-	 - Backend docs: `http://localhost:8000/docs`
+	 - Backend docs (non-production only): `http://localhost:8000/docs`
 
 ## Runtime Notes
 
@@ -28,8 +28,31 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 - Admin login is mediated by FastAPI, which issues an `HttpOnly` session cookie after verifying Supabase credentials and admin role metadata.
 - Backend data access is anchored to a server credential path via `SUPABASE_SERVICE_ROLE_KEY` when configured, with a local-development fallback to the anon key.
 - Admin requests are authorized by a signed backend session token in an `HttpOnly` cookie until session expiry.
+- Frontend auth no longer stores admin tokens in `localStorage` or `sessionStorage`.
+- Production API documentation endpoints are disabled: `/docs`, `/redoc`, and `/openapi.json`.
 - Frontend runtime only needs `VITE_API_BASE_URL`; Supabase project URL and anon key are no longer shipped to the browser bundle.
 - Backend uptime is handled by an external cron job that pings `/health`.
+
+## Recent Hardening Updates (2026-04-12)
+
+- Runtime safety:
+	- `ENVIRONMENT` defaults to `production`.
+	- `ADMIN_SESSION_SECRET` is required when `ENVIRONMENT=production`.
+	- `docker-compose` backend command no longer uses `--reload`.
+- Error handling:
+	- API responses no longer include raw Python exception strings.
+	- API responses no longer include raw PostgREST error JSON payloads.
+	- Conflict responses are sanitized and do not forward raw DB hints/details.
+- Auth and session behavior:
+	- Frontend uses cookie-backed session probing for admin auth state.
+	- Per-request live Supabase `get_user_by_id` lookup in `verify_admin` was removed.
+	- Admin login guard (`failedAttempts`, cooldown) now survives page refresh inside the same browser session.
+- Data and performance:
+	- `announcement.body` now has explicit max length limits in create and update schemas.
+	- Project serialization now fetches contributor/member rows scoped to requested projects instead of full-table scans.
+	- In-memory rate-limit buckets now include periodic stale-key garbage collection.
+- UX:
+	- Apply page now has frontend validation and improved 422 field-level error messaging.
 
 ## Supabase SQL Editor Order (Local Workflow)
 
