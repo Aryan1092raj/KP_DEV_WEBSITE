@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "boneyard-js/react";
+import { useNavigate } from "react-router-dom";
 
 import { AdminDashboardFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
@@ -47,6 +48,7 @@ const emptySummary = {
 };
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -103,16 +105,17 @@ export default function AdminDashboard() {
   }
 
   const tiles = [
-    { label: "Members", value: activeSummary.members.length },
-    { label: "Projects", value: activeSummary.projects.length },
-    { label: "Events", value: activeSummary.events.length },
-    { label: "Milestones", value: activeSummary.timeline.length },
-    { label: "Announcements", value: activeSummary.announcements.length },
+    { label: "Members", value: activeSummary.members.length, to: "/admin/members" },
+    { label: "Projects", value: activeSummary.projects.length, to: "/admin/projects" },
+    { label: "Events", value: activeSummary.events.length, to: "/admin/events" },
+    { label: "Timeline", value: activeSummary.timeline.length, to: "/admin/timeline" },
+    { label: "Announcements", value: activeSummary.announcements.length, to: "/admin/announcements" },
     {
-      label: "Pending applications",
+      label: "Applications",
       value: activeSummary.applications.filter((application) => application.status === "pending").length,
+      to: "/admin/applications",
     },
-    { label: "Contact messages", value: activeSummary.contactMessages.length },
+    { label: "Contact messages", value: activeSummary.contactMessages.length, to: "/admin/contact-messages" },
   ];
 
   return (
@@ -134,12 +137,17 @@ export default function AdminDashboard() {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {tiles.map((tile) => (
-            <div key={tile.label} className="admin-card">
+            <button
+              key={tile.label}
+              className="admin-card cursor-pointer text-left transition hover:-translate-y-0.5 hover:border-white/25 hover:brightness-105"
+              onClick={() => navigate(tile.to)}
+              type="button"
+            >
               <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
                 <VariableText label={tile.label} radius={85} />
               </p>
               <p className="mt-3 text-4xl font-bold text-ink dark:text-white">{tile.value}</p>
-            </div>
+            </button>
           ))}
         </div>
 

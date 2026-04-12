@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.models.validators import normalize_text
+
 
 class AnnouncementBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -16,7 +18,7 @@ class AnnouncementBase(BaseModel):
     @field_validator("title", "body", "author", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class AnnouncementCreate(AnnouncementBase):
@@ -35,7 +37,7 @@ class AnnouncementUpdate(BaseModel):
     @field_validator("title", "body", "author", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class AnnouncementResponse(AnnouncementBase):

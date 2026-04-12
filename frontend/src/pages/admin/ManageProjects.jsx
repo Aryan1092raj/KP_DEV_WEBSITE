@@ -7,6 +7,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useAdminCrudPage } from "../../hooks/useAdminCrudPage";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 import { projectService } from "../../services/projectService";
@@ -32,11 +33,26 @@ export default function ManageProjects() {
   const { data, error, loading, refetch } = useFetch(projectService.getAdminAll);
   const [members, setMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(true);
-  const [activeProject, setActiveProject] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [deletingProject, setDeletingProject] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const {
+    activeItem,
+    setActiveItem,
+    saving,
+    toast,
+    setToast,
+    deletingItem,
+    setDeletingItem,
+    deleting,
+    handleSave,
+    handleDelete,
+  } = useAdminCrudPage({
+    service: projectService,
+    refetch,
+    createSuccessMessage: "Project created successfully.",
+    updateSuccessMessage: "Project updated successfully.",
+    deleteSuccessMessage: "Project deleted successfully.",
+    saveErrorMessage: "Unable to save project.",
+    deleteErrorMessage: "Unable to delete project.",
+  });
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
@@ -62,53 +78,16 @@ export default function ManageProjects() {
       .finally(() => setMembersLoading(false));
   }, [boneyardBuildMode]);
 
-  async function handleSave(payload) {
-    setSaving(true);
-    try {
-      if (activeProject) {
-        await projectService.update(activeProject.id, payload);
-        setToast({ type: "success", message: "Project updated successfully." });
-      } else {
-        await projectService.create(payload);
-        setToast({ type: "success", message: "Project created successfully." });
-      }
-      setActiveProject(null);
-      refetch();
-    } catch (requestError) {
-      setToast({ type: "error", message: requestError.message || "Unable to save project." });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!deletingProject) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      await projectService.remove(deletingProject.id);
-      setToast({ type: "success", message: "Project deleted successfully." });
-      setDeletingProject(null);
-      refetch();
-    } catch (requestError) {
-      setToast({ type: "error", message: requestError.message || "Unable to delete project." });
-    } finally {
-      setDeleting(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <Toast onClose={() => setToast(null)} toast={toast} />
       <ConfirmModal
         confirmLabel="Delete project"
         loading={deleting}
-        message={`Delete ${deletingProject?.title || "this project"}? Contributor links will be removed too.`}
-        onCancel={() => setDeletingProject(null)}
+        message={`Delete ${deletingItem?.title || "this project"}? Contributor links will be removed too.`}
+        onCancel={() => setDeletingItem(null)}
         onConfirm={handleDelete}
-        open={Boolean(deletingProject)}
+        open={Boolean(deletingItem)}
         title="Confirm delete"
       />
 
@@ -121,7 +100,7 @@ export default function ManageProjects() {
             <VariableText label="Manage project metadata and contributors" />
           </h1>
         </div>
-        <button className="btn-primary" onClick={() => setActiveProject(null)} type="button">
+        <button className="btn-primary" onClick={() => setActiveItem(null)} type="button">
           <VariableText label="New project" radius={85} />
         </button>
       </div>
@@ -136,10 +115,10 @@ export default function ManageProjects() {
         >
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
             <ProjectForm
-              initialData={activeProject}
+              initialData={activeItem}
               loading={saving}
               members={contributorOptions}
-              onCancel={() => setActiveProject(null)}
+              onCancel={() => setActiveItem(null)}
               onSubmit={handleSave}
             />
 
@@ -164,10 +143,10 @@ export default function ManageProjects() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveProject(project)} type="button">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveItem(project)} type="button">
                           <VariableText label="Edit" radius={85} />
                         </button>
-                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingProject(project)} type="button">
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingItem(project)} type="button">
                           <VariableText label="Delete" radius={85} />
                         </button>
                       </div>

@@ -54,6 +54,18 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 - UX:
 	- Apply page now has frontend validation and improved 422 field-level error messaging.
 
+## Recent Refactor Updates (2026-04-12)
+
+- Backend dedupe:
+	- Added shared DB CRUD helpers to remove repeated create/update/delete conflict/not-found flows.
+	- Added shared model validator helpers for text and empty-URL normalization.
+- Frontend dedupe:
+	- Added shared admin service factories for CRUD and admin-list patterns.
+	- Added shared admin form/page hooks to centralize repeated state and handler logic.
+	- Added shared URL normalization utility used across admin forms.
+- Cleanup:
+	- Removed unused visual components `Particles` and `Lanyard` (and their CSS).
+
 ## Supabase SQL Editor Order (Local Workflow)
 
 These SQL files are intentionally local-only and ignored by git. Run them manually in Supabase SQL Editor in this order:
@@ -98,6 +110,8 @@ Important:
 	- Classes/Functions: `root`, `health`
 - `backend/app/db/client.py`: Supabase/PostgREST client helpers.
 	- Classes/Functions: `get_supabase`, `get_auth_supabase`, `get_postgrest_client`
+- `backend/app/db/crud_helpers.py`: Shared CRUD primitives for create/update/delete-by-id flows.
+	- Classes/Functions: `create_record`, `update_record_by_id`, `delete_record_by_id`
 - `backend/app/exceptions/handlers.py`: API error payload and common raise helpers.
 	- Classes/Functions: `error_payload`, `raise_not_found`, `raise_conflict`
 - `backend/app/middleware/auth.py`: Admin session cookie and authorization helpers.
@@ -121,6 +135,8 @@ Important:
 	- Classes/Functions: `ProjectBase`, `ProjectCreate`, `ProjectUpdate`, `ProjectResponse`, `ProjectContributorBase`, `ProjectContributorCreate`, `ProjectContributorResponse`
 - `backend/app/models/timeline.py`: Timeline schemas.
 	- Classes/Functions: `TimelineBase`, `TimelineCreate`, `TimelineUpdate`, `TimelineResponse`
+- `backend/app/models/validators.py`: Shared model normalization helpers.
+	- Classes/Functions: `normalize_text`, `normalize_empty_url`
 
 ### Backend Routers
 
@@ -184,13 +200,21 @@ Important:
 	- Classes/Functions: `ProximityContainerProvider`, `useProximityContainer`
 - `frontend/src/hooks/useAuth.js`: Hook wrapper over auth context.
 	- Classes/Functions: `useAuth`
+- `frontend/src/hooks/useAdminCrudPage.js`: Shared admin CRUD page state/handler hook.
+	- Classes/Functions: `useAdminCrudPage`
+- `frontend/src/hooks/useAdminForm.js`: Shared admin form state/change hook.
+	- Classes/Functions: `useAdminForm`
 - `frontend/src/hooks/useFetch.js`: Generic async data hook.
 	- Classes/Functions: `useFetch`
 - `frontend/src/lib/api.js`: Axios client and unauthorized handler plumbing.
 	- Classes/Functions: `setUnauthorizedHandler`, `extractError`
+- `frontend/src/lib/utils.js`: Shared frontend utilities.
+	- Classes/Functions: `normalizeUrl`
 
 ### Frontend Services
 
+- `frontend/src/services/createAdminCrudService.js`: Shared admin service factories.
+	- Methods: `createAdminCrudService`, `createAdminListService`
 - `frontend/src/services/adminAuthService.js`: Admin auth/session API service.
 	- Methods: `getSession`, `login`, `logout`
 - `frontend/src/services/announcementService.js`: Announcement API service.
@@ -222,9 +246,6 @@ Important:
 	- Classes/Functions: `SpinnerView`, `LoadingSpinner`
 - `frontend/src/components/common/Navbar.jsx`: Site navbar.
 	- Classes/Functions: `Navbar`
-- `frontend/src/components/common/Particles.css`: Particle background styles. Functions: none.
-- `frontend/src/components/common/Particles.jsx`: Animated particle background.
-	- Classes/Functions: `Particles`, `hexToRgb`, `handlePointerMove`, `resize`, `update`
 - `frontend/src/components/common/Toast.jsx`: Toast messages.
 	- Classes/Functions: `Toast`
 - `frontend/src/components/common/VariableProximity.css`: Variable text effect styles. Functions: none.
@@ -244,9 +265,6 @@ Important:
 	- Classes/Functions: `EventCard`
 - `frontend/src/components/public/HeroSection.jsx`: Homepage hero.
 	- Classes/Functions: `HeroSection`
-- `frontend/src/components/public/Lanyard.css`: Lanyard styles. Functions: none.
-- `frontend/src/components/public/Lanyard.jsx`: Interactive lanyard visual.
-	- Classes/Functions: `Lanyard`, `Band`, `handleResize`
 - `frontend/src/components/public/MemberCard.jsx`: Team member card.
 	- Classes/Functions: `MemberCard`
 - `frontend/src/components/public/ProjectCard.jsx`: Project card UI.
@@ -261,15 +279,15 @@ Important:
 - `frontend/src/components/admin/AdminSidebar.jsx`: Admin sidebar.
 	- Classes/Functions: `AdminSidebar`
 - `frontend/src/components/admin/AnnouncementForm.jsx`: Announcement create/update form.
-	- Classes/Functions: `AnnouncementForm`, `handleChange`, `submit`
+	- Classes/Functions: `AnnouncementForm`, `submit`
 - `frontend/src/components/admin/EventForm.jsx`: Event create/update form.
-	- Classes/Functions: `EventForm`, `handleChange`, `normalizeUrl`, `submit`
+	- Classes/Functions: `mapEventInitialData`, `EventForm`, `submit`
 - `frontend/src/components/admin/MemberForm.jsx`: Member create/update form.
-	- Classes/Functions: `MemberForm`, `handleChange`, `normalizeUrl`, `handlePhotoUpload`, `clearPhoto`, `submit`
+	- Classes/Functions: `MemberForm`, `handlePhotoUpload`, `clearPhoto`, `submit`
 - `frontend/src/components/admin/ProjectForm.jsx`: Project create/update form with contributors.
-	- Classes/Functions: `ProjectForm`, `updateField`, `addContributor`, `removeContributor`, `updateContributor`, `submit`
+	- Classes/Functions: `mapProjectInitialData`, `ProjectForm`, `addContributor`, `removeContributor`, `updateContributor`, `submit`
 - `frontend/src/components/admin/TimelineForm.jsx`: Timeline create/update form.
-	- Classes/Functions: `TimelineForm`, `handleChange`, `submit`
+	- Classes/Functions: `TimelineForm`, `submit`
 
 ### Frontend Public Pages
 

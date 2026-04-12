@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import TimelineForm from "../../components/admin/TimelineForm";
@@ -7,6 +6,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useAdminCrudPage } from "../../hooks/useAdminCrudPage";
 import { useFetch } from "../../hooks/useFetch";
 import { timelineService } from "../../services/timelineService";
 
@@ -17,57 +17,30 @@ const fixtureTimeline = [
 
 export default function ManageTimeline() {
   const { data, error, loading, refetch } = useFetch(timelineService.getAdminAll);
-  const [activeItem, setActiveItem] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [deletingItem, setDeletingItem] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const {
+    activeItem,
+    setActiveItem,
+    saving,
+    toast,
+    setToast,
+    deletingItem,
+    setDeletingItem,
+    deleting,
+    handleSave,
+    handleDelete,
+  } = useAdminCrudPage({
+    service: timelineService,
+    refetch,
+    createSuccessMessage: "Timeline entry created.",
+    updateSuccessMessage: "Timeline entry updated.",
+    deleteSuccessMessage: "Timeline entry deleted.",
+    saveErrorMessage: "Unable to save timeline entry.",
+    deleteErrorMessage: "Unable to delete timeline entry.",
+  });
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const items = boneyardBuildMode ? fixtureTimeline : data ?? [];
-
-  async function handleSave(payload) {
-    setSaving(true);
-    try {
-      if (activeItem) {
-        await timelineService.update(activeItem.id, payload);
-        setToast({ type: "success", message: "Timeline entry updated." });
-      } else {
-        await timelineService.create(payload);
-        setToast({ type: "success", message: "Timeline entry created." });
-      }
-      setActiveItem(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: requestError.message || "Unable to save timeline entry.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!deletingItem) {
-      return;
-    }
-    setDeleting(true);
-    try {
-      await timelineService.remove(deletingItem.id);
-      setToast({ type: "success", message: "Timeline entry deleted." });
-      setDeletingItem(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: requestError.message || "Unable to delete timeline entry.",
-      });
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   return (
     <div className="space-y-6">

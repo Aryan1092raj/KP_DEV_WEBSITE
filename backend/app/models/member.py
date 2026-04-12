@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
+from app.models.validators import normalize_empty_url, normalize_text
+
 
 IMAGE_DATA_URL_PATTERN = re.compile(
     r"^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$",
@@ -51,7 +53,7 @@ class MemberBase(BaseModel):
     @field_validator("name", "role", "batch", "bio", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("photo_url", mode="before")
     @classmethod
@@ -66,9 +68,7 @@ class MemberBase(BaseModel):
     @field_validator("github_url", "linkedin_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value in ("", None):
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class MemberCreate(MemberBase):
@@ -91,7 +91,7 @@ class MemberUpdate(BaseModel):
     @field_validator("name", "role", "batch", "bio", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("photo_url", mode="before")
     @classmethod
@@ -106,9 +106,7 @@ class MemberUpdate(BaseModel):
     @field_validator("github_url", "linkedin_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value == "":
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class MemberResponse(MemberBase):

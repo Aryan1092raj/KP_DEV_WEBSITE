@@ -5,7 +5,8 @@ from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
 from app.db.client import get_auth_supabase, get_postgrest_client, get_supabase
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.db.crud_helpers import create_record, delete_record_by_id, update_record_by_id
+from app.exceptions.handlers import raise_conflict
 from app.middleware.auth import verify_admin
 from app.models.project import ProjectCreate, ProjectResponse, ProjectUpdate
 
@@ -147,12 +148,18 @@ def create_project(payload: ProjectCreate, admin: dict = Depends(verify_admin)) 
     project_payload = jsonable_encoder(payload, exclude_none=True)
     contributors = project_payload.pop("contributors", [])
     db = get_postgrest_client()
+
+    created = create_record(
+        table_name="projects",
+        payload=project_payload,
+        conflict_message="Unable to create project",
+    )
+
     try:
-        response = db.table("projects").insert(project_payload).execute()
-        created = response.data[0]
         _replace_project_contributors(created["id"], contributors)
     except APIError as exc:
         raise_conflict(exc, "Unable to create project")
+
     return _serialize_projects([created], db)[0]
 
 
@@ -164,43 +171,29 @@ def update_project(
     contributors = project_payload.pop("contributors", None)
     db = get_postgrest_client()
 
-    try:
-        if project_payload:
-            response = db.table("projects").update(project_payload).eq("id", str(project_id)).execute()
-            if not response.data:
-                raise_not_found("Project")
-            updated = response.data[0]
-        else:
-            lookup = (
-                db.table("projects")
-                .select(PROJECT_COLUMNS)
-                .eq("id", str(project_id))
-                .execute()
-            )
-            if not lookup.data:
-                raise_not_found("Project")
-            updated = lookup.data[0]
+    updated = update_record_by_id(
+        table_name="projects",
+        record_id=project_id,
+        payload=project_payload,
+        columns=PROJECT_COLUMNS,
+        conflict_message="Unable to update project",
+        not_found_resource="Project",
+    )
 
-        if contributors is not None:
+    if contributors is not None:
+        try:
             _replace_project_contributors(str(project_id), contributors)
-    except APIError as exc:
-        raise_conflict(exc, "Unable to update project")
+        except APIError as exc:
+            raise_conflict(exc, "Unable to update project")
 
     return _serialize_projects([updated], db)[0]
 
 
 @admin_router.delete("/projects/{project_id}")
 def delete_project(project_id: UUID, admin: dict = Depends(verify_admin)) -> dict[str, bool]:
-    try:
-        response = (
-            get_postgrest_client()
-            .table("projects")
-            .delete()
-            .eq("id", str(project_id))
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to delete project")
-    if not response.data:
-        raise_not_found("Project")
-    return {"deleted": True}
+    return delete_record_by_id(
+        table_name="projects",
+        record_id=project_id,
+        conflict_message="Unable to delete project",
+        not_found_resource="Project",
+    )

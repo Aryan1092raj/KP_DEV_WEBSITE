@@ -2,10 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
-from postgrest.exceptions import APIError
 
 from app.db.client import get_auth_supabase, get_postgrest_client
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.db.crud_helpers import (
+    create_record,
+    delete_record_by_id,
+    update_record_by_id,
+)
 from app.middleware.auth import verify_admin
 from app.models.timeline import TimelineCreate, TimelineResponse, TimelineUpdate
 
@@ -48,16 +51,11 @@ def list_timeline_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
 )
 def create_timeline_entry(payload: TimelineCreate, admin: dict = Depends(verify_admin)) -> dict:
     timeline_payload = jsonable_encoder(payload, exclude_none=True)
-    try:
-        response = (
-            get_postgrest_client()
-            .table("timeline")
-            .insert(timeline_payload)
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to create timeline entry")
-    return response.data[0]
+    return create_record(
+        table_name="timeline",
+        payload=timeline_payload,
+        conflict_message="Unable to create timeline entry",
+    )
 
 
 @admin_router.put("/timeline/{timeline_id}", response_model=TimelineResponse)
@@ -65,38 +63,23 @@ def update_timeline_entry(
     timeline_id: UUID, payload: TimelineUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     timeline_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client()
-    try:
-        if timeline_payload:
-            response = db.table("timeline").update(timeline_payload).eq("id", str(timeline_id)).execute()
-        else:
-            response = (
-                db.table("timeline")
-                .select(TIMELINE_COLUMNS)
-                .eq("id", str(timeline_id))
-                .execute()
-            )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to update timeline entry")
-    if not response.data:
-        raise_not_found("Timeline entry")
-    return response.data[0]
+    return update_record_by_id(
+        table_name="timeline",
+        record_id=timeline_id,
+        payload=timeline_payload,
+        columns=TIMELINE_COLUMNS,
+        conflict_message="Unable to update timeline entry",
+        not_found_resource="Timeline entry",
+    )
 
 
 @admin_router.delete("/timeline/{timeline_id}")
 def delete_timeline_entry(
     timeline_id: UUID, admin: dict = Depends(verify_admin)
 ) -> dict[str, bool]:
-    try:
-        response = (
-            get_postgrest_client()
-            .table("timeline")
-            .delete()
-            .eq("id", str(timeline_id))
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to delete timeline entry")
-    if not response.data:
-        raise_not_found("Timeline entry")
-    return {"deleted": True}
+    return delete_record_by_id(
+        table_name="timeline",
+        record_id=timeline_id,
+        conflict_message="Unable to delete timeline entry",
+        not_found_resource="Timeline entry",
+    )

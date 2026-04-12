@@ -589,37 +589,16 @@
     font-weight: 800;
     letter-spacing: 0.01em;
     color: #f3fbff !important;
-    text-shadow: 0 0 16px rgba(205, 236, 255, 0.72), 0 0 32px rgba(123, 201, 255, 0.34);
-  }
-
-  .square {
-    display: block;
-    width: 1rem;
-    height: 1rem;
-    border-radius: 0.24rem;
-    border: 1px solid rgba(133, 219, 255, 0.6);
-    background: rgba(109, 210, 255, 0.12);
   }
 
   .scroll-container {
     position: relative;
   }
 
-  .team-square {
-    margin-bottom: 0.9rem;
-  }
-
   .project-motion-shell {
     position: relative;
     overflow: hidden;
     border-radius: 24px;
-  }
-
-  .project-square {
-    position: absolute;
-    top: 0.8rem;
-    left: 0.8rem;
-    z-index: 2;
   }
 
   .travel-page {

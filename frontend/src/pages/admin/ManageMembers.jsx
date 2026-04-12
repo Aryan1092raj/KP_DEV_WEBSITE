@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import MemberForm from "../../components/admin/MemberForm";
@@ -7,6 +6,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useAdminCrudPage } from "../../hooks/useAdminCrudPage";
 import { useFetch } from "../../hooks/useFetch";
 import { memberService } from "../../services/memberService";
 
@@ -23,55 +23,31 @@ function getRequestErrorMessage(requestError, fallbackMessage) {
 
 export default function ManageMembers() {
   const { data, error, loading, refetch } = useFetch(memberService.getAdminAll);
-  const [activeMember, setActiveMember] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [deletingMember, setDeletingMember] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const {
+    activeItem,
+    setActiveItem,
+    saving,
+    toast,
+    setToast,
+    deletingItem,
+    setDeletingItem,
+    deleting,
+    handleSave,
+    handleDelete,
+  } = useAdminCrudPage({
+    service: memberService,
+    refetch,
+    createSuccessMessage: "Member created successfully.",
+    updateSuccessMessage: "Member updated successfully.",
+    deleteSuccessMessage: "Member deleted successfully.",
+    saveErrorMessage: "Unable to save member.",
+    deleteErrorMessage: "Unable to delete member.",
+    getSaveErrorMessage: getRequestErrorMessage,
+  });
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const members = Array.isArray(data) ? data : [];
-
-  async function handleSave(payload) {
-    setSaving(true);
-    try {
-      if (activeMember) {
-        await memberService.update(activeMember.id, payload);
-        setToast({ type: "success", message: "Member updated successfully." });
-      } else {
-        await memberService.create(payload);
-        setToast({ type: "success", message: "Member created successfully." });
-      }
-      setActiveMember(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: getRequestErrorMessage(requestError, "Unable to save member."),
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!deletingMember) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      await memberService.remove(deletingMember.id);
-      setToast({ type: "success", message: "Member deleted successfully." });
-      setDeletingMember(null);
-      refetch();
-    } catch (requestError) {
-      setToast({ type: "error", message: requestError.message || "Unable to delete member." });
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -79,10 +55,10 @@ export default function ManageMembers() {
       <ConfirmModal
         confirmLabel="Delete member"
         loading={deleting}
-        message={`Delete ${deletingMember?.name || "this member"}? This cannot be undone.`}
-        onCancel={() => setDeletingMember(null)}
+        message={`Delete ${deletingItem?.name || "this member"}? This cannot be undone.`}
+        onCancel={() => setDeletingItem(null)}
         onConfirm={handleDelete}
-        open={Boolean(deletingMember)}
+        open={Boolean(deletingItem)}
         title="Confirm delete"
       />
 
@@ -95,7 +71,7 @@ export default function ManageMembers() {
             <VariableText label="Manage current members and alumni state" />
           </h1>
         </div>
-        <button className="btn-primary" onClick={() => setActiveMember(null)} type="button">
+        <button className="btn-primary" onClick={() => setActiveItem(null)} type="button">
           <VariableText label="New member" radius={85} />
         </button>
       </div>
@@ -110,9 +86,9 @@ export default function ManageMembers() {
         >
           <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
             <MemberForm
-              initialData={activeMember}
+              initialData={activeItem}
               loading={saving}
-              onCancel={() => setActiveMember(null)}
+              onCancel={() => setActiveItem(null)}
               onSubmit={handleSave}
             />
 
@@ -139,10 +115,10 @@ export default function ManageMembers() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveMember(member)} type="button">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveItem(member)} type="button">
                           <VariableText label="Edit" radius={85} />
                         </button>
-                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingMember(member)} type="button">
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingItem(member)} type="button">
                           <VariableText label="Delete" radius={85} />
                         </button>
                       </div>

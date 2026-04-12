@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import EventForm from "../../components/admin/EventForm";
@@ -7,6 +6,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useAdminCrudPage } from "../../hooks/useAdminCrudPage";
 import { useFetch } from "../../hooks/useFetch";
 import { eventService } from "../../services/eventService";
 
@@ -40,55 +40,31 @@ function getRequestErrorMessage(requestError, fallbackMessage) {
 
 export default function ManageEvents() {
   const { data, error, loading, refetch } = useFetch(eventService.getAdminAll);
-  const [activeEvent, setActiveEvent] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [deletingEvent, setDeletingEvent] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const {
+    activeItem,
+    setActiveItem,
+    saving,
+    toast,
+    setToast,
+    deletingItem,
+    setDeletingItem,
+    deleting,
+    handleSave,
+    handleDelete,
+  } = useAdminCrudPage({
+    service: eventService,
+    refetch,
+    createSuccessMessage: "Event created successfully.",
+    updateSuccessMessage: "Event updated successfully.",
+    deleteSuccessMessage: "Event deleted successfully.",
+    saveErrorMessage: "Unable to save event.",
+    deleteErrorMessage: "Unable to delete event.",
+    getSaveErrorMessage: getRequestErrorMessage,
+  });
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const events = boneyardBuildMode ? fixtureEvents : data ?? [];
-
-  async function handleSave(payload) {
-    setSaving(true);
-    try {
-      if (activeEvent) {
-        await eventService.update(activeEvent.id, payload);
-        setToast({ type: "success", message: "Event updated successfully." });
-      } else {
-        await eventService.create(payload);
-        setToast({ type: "success", message: "Event created successfully." });
-      }
-      setActiveEvent(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: getRequestErrorMessage(requestError, "Unable to save event."),
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!deletingEvent) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      await eventService.remove(deletingEvent.id);
-      setToast({ type: "success", message: "Event deleted successfully." });
-      setDeletingEvent(null);
-      refetch();
-    } catch (requestError) {
-      setToast({ type: "error", message: requestError.message || "Unable to delete event." });
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -96,10 +72,10 @@ export default function ManageEvents() {
       <ConfirmModal
         confirmLabel="Delete event"
         loading={deleting}
-        message={`Delete ${deletingEvent?.title || "this event"}?`}
-        onCancel={() => setDeletingEvent(null)}
+        message={`Delete ${deletingItem?.title || "this event"}?`}
+        onCancel={() => setDeletingItem(null)}
         onConfirm={handleDelete}
-        open={Boolean(deletingEvent)}
+        open={Boolean(deletingItem)}
         title="Confirm delete"
       />
 
@@ -112,7 +88,7 @@ export default function ManageEvents() {
             <VariableText label="Manage sessions, workshops, and talks" />
           </h1>
         </div>
-        <button className="btn-primary" onClick={() => setActiveEvent(null)} type="button">
+        <button className="btn-primary" onClick={() => setActiveItem(null)} type="button">
           <VariableText label="New event" radius={85} />
         </button>
       </div>
@@ -127,9 +103,9 @@ export default function ManageEvents() {
         >
           <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
             <EventForm
-              initialData={activeEvent}
+              initialData={activeItem}
               loading={saving}
-              onCancel={() => setActiveEvent(null)}
+              onCancel={() => setActiveItem(null)}
               onSubmit={handleSave}
             />
 
@@ -148,10 +124,10 @@ export default function ManageEvents() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveEvent(event)} type="button">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveItem(event)} type="button">
                           <VariableText label="Edit" radius={85} />
                         </button>
-                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingEvent(event)} type="button">
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingItem(event)} type="button">
                           <VariableText label="Delete" radius={85} />
                         </button>
                       </div>

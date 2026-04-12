@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
+from app.models.validators import normalize_empty_url, normalize_text
+
 EventType = Literal["session", "workshop", "hackathon", "talk"]
 
 
@@ -20,14 +22,12 @@ class EventBase(BaseModel):
     @field_validator("title", "description", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("resource_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value in ("", None):
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class EventCreate(EventBase):
@@ -47,14 +47,12 @@ class EventUpdate(BaseModel):
     @field_validator("title", "description", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("resource_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value == "":
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class EventResponse(EventBase):

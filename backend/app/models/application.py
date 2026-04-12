@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.models.validators import normalize_text
+
 ApplicationStatus = Literal["pending", "accepted", "rejected"]
 
 
@@ -20,7 +22,7 @@ class ApplicationCreate(BaseModel):
     @field_validator("name", "branch", "batch", "why_join", "skills", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class ApplicationStatusUpdate(BaseModel):

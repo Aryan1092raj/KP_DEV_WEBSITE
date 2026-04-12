@@ -43,7 +43,24 @@ export default function Footer() {
               <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
             </a>
           </p>
-          <p><VariableText label="Official digital platform for Prompt Dev Cell, IIT Mandi." radius={85} /></p>
+          <p>
+            <VariableText className="text-base font-bold sm:text-lg" label="Instagram:" radius={85} />{" "}
+            <a
+              className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
+              href="https://www.instagram.com/kamandprompt/"
+            >
+              <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
+            </a>
+          </p>
+          <p>
+            <VariableText className="text-base font-bold sm:text-lg" label="Github:" radius={85} />{" "}
+            <a
+              className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
+              href="https://github.com/KamandPrompt"
+            >
+              <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
+            </a>
+          </p>
         </div>
       </div>
     </footer>

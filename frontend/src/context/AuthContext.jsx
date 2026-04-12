@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { setAccessToken, setUnauthorizedHandler } from "../lib/api";
+import { setUnauthorizedHandler } from "../lib/api";
 import { adminAuthService } from "../services/adminAuthService";
 
 const AuthContext = createContext(null);
@@ -23,7 +23,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   function clearAuthState() {
-    setAccessToken(null);
     startTransition(() => {
       setSession(null);
       setUser(null);
@@ -87,7 +86,6 @@ export function AuthProvider({ children }) {
 
   async function login(credentials) {
     const nextSession = await adminAuthService.login(credentials);
-    setAccessToken(null);
     startTransition(() => {
       setSession(nextSession);
       setUser(nextSession.user);

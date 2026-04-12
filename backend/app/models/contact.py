@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.models.validators import normalize_text
+
 
 class ContactMessageCreate(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -14,7 +16,7 @@ class ContactMessageCreate(BaseModel):
     @field_validator("name", "message", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class ContactMessageResponse(ContactMessageCreate):

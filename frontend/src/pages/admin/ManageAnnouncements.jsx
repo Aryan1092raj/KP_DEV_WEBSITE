@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import AnnouncementForm from "../../components/admin/AnnouncementForm";
@@ -7,6 +6,7 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
+import { useAdminCrudPage } from "../../hooks/useAdminCrudPage";
 import { useFetch } from "../../hooks/useFetch";
 import { announcementService } from "../../services/announcementService";
 
@@ -27,57 +27,30 @@ const fixtureAnnouncements = [
 
 export default function ManageAnnouncements() {
   const { data, error, loading, refetch } = useFetch(announcementService.getAdminAll);
-  const [activeAnnouncement, setActiveAnnouncement] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [deletingAnnouncement, setDeletingAnnouncement] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const {
+    activeItem,
+    setActiveItem,
+    saving,
+    toast,
+    setToast,
+    deletingItem,
+    setDeletingItem,
+    deleting,
+    handleSave,
+    handleDelete,
+  } = useAdminCrudPage({
+    service: announcementService,
+    refetch,
+    createSuccessMessage: "Announcement created.",
+    updateSuccessMessage: "Announcement updated.",
+    deleteSuccessMessage: "Announcement deleted.",
+    saveErrorMessage: "Unable to save announcement.",
+    deleteErrorMessage: "Unable to delete announcement.",
+  });
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
   const announcements = boneyardBuildMode ? fixtureAnnouncements : data ?? [];
-
-  async function handleSave(payload) {
-    setSaving(true);
-    try {
-      if (activeAnnouncement) {
-        await announcementService.update(activeAnnouncement.id, payload);
-        setToast({ type: "success", message: "Announcement updated." });
-      } else {
-        await announcementService.create(payload);
-        setToast({ type: "success", message: "Announcement created." });
-      }
-      setActiveAnnouncement(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: requestError.message || "Unable to save announcement.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!deletingAnnouncement) {
-      return;
-    }
-    setDeleting(true);
-    try {
-      await announcementService.remove(deletingAnnouncement.id);
-      setToast({ type: "success", message: "Announcement deleted." });
-      setDeletingAnnouncement(null);
-      refetch();
-    } catch (requestError) {
-      setToast({
-        type: "error",
-        message: requestError.message || "Unable to delete announcement.",
-      });
-    } finally {
-      setDeleting(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -85,10 +58,10 @@ export default function ManageAnnouncements() {
       <ConfirmModal
         confirmLabel="Delete announcement"
         loading={deleting}
-        message={`Delete ${deletingAnnouncement?.title || "this announcement"}?`}
-        onCancel={() => setDeletingAnnouncement(null)}
+        message={`Delete ${deletingItem?.title || "this announcement"}?`}
+        onCancel={() => setDeletingItem(null)}
         onConfirm={handleDelete}
-        open={Boolean(deletingAnnouncement)}
+        open={Boolean(deletingItem)}
         title="Confirm delete"
       />
 
@@ -101,7 +74,7 @@ export default function ManageAnnouncements() {
             <VariableText label="Create drafts or publish club updates" />
           </h1>
         </div>
-        <button className="btn-primary" onClick={() => setActiveAnnouncement(null)} type="button">
+        <button className="btn-primary" onClick={() => setActiveItem(null)} type="button">
           <VariableText label="New announcement" radius={85} />
         </button>
       </div>
@@ -116,9 +89,9 @@ export default function ManageAnnouncements() {
         >
           <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
             <AnnouncementForm
-              initialData={activeAnnouncement}
+              initialData={activeItem}
               loading={saving}
-              onCancel={() => setActiveAnnouncement(null)}
+              onCancel={() => setActiveItem(null)}
               onSubmit={handleSave}
             />
 
@@ -137,10 +110,10 @@ export default function ManageAnnouncements() {
                         </p>
                       </div>
                       <div className="flex gap-3">
-                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveAnnouncement(announcement)} type="button">
+                        <button className="btn-secondary !px-4 !py-2" onClick={() => setActiveItem(announcement)} type="button">
                           <VariableText label="Edit" radius={85} />
                         </button>
-                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingAnnouncement(announcement)} type="button">
+                        <button className="btn-danger !px-4 !py-2" onClick={() => setDeletingItem(announcement)} type="button">
                           <VariableText label="Delete" radius={85} />
                         </button>
                       </div>

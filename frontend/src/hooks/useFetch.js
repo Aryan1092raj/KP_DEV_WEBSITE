@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useRef, useState, useDeferredValue } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useFetch(fetcher, dependencies = []) {
   const fetcherRef = useRef(fetcher);
@@ -6,7 +6,6 @@ export function useFetch(fetcher, dependencies = []) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [reloadKey, setReloadKey] = useState(0);
-  const deferredReloadKey = useDeferredValue(reloadKey);
 
   useEffect(() => {
     fetcherRef.current = fetcher;
@@ -24,7 +23,7 @@ export function useFetch(fetcher, dependencies = []) {
         if (!active) {
           return;
         }
-        startTransition(() => setData(result));
+        setData(result);
       } catch (requestError) {
         if (!active) {
           return;
@@ -42,7 +41,7 @@ export function useFetch(fetcher, dependencies = []) {
     return () => {
       active = false;
     };
-  }, [...dependencies, deferredReloadKey]);
+  }, [...dependencies, reloadKey]);
 
   return {
     data,

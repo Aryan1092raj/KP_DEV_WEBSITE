@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-
+import { useAdminForm } from "../../hooks/useAdminForm";
+import { normalizeUrl } from "../../lib/utils";
 import VariableText from "../common/VariableText";
 
 const emptyEvent = {
@@ -11,49 +11,25 @@ const emptyEvent = {
   is_upcoming: false,
 };
 
+function mapEventInitialData(initialData, emptyState) {
+  return {
+    ...emptyState,
+    ...initialData,
+    event_date:
+      typeof initialData.event_date === "string" && initialData.event_date.length >= 10
+        ? initialData.event_date.slice(0, 10)
+        : "",
+    resource_url: initialData.resource_url ?? "",
+  };
+}
+
 export default function EventForm({ initialData, onSubmit, onCancel, loading }) {
-  const [form, setForm] = useState(emptyEvent);
-
-  useEffect(() => {
-    if (!initialData) {
-      setForm(emptyEvent);
-      return;
-    }
-
-    setForm({
-      ...emptyEvent,
-      ...initialData,
-      event_date:
-        typeof initialData.event_date === "string" && initialData.event_date.length >= 10
-          ? initialData.event_date.slice(0, 10)
-          : "",
-      resource_url: initialData.resource_url ?? "",
-    });
-  }, [initialData]);
-
-  function handleChange(event) {
-    const { name, value, type, checked } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
+  const { form, handleChange } = useAdminForm(emptyEvent, initialData, {
+    mapInitialData: mapEventInitialData,
+  });
 
   function submit(event) {
     event.preventDefault();
-
-    const normalizeUrl = (value) => {
-      const trimmed = (value ?? "").trim();
-      if (!trimmed) {
-        return "";
-      }
-
-      if (/^https?:\/\//i.test(trimmed)) {
-        return trimmed;
-      }
-
-      return `https://${trimmed}`;
-    };
 
     onSubmit({
       title: form.title.trim(),

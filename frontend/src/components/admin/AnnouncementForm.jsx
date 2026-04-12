@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-
+import { useAdminForm } from "../../hooks/useAdminForm";
 import VariableText from "../common/VariableText";
 
 const emptyAnnouncement = {
@@ -15,19 +14,7 @@ export default function AnnouncementForm({
   onCancel,
   loading,
 }) {
-  const [form, setForm] = useState(emptyAnnouncement);
-
-  useEffect(() => {
-    setForm(initialData ? { ...emptyAnnouncement, ...initialData } : emptyAnnouncement);
-  }, [initialData]);
-
-  function handleChange(event) {
-    const { name, value, type, checked } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
+  const { form, handleChange } = useAdminForm(emptyAnnouncement, initialData);
 
   function submit(event) {
     event.preventDefault();

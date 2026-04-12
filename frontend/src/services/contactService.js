@@ -1,6 +1,7 @@
 import api from "../lib/api";
+import { createAdminListService } from "./createAdminCrudService";
 
 export const contactService = {
   submit: async (payload) => (await api.post("/contact", payload)).data,
-  getAdminAll: async () => (await api.get("/admin/contact-messages")).data,
+  ...createAdminListService("contact-messages"),
 };
