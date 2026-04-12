@@ -12,7 +12,7 @@ const links = [
   { to: "/admin/timeline", label: "Timeline" },
   { to: "/admin/announcements", label: "Announcements" },
   { to: "/admin/applications", label: "Applications" },
-  { to: "/admin/contact-messages", label: "Contact inbox" },
+  { to: "/admin/contact-messages", label: "Contact messages" },
 ];
 
 export default function AdminSidebar({ onLogout }) {
@@ -69,7 +69,7 @@ export default function AdminSidebar({ onLogout }) {
         ))}
       </nav>
 
-      <button className="btn-danger mt-8 w-full" onClick={onLogout} type="button">
+      <button className="btn-primary mt-8 w-full !text-white" onClick={onLogout} type="button">
         <VariableText label="Logout" radius={85} />
       </button>
     </aside>

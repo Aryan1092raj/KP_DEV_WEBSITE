@@ -41,7 +41,6 @@ const stations = [
 
 const STATION_VISIBILITY_THRESHOLD = 0.035;
 const STATION_PREVIEW_MS = 1000;
-const STATION_POSTVIEW_MS = 1000;
 const WHEEL_PROGRESS_FACTOR = 0.0008;
 const PROGRESS_SMOOTHING = 0.16;
 const PROGRESS_EPSILON = 0.0006;
@@ -55,8 +54,6 @@ export default function TravelLandingPage() {
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const motionFrameRef = useRef(null);
-  const stationWindowTimerRef = useRef(null);
-  const stationWindowEndsAtRef = useRef(0);
   const speedProgressPerSecondRef = useRef(0);
   const lastFrameTimeRef = useRef(null);
   const [journeyStarted, setJourneyStarted] = useState(false);
@@ -150,30 +147,12 @@ export default function TravelLandingPage() {
       if (motionFrameRef.current) {
         cancelAnimationFrame(motionFrameRef.current);
       }
-      if (stationWindowTimerRef.current) {
-        clearTimeout(stationWindowTimerRef.current);
-      }
     };
   }, []);
 
   function openStationWindow(stationIndex) {
-    const now = performance.now();
-    const nextWindowEnd = now + STATION_POSTVIEW_MS;
-
     setVisibleStationIndex(stationIndex);
     setShowStation(true);
-
-    stationWindowEndsAtRef.current = Math.max(stationWindowEndsAtRef.current, nextWindowEnd);
-
-    if (stationWindowTimerRef.current) {
-      clearTimeout(stationWindowTimerRef.current);
-    }
-
-    stationWindowTimerRef.current = window.setTimeout(() => {
-      setShowStation(false);
-      stationWindowEndsAtRef.current = 0;
-      stationWindowTimerRef.current = null;
-    }, Math.max(0, stationWindowEndsAtRef.current - now));
   }
 
   function clampProgress(value) {
@@ -238,10 +217,6 @@ export default function TravelLandingPage() {
     if (journeyStarted || clampedTarget > 0) {
       startMotion();
     }
-  }
-
-  function jumpToStation(nextStationIndex) {
-    updateTarget(stationPositions[nextStationIndex]);
   }
 
   useEffect(() => {
@@ -421,19 +396,6 @@ export default function TravelLandingPage() {
             </div>
           </div>
 
-          <div className="travel-station-rail">
-            {stations.map((station, index) => (
-              <button
-                className={`travel-station-tab allow-accent-border ${index === activeStationIndex ? "is-active" : ""}`}
-                key={station.stop}
-                onClick={() => jumpToStation(index)}
-                type="button"
-              >
-                <span>{station.stop}</span>
-                {station.title}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
     </main>

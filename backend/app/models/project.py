@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
+from app.models.validators import normalize_empty_url, normalize_text
+
 ProjectStatus = Literal["active", "archived", "in-progress"]
 
 
@@ -16,7 +18,7 @@ class ProjectContributorBase(BaseModel):
     @field_validator("role", mode="before")
     @classmethod
     def strip_role(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class ProjectContributorCreate(ProjectContributorBase):
@@ -45,7 +47,7 @@ class ProjectBase(BaseModel):
     @field_validator("title", "description", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("tech_stack", mode="before")
     @classmethod
@@ -60,9 +62,7 @@ class ProjectBase(BaseModel):
     @field_validator("github_url", "live_url", "thumbnail_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value in ("", None):
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class ProjectCreate(ProjectBase):
@@ -86,7 +86,7 @@ class ProjectUpdate(BaseModel):
     @field_validator("title", "description", mode="before")
     @classmethod
     def strip_text(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
     @field_validator("tech_stack", mode="before")
     @classmethod
@@ -103,9 +103,7 @@ class ProjectUpdate(BaseModel):
     @field_validator("github_url", "live_url", "thumbnail_url", mode="before")
     @classmethod
     def empty_url_to_none(cls, value: object) -> object:
-        if value == "":
-            return None
-        return value
+        return normalize_empty_url(value)
 
 
 class ProjectResponse(BaseModel):

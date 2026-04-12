@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-
+import { useAdminForm } from "../../hooks/useAdminForm";
 import VariableText from "../common/VariableText";
 
 const emptyTimeline = {
@@ -10,16 +9,7 @@ const emptyTimeline = {
 };
 
 export default function TimelineForm({ initialData, onSubmit, onCancel, loading }) {
-  const [form, setForm] = useState(emptyTimeline);
-
-  useEffect(() => {
-    setForm(initialData ? { ...emptyTimeline, ...initialData } : emptyTimeline);
-  }, [initialData]);
-
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
-  }
+  const { form, handleChange } = useAdminForm(emptyTimeline, initialData);
 
   function submit(event) {
     event.preventDefault();

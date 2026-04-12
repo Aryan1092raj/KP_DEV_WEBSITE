@@ -2,10 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
-from postgrest.exceptions import APIError
 
 from app.db.client import get_auth_supabase, get_postgrest_client
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.db.crud_helpers import (
+    create_record,
+    delete_record_by_id,
+    update_record_by_id,
+)
 from app.middleware.auth import verify_admin
 from app.models.member import MemberCreate, MemberResponse, MemberUpdate
 
@@ -51,16 +54,11 @@ def list_members_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
 )
 def create_member(payload: MemberCreate, admin: dict = Depends(verify_admin)) -> dict:
     member_payload = jsonable_encoder(payload, exclude_none=True)
-    try:
-        response = (
-            get_postgrest_client()
-            .table("team_members")
-            .insert(member_payload)
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to create member")
-    return response.data[0]
+    return create_record(
+        table_name="team_members",
+        payload=member_payload,
+        conflict_message="Unable to create member",
+    )
 
 
 @admin_router.put("/members/{member_id}", response_model=MemberResponse)
@@ -68,36 +66,21 @@ def update_member(
     member_id: UUID, payload: MemberUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     update_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client()
-    try:
-        if update_payload:
-            response = db.table("team_members").update(update_payload).eq("id", str(member_id)).execute()
-        else:
-            response = (
-                db.table("team_members")
-                .select(MEMBER_COLUMNS)
-                .eq("id", str(member_id))
-                .execute()
-            )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to update member")
-    if not response.data:
-        raise_not_found("Member")
-    return response.data[0]
+    return update_record_by_id(
+        table_name="team_members",
+        record_id=member_id,
+        payload=update_payload,
+        columns=MEMBER_COLUMNS,
+        conflict_message="Unable to update member",
+        not_found_resource="Member",
+    )
 
 
 @admin_router.delete("/members/{member_id}")
 def delete_member(member_id: UUID, admin: dict = Depends(verify_admin)) -> dict[str, bool]:
-    try:
-        response = (
-            get_postgrest_client()
-            .table("team_members")
-            .delete()
-            .eq("id", str(member_id))
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to delete member")
-    if not response.data:
-        raise_not_found("Member")
-    return {"deleted": True}
+    return delete_record_by_id(
+        table_name="team_members",
+        record_id=member_id,
+        conflict_message="Unable to delete member",
+        not_found_resource="Member",
+    )

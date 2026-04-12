@@ -2,10 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
-from postgrest.exceptions import APIError
 
 from app.db.client import get_auth_supabase, get_postgrest_client
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.db.crud_helpers import create_record, update_record_by_id
 from app.middleware.auth import verify_admin
 from app.models.application import (
     ApplicationCreate,
@@ -26,11 +25,12 @@ APPLICATION_COLUMNS = "id,name,email,branch,batch,why_join,skills,status,submitt
 )
 def create_application(payload: ApplicationCreate) -> dict:
     application_payload = jsonable_encoder(payload, exclude_none=True)
-    try:
-        response = get_auth_supabase().table("applications").insert(application_payload).execute()
-    except APIError as exc:
-        raise_conflict(exc, "Unable to submit application")
-    return response.data[0]
+    return create_record(
+        table_name="applications",
+        payload=application_payload,
+        conflict_message="Unable to submit application",
+        db_client=get_auth_supabase(),
+    )
 
 
 @admin_router.get("/applications", response_model=list[ApplicationResponse])
@@ -54,16 +54,11 @@ def update_application_status(
     payload: ApplicationStatusUpdate,
     admin: dict = Depends(verify_admin),
 ) -> dict:
-    try:
-        response = (
-            get_postgrest_client()
-            .table("applications")
-            .update(jsonable_encoder(payload))
-            .eq("id", str(application_id))
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to update application status")
-    if not response.data:
-        raise_not_found("Application")
-    return response.data[0]
+    return update_record_by_id(
+        table_name="applications",
+        record_id=application_id,
+        payload=jsonable_encoder(payload),
+        columns=APPLICATION_COLUMNS,
+        conflict_message="Unable to update application status",
+        not_found_resource="Application",
+    )

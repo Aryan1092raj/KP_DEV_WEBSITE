@@ -1,6 +1,5 @@
 import axios from "axios";
 
-let accessToken = null;
 let unauthorizedHandler = null;
 const ADMIN_TOKEN_STORAGE_KEY = "kp_admin_access_token";
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
@@ -9,22 +8,16 @@ const normalizedBaseUrl = rawBaseUrl
   .trim()
   .replace(/\/+$/, "");
 
-function readStoredToken() {
+function clearLegacyStoredToken() {
   if (typeof window === "undefined") {
-    return null;
+    return;
   }
 
-  return (
-    window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) ||
-    window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY)
-  );
+  window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
+  window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
-accessToken = readStoredToken();
-
-export function setAccessToken(token) {
-  accessToken = token;
-}
+clearLegacyStoredToken();
 
 export function setUnauthorizedHandler(handler) {
   unauthorizedHandler = handler;
@@ -48,13 +41,6 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});
-
-api.interceptors.request.use((config) => {
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`;
-  }
-  return config;
 });
 
 api.interceptors.response.use(

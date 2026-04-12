@@ -223,7 +223,6 @@ export default function ProjectsPage() {
                     }
                   }}
                 >
-                  <span className="square project-square" aria-hidden="true" />
                   <ProjectCard project={project} />
                 </div>
               ))}

@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
-import { animate, onScroll } from "animejs";
+import { useMemo, useRef } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import kpLogo from "../../assets/kp-logo.svg";
@@ -53,31 +52,6 @@ export default function TeamPage() {
     [membersToRender],
   );
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    const square = container?.querySelector(".square");
-
-    if (!container || !square) {
-      return;
-    }
-
-    const squareAnimation = animate(square, {
-      x: "15rem", 
-      rotate: "1turn",
-      duration: 2000,
-      alternate: true,
-      loop: true,
-      ease: "inOutQuad",
-      autoplay: onScroll({
-        container,
-      }),
-    });
-
-    return () => {
-      squareAnimation?.pause?.();
-    };
-  }, []);
-
   return (
     <div className="page-shell scroll-container" ref={scrollContainerRef}>
       {showError ? <ErrorMessage message={error} onRetry={refetch} /> : null}
@@ -91,7 +65,6 @@ export default function TeamPage() {
         >
           <div className="space-y-6">
             <div>
-              <span className="square team-square" aria-hidden="true" />
               <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
                 <VariableText label="Core team" />
               </p>

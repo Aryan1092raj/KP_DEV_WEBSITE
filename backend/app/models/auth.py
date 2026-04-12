@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
+from app.models.validators import normalize_text
+
 
 class AdminLoginRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -12,7 +14,7 @@ class AdminLoginRequest(BaseModel):
     @field_validator("password", mode="before")
     @classmethod
     def strip_password(cls, value: str | None) -> str | None:
-        return value.strip() if isinstance(value, str) else value
+        return normalize_text(value)
 
 
 class AdminUserResponse(BaseModel):

@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { useAdminForm } from "../../hooks/useAdminForm";
+import { normalizeUrl } from "../../lib/utils";
 import VariableText from "../common/VariableText";
 
 const emptyMember = {
@@ -15,20 +17,8 @@ const emptyMember = {
 };
 
 export default function MemberForm({ initialData, onSubmit, onCancel, loading }) {
-  const [form, setForm] = useState(emptyMember);
+  const { form, setForm, handleChange } = useAdminForm(emptyMember, initialData);
   const [photoError, setPhotoError] = useState("");
-
-  useEffect(() => {
-    setForm(initialData ? { ...emptyMember, ...initialData } : emptyMember);
-  }, [initialData]);
-
-  function handleChange(event) {
-    const { name, value, type, checked } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
 
   function handlePhotoUpload(event) {
     const file = event.target.files?.[0];
@@ -72,19 +62,6 @@ export default function MemberForm({ initialData, onSubmit, onCancel, loading })
 
   function submit(event) {
     event.preventDefault();
-
-    const normalizeUrl = (value) => {
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return "";
-      }
-
-      if (/^https?:\/\//i.test(trimmed)) {
-        return trimmed;
-      }
-
-      return `https://${trimmed}`;
-    };
 
     onSubmit({
       ...form,

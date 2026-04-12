@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-
+import { useAdminForm } from "../../hooks/useAdminForm";
+import { normalizeUrl } from "../../lib/utils";
 import VariableText from "../common/VariableText";
 
 const emptyProject = {
@@ -15,6 +15,20 @@ const emptyProject = {
   contributors: [],
 };
 
+function mapProjectInitialData(initialData, emptyState) {
+  return {
+    ...emptyState,
+    ...initialData,
+    tech_stack: initialData.tech_stack?.join(", ") || "",
+    year: initialData.year ?? "",
+    contributors:
+      initialData.contributors?.map((contributor) => ({
+        member_id: contributor.member_id,
+        role: contributor.role,
+      })) || [],
+  };
+}
+
 export default function ProjectForm({
   initialData,
   members,
@@ -22,34 +36,11 @@ export default function ProjectForm({
   onCancel,
   loading,
 }) {
-  const [form, setForm] = useState(emptyProject);
-
-  useEffect(() => {
-    if (!initialData) {
-      setForm(emptyProject);
-      return;
-    }
-
-    setForm({
-      ...emptyProject,
-      ...initialData,
-      tech_stack: initialData.tech_stack?.join(", ") || "",
-      year: initialData.year ?? "",
-      contributors:
-        initialData.contributors?.map((contributor) => ({
-          member_id: contributor.member_id,
-          role: contributor.role,
-        })) || [],
-    });
-  }, [initialData]);
-
-  function updateField(event) {
-    const { name, value, type, checked } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }
+  const { form, setForm, handleChange: updateField } = useAdminForm(
+    emptyProject,
+    initialData,
+    { mapInitialData: mapProjectInitialData }
+  );
 
   function updateContributor(index, field, value) {
     setForm((current) => ({
@@ -78,6 +69,9 @@ export default function ProjectForm({
     event.preventDefault();
     onSubmit({
       ...form,
+      github_url: normalizeUrl(form.github_url),
+      live_url: normalizeUrl(form.live_url),
+      thumbnail_url: normalizeUrl(form.thumbnail_url),
       year: form.year ? Number(form.year) : null,
       tech_stack: form.tech_stack
         .split(",")

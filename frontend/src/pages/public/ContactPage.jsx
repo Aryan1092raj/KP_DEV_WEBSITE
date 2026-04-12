@@ -341,7 +341,7 @@ export default function ContactPage() {
                       <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[var(--kp-border)] bg-[var(--kp-surface)]">
                         {item.icon}
                       </span>
-                      <span className="font-mono text-2xl font-black uppercase tracking-[0.14em] sm:text-[2rem]">
+                      <span className="font-mono text-lg font-black uppercase tracking-[0.14em] sm:text-xl">
                         <VariableText label={item.label} radius={85} />
                       </span>
                     </a>

@@ -3,10 +3,13 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
-from postgrest.exceptions import APIError
 
 from app.db.client import get_auth_supabase, get_postgrest_client
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.db.crud_helpers import (
+    create_record,
+    delete_record_by_id,
+    update_record_by_id,
+)
 from app.middleware.auth import verify_admin
 from app.models.announcement import (
     AnnouncementCreate,
@@ -66,16 +69,11 @@ def create_announcement(
     announcement_payload = _prepare_announcement_payload(
         jsonable_encoder(payload, exclude_none=True)
     )
-    try:
-        response = (
-            get_postgrest_client()
-            .table("announcements")
-            .insert(announcement_payload)
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to create announcement")
-    return response.data[0]
+    return create_record(
+        table_name="announcements",
+        payload=announcement_payload,
+        conflict_message="Unable to create announcement",
+    )
 
 
 @admin_router.put("/announcements/{announcement_id}", response_model=AnnouncementResponse)
@@ -83,43 +81,28 @@ def update_announcement(
     announcement_id: UUID, payload: AnnouncementUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     announcement_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client()
-    try:
-        if announcement_payload:
-            response = (
-                db.table("announcements")
-                .update(_prepare_announcement_payload(announcement_payload))
-                .eq("id", str(announcement_id))
-                .execute()
-            )
-        else:
-            response = (
-                db.table("announcements")
-                .select(ANNOUNCEMENT_COLUMNS)
-                .eq("id", str(announcement_id))
-                .execute()
-            )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to update announcement")
-    if not response.data:
-        raise_not_found("Announcement")
-    return response.data[0]
+    update_payload = (
+        _prepare_announcement_payload(announcement_payload)
+        if announcement_payload
+        else announcement_payload
+    )
+    return update_record_by_id(
+        table_name="announcements",
+        record_id=announcement_id,
+        payload=update_payload,
+        columns=ANNOUNCEMENT_COLUMNS,
+        conflict_message="Unable to update announcement",
+        not_found_resource="Announcement",
+    )
 
 
 @admin_router.delete("/announcements/{announcement_id}")
 def delete_announcement(
     announcement_id: UUID, admin: dict = Depends(verify_admin)
 ) -> dict[str, bool]:
-    try:
-        response = (
-            get_postgrest_client()
-            .table("announcements")
-            .delete()
-            .eq("id", str(announcement_id))
-            .execute()
-        )
-    except APIError as exc:
-        raise_conflict(exc, "Unable to delete announcement")
-    if not response.data:
-        raise_not_found("Announcement")
-    return {"deleted": True}
+    return delete_record_by_id(
+        table_name="announcements",
+        record_id=announcement_id,
+        conflict_message="Unable to delete announcement",
+        not_found_resource="Announcement",
+    )
