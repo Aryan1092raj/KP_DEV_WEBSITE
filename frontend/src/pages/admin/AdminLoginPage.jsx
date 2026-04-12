@@ -9,6 +9,12 @@ import { useAuth } from "../../hooks/useAuth";
 
 const LOGIN_GUARD_STORAGE_KEY = "kp_admin_login_guard";
 
+function createCaptchaChallenge() {
+  const first = Math.floor(Math.random() * 8) + 1;
+  const second = Math.floor(Math.random() * 8) + 1;
+  return { first, second };
+}
+
 export default function AdminLoginPage() {
   const ATTEMPT_LIMIT = 5;
   const COOLDOWN_SECONDS = 60;
@@ -20,19 +26,17 @@ export default function AdminLoginPage() {
   const [toast, setToast] = useState(null);
   const [inlineFeedback, setInlineFeedback] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState({ email: false, password: false });
+  const [touched, setTouched] = useState({ email: false, password: false, captcha: false });
   const [formErrors, setFormErrors] = useState({ email: "", password: "", captcha: "" });
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockUntil, setLockUntil] = useState(null);
   const [now, setNow] = useState(Date.now());
   const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [captchaChallenge, setCaptchaChallenge] = useState(() => createCaptchaChallenge());
   const emailInputRef = useRef(null);
   const passwordInputRef = useRef(null);
 
-  const captchaRequired = failedAttempts >= 3;
-  const captchaA = 2 + (failedAttempts % 4);
-  const captchaB = 3 + (failedAttempts % 5);
-  const captchaExpected = String(captchaA + captchaB);
+  const captchaExpected = String(captchaChallenge.first + captchaChallenge.second);
 
   const remainingLockSeconds = useMemo(() => {
     if (!lockUntil) {
@@ -206,7 +210,7 @@ export default function AdminLoginPage() {
       errors.password = "Password cannot be empty.";
     }
 
-    if (captchaRequired && String(nextCaptcha).trim() !== captchaExpected) {
+    if (String(nextCaptcha).trim() !== captchaExpected) {
       errors.captcha = "Captcha answer is incorrect.";
     }
 
@@ -221,7 +225,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    setTouched({ email: true, password: true });
+    setTouched({ email: true, password: true, captcha: true });
     const nextErrors = validate(form, captchaAnswer);
     setFormErrors(nextErrors);
 
@@ -237,10 +241,13 @@ export default function AdminLoginPage() {
       setFailedAttempts(0);
       setLockUntil(null);
       setCaptchaAnswer("");
+      setCaptchaChallenge(createCaptchaChallenge());
       navigate("/admin", { replace: true });
     } catch (requestError) {
       const nextAttempts = failedAttempts + 1;
       setFailedAttempts(nextAttempts);
+      setCaptchaAnswer("");
+      setCaptchaChallenge(createCaptchaChallenge());
 
       if (nextAttempts >= ATTEMPT_LIMIT) {
         setLockUntil(Date.now() + COOLDOWN_SECONDS * 1000);
@@ -264,7 +271,7 @@ export default function AdminLoginPage() {
 
   const hasEmailError = Boolean(touched.email && formErrors.email);
   const hasPasswordError = Boolean(touched.password && formErrors.password);
-  const hasCaptchaError = Boolean(captchaRequired && formErrors.captcha);
+  const hasCaptchaError = Boolean(touched.captcha && formErrors.captcha);
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
   const hasPasswordValue = Boolean(form.password.trim());
   const disableSubmit =
@@ -272,7 +279,7 @@ export default function AdminLoginPage() {
     isLocked ||
     !emailLooksValid ||
     !hasPasswordValue ||
-    (captchaRequired && captchaAnswer.trim() !== captchaExpected);
+    captchaAnswer.trim() !== captchaExpected;
 
   return (
     <div className="page-shell">
@@ -379,17 +386,22 @@ export default function AdminLoginPage() {
             <VariableText label="Show password" radius={85} />
           </label>
 
-          {captchaRequired ? (
-            <label htmlFor="captcha-answer">
-              <span className="label">
-                <VariableText label={`Captcha: ${captchaA} + ${captchaB} = ?`} radius={85} />
-              </span>
+          <label htmlFor="captcha-answer">
+            <span className="label">
+              <VariableText
+                label={`Captcha: ${captchaChallenge.first} + ${captchaChallenge.second} = ?`}
+                radius={85}
+              />
+            </span>
+            <div className="flex gap-3">
               <input
                 aria-describedby={hasCaptchaError ? "captcha-error" : undefined}
                 aria-invalid={hasCaptchaError}
                 className={`input ${hasCaptchaError ? "allow-accent-border !border-rose-400" : ""}`}
                 id="captcha-answer"
                 inputMode="numeric"
+                name="captcha"
+                onBlur={handleBlur}
                 onChange={(event) => {
                   setCaptchaAnswer(event.target.value);
                   if (formErrors.captcha) {
@@ -399,13 +411,25 @@ export default function AdminLoginPage() {
                 type="text"
                 value={captchaAnswer}
               />
-              {hasCaptchaError ? (
-                <p className="allow-accent mt-2 text-xs text-rose-300" id="captcha-error" role="status">
-                  {formErrors.captcha}
-                </p>
-              ) : null}
-            </label>
-          ) : null}
+              <button
+                className="btn-secondary !px-4 !py-2"
+                onClick={() => {
+                  setCaptchaAnswer("");
+                  setCaptchaChallenge(createCaptchaChallenge());
+                  setTouched((current) => ({ ...current, captcha: false }));
+                  setFormErrors((current) => ({ ...current, captcha: "" }));
+                }}
+                type="button"
+              >
+                <VariableText label="New" radius={85} />
+              </button>
+            </div>
+            {hasCaptchaError ? (
+              <p className="allow-accent mt-2 text-xs text-rose-300" id="captcha-error" role="status">
+                {formErrors.captcha}
+              </p>
+            ) : null}
+          </label>
 
           {inlineFeedback ? (
             <p aria-live="polite" className="allow-accent text-sm text-rose-300">
