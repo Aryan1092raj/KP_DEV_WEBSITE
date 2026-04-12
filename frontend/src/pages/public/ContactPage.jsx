@@ -172,7 +172,7 @@ export default function ContactPage() {
             <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
               <VariableText label="Get in touch" radius={85} />
             </p>
-            <h1 className="page-heading-anim text-4xl font-bold sm:text-5xl">
+            <h1 className="page-heading-anim text-3xl font-bold sm:text-4xl">
               <VariableText label="Contact us" />
             </h1>
             <p className="page-heading-anim max-w-2xl text-base text-white">
@@ -308,18 +308,18 @@ export default function ContactPage() {
 
               <TerminalPanel title="Coordinator">
                 <div className="flex items-center gap-5 rounded-[22px] border border-[var(--kp-border)] bg-[var(--kp-elevated)] px-4 py-5">
-                  <div className="flex h-20 w-20 items-center justify-center border border-[var(--kp-border)] bg-[var(--kp-elevated)] font-mono text-2xl font-bold text-white">
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center border border-[var(--kp-border)] bg-[var(--kp-elevated)] font-mono text-2xl font-bold text-white">
                     HJ
                   </div>
-                  <div>
-                    <p className="text-4xl font-bold uppercase tracking-[0.05em] text-white">
+                  <div className="min-w-0">
+                    <p className="truncate text-2xl font-bold uppercase tracking-[0.05em] text-white sm:text-4xl">
                       HARSHIT_JAIN
                     </p>
-                    <p className="mt-1 font-mono text-xl uppercase tracking-[0.12em] text-white">
+                    <p className="mt-1 font-mono text-base uppercase tracking-[0.12em] text-white sm:text-xl">
                       COORDINATOR
                     </p>
                     <a
-                      className="mt-3 inline-block font-mono text-2xl text-white hover:text-white"
+                      className="mt-3 inline-block max-w-full truncate font-mono text-lg text-white hover:text-white sm:text-2xl"
                       href="tel:+919418539191"
                     >
                       <VariableText label="+91 94185 39191" radius={85} />

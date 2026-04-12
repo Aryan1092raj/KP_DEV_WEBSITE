@@ -8,7 +8,7 @@ export default function StatsBar({ stats }) {
           <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
             <VariableText label={stat.label} radius={85} />
           </p>
-          <p className="mt-3 text-4xl font-bold text-ink dark:text-white">{stat.value}</p>
+          <p className="mt-3 text-3xl font-bold text-ink dark:text-white sm:text-4xl">{stat.value}</p>
         </div>
       ))}
     </section>

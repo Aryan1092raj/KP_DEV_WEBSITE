@@ -43,7 +43,7 @@ export default function ViewContactMessages() {
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
           <VariableText label="Contact inbox" radius={85} />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">
+        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
           <VariableText label="Review messages submitted from the public contact page" />
         </h1>
       </div>

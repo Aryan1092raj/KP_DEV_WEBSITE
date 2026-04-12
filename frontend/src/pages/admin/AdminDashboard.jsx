@@ -130,7 +130,7 @@ export default function AdminDashboard() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
             <VariableText label="Dashboard" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             <VariableText label="Operations overview for this cycle" />
           </h1>
         </div>
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
               <p className="text-sm uppercase tracking-[0.24em] text-slate-500 dark:text-slate-300">
                 <VariableText label={tile.label} radius={85} />
               </p>
-              <p className="mt-3 text-4xl font-bold text-ink dark:text-white">{tile.value}</p>
+              <p className="mt-3 text-3xl font-bold text-ink dark:text-white sm:text-4xl">{tile.value}</p>
             </button>
           ))}
         </div>

@@ -55,12 +55,12 @@ export default function ManageTimeline() {
         title="Confirm delete"
       />
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
             <VariableText label="Timeline" radius={85} />
           </p>
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
             <VariableText label="Curate club milestones and historical order" />
           </h1>
         </div>

@@ -45,11 +45,11 @@ export default function Toast({ toast, onClose }) {
   const selected = variants[type] || variants.success;
 
   return (
-    <div className="fixed right-4 top-4 z-50">
+    <div className="fixed right-4 top-4" style={{ zIndex: 1005 }}>
       <div
         aria-live={selected.live}
         role="status"
-        className={`min-w-[300px] rounded-2xl border px-4 py-3 shadow-soft ${selected.shell}`}
+        className={`min-w-[260px] max-w-[calc(100vw-2rem)] rounded-2xl border px-4 py-3 shadow-soft ${selected.shell}`}
       >
         <div className="flex items-start justify-between gap-4">
           <p className="allow-accent flex items-center gap-2 text-sm font-medium">

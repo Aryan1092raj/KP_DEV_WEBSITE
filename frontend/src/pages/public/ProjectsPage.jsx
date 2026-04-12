@@ -201,7 +201,7 @@ export default function ProjectsPage() {
               <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
                 <VariableText label="Projects showcase" />
               </p>
-              <h1 className="page-heading-anim mt-3 text-4xl font-bold">
+              <h1 className="page-heading-anim mt-3 text-3xl font-bold sm:text-4xl">
                 <VariableText label="Build archive from across the club" />
               </h1>
             </div>

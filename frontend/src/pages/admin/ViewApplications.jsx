@@ -64,7 +64,7 @@ export default function ViewApplications() {
         <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
           <VariableText label="Join applications" radius={85} />
         </p>
-        <h1 className="mt-3 text-4xl font-bold">
+        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">
           <VariableText label="Review, accept, or reject club applicants" />
         </h1>
       </div>
