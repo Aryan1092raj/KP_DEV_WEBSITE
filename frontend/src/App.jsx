@@ -96,7 +96,7 @@ function PublicLayout({ onPublicScrollProgressChange, scrollProgress }) {
           ))}
         </div>
       </div>
-      <Navbar authenticated={Boolean(session && isAdmin)} scrollProgress={scrollProgress} />
+      <Navbar scrollProgress={scrollProgress} />
       <main className="kp-public-scroll" ref={scrollContainerRef}>
         <Outlet />
         <Footer />
@@ -139,7 +139,7 @@ function AppRoutes({ onPublicScrollProgressChange, scrollProgress }) {
           <Route element={<ContactPage />} path="/contact" />
         </Route>
 
-        <Route element={<AdminLoginPage />} path="/admin/login" />
+        <Route element={<AdminLoginPage />} path="/adminlogin" />
 
         <Route
           element={

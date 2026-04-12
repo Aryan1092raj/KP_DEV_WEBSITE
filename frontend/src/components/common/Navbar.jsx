@@ -13,10 +13,11 @@ const links = [
   { to: "/contact", label: "Contact" },
 ];
 
-export default function Navbar({ authenticated, scrollProgress = 0 }) {
+export default function Navbar({ scrollProgress = 0 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const headerRef = useRef(null);
+  const showAdminHint = new URLSearchParams(location.search).get("admin") === "true";
 
   useEffect(() => {
     setMenuOpen(false);
@@ -89,10 +90,6 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
     };
   }, []);
 
-  const adminButtonClass = authenticated
-    ? "btn-primary !px-4 !py-2"
-    : "btn-primary !px-4 !py-2 !bg-[#2f8cff] !border-[#2f8cff] hover:!border-[#5aa8ff]";
-
   return (
     <header className="kp-nav" ref={headerRef}>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
@@ -125,11 +122,13 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <Link className={adminButtonClass} to={authenticated ? "/admin" : "/admin/login"}>
-            <VariableText label={authenticated ? "Dashboard" : "Admin login"} radius={85} />
-          </Link>
-        </div>
+        {showAdminHint ? (
+          <div className="hidden items-center lg:flex">
+            <Link className="btn-secondary !px-3 !py-2 text-sm" to="/adminlogin">
+              <VariableText label="Admin access" radius={85} />
+            </Link>
+          </div>
+        ) : null}
 
         <button
           aria-controls="mobile-nav-drawer"
@@ -183,13 +182,16 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
             </NavLink>
           ))}
 
-          <Link
-            className={`${adminButtonClass} mt-1 min-h-[48px] justify-center !py-3.5 text-base`}
-            onClick={() => setMenuOpen(false)}
-            to={authenticated ? "/admin" : "/admin/login"}
-          >
-            <VariableText label={authenticated ? "Dashboard" : "Admin login"} radius={85} />
-          </Link>
+          {showAdminHint ? (
+            <Link
+              className="btn-secondary mt-1 min-h-[48px] justify-center !py-3.5 text-base"
+              onClick={() => setMenuOpen(false)}
+              to="/adminlogin"
+            >
+              <VariableText label="Admin access" radius={85} />
+            </Link>
+          ) : null}
+
         </nav>
       </div>
 

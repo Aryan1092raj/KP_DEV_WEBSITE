@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
         // Ignore logout errors here; local auth state has already been cleared.
       }
       if (window.location.pathname.startsWith("/admin")) {
-        navigate("/admin/login", { replace: true });
+        navigate("/adminlogin", { replace: true });
       }
     });
 
