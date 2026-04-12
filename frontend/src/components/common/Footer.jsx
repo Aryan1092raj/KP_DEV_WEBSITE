@@ -61,6 +61,15 @@ export default function Footer() {
               <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
             </a>
           </p>
+          <p>
+            <a
+              className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
+              href="#"
+              id="open_preferences_center"
+            >
+              <VariableText className="allow-accent text-[#b78bff] font-semibold" label="Update cookies preferences" radius={85} />
+            </a>
+          </p>
         </div>
       </div>
     </footer>
