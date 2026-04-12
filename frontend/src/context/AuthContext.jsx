@@ -16,6 +16,10 @@ function isAdminUser(user) {
   return user?.role === "admin";
 }
 
+function createAuthError(message, code) {
+  return { error: true, message, code };
+}
+
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
@@ -86,12 +90,30 @@ export function AuthProvider({ children }) {
 
   async function login(credentials) {
     const nextSession = await adminAuthService.login(credentials);
+    let verifiedSession;
+
+    try {
+      verifiedSession = await adminAuthService.getSession();
+    } catch {
+      throw createAuthError(
+        "Signed in, but your session could not be saved in the browser. Check CORS_ORIGIN, API base URL, and cookie settings.",
+        "SESSION_NOT_PERSISTED"
+      );
+    }
+
+    if (!isAdminUser(verifiedSession?.user)) {
+      throw createAuthError(
+        "Login succeeded, but admin session validation failed. Please try again.",
+        "SESSION_VALIDATION_FAILED"
+      );
+    }
+
     startTransition(() => {
-      setSession(nextSession);
-      setUser(nextSession.user);
+      setSession(verifiedSession);
+      setUser(verifiedSession.user);
       setLoading(false);
     });
-    return nextSession;
+    return verifiedSession || nextSession;
   }
 
   async function logout() {

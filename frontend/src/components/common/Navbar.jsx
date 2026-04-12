@@ -69,16 +69,16 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
 
   return (
     <header className="kp-nav" ref={headerRef}>
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link className="flex items-center gap-3" to="/">
-          <div className="flex h-12 w-[96px] items-center justify-center overflow-hidden">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:px-8">
+        <Link className="flex min-w-0 items-center gap-2 sm:gap-3" to="/">
+          <div className="flex h-10 w-[80px] shrink-0 items-center justify-center overflow-hidden sm:h-12 sm:w-[96px]">
             <img alt="Kammand Prompt logo" className="h-full w-full object-contain" src={kpLogo} />
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-ember sm:text-sm">
+          <div className="min-w-0">
+            <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-ember sm:text-sm sm:tracking-[0.24em]">
               <VariableText label="IIT Mandi" />
             </p>
-            <p className="text-xl font-black leading-tight sm:text-[1.55rem]">
+            <p className="truncate text-lg font-black leading-tight sm:text-[1.55rem]">
               <VariableText label="Kammand Prompt" />
             </p>
           </div>
@@ -109,7 +109,7 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
           aria-controls="mobile-nav-drawer"
           aria-expanded={menuOpen}
           aria-label="Toggle navigation menu"
-          className="btn-secondary !px-3 !py-2 lg:hidden"
+          className="btn-secondary shrink-0 !px-3 !py-2 lg:hidden"
           onClick={() => setMenuOpen((current) => !current)}
           type="button"
         >
@@ -121,25 +121,29 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
 
       <div
         className={`fixed inset-0 bg-slate-950/50 transition-opacity lg:hidden ${
-          menuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+          menuOpen
+            ? "pointer-events-auto opacity-100 duration-200 ease-out"
+            : "pointer-events-none opacity-0 duration-340 ease-in"
         }`}
         onClick={() => setMenuOpen(false)}
         style={{ zIndex: 1002 }}
       />
 
       <div
-        className={`fixed left-0 right-0 top-[var(--kp-nav-height,84px)] border-b border-white/10 bg-[#040d1d]/95 px-4 pb-5 pt-4 shadow-xl backdrop-blur transition-transform duration-200 lg:hidden ${
-          menuOpen ? "translate-y-0" : "-translate-y-[110%]"
+        className={`kp-mobile-drawer fixed inset-x-0 top-[var(--kp-nav-height,84px)] bottom-0 border-b border-white/10 bg-[#040d1d]/95 px-4 pb-5 pt-4 shadow-xl backdrop-blur transition-transform will-change-transform lg:hidden ${
+          menuOpen
+            ? "translate-y-0 duration-220 ease-out"
+            : "-translate-y-[108%] duration-360 ease-in"
         }`}
         id="mobile-nav-drawer"
         style={{ zIndex: 1003 }}
       >
-        <nav className="grid gap-2">
+        <nav className="kp-mobile-drawer-nav grid gap-3">
           {links.map((link) => (
             <NavLink
               key={link.to}
               className={({ isActive }) =>
-                `rounded-xl px-4 py-3 text-sm font-medium transition ${
+                `rounded-2xl px-4 py-3.5 text-base font-medium transition ${
                   isActive
                     ? "bg-white text-[#041326]"
                     : "text-white/85 hover:bg-white/10"
@@ -154,7 +158,7 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
           ))}
 
           <Link
-            className={`${adminButtonClass} mt-2 justify-center`}
+            className={`${adminButtonClass} mt-1 min-h-[48px] justify-center !py-3.5 text-base`}
             onClick={() => setMenuOpen(false)}
             to={authenticated ? "/admin" : "/admin/login"}
           >
