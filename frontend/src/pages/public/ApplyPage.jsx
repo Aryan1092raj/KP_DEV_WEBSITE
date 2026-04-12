@@ -29,27 +29,89 @@ export default function ApplyPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const formToRender = boneyardBuildMode ? fixtureForm : form;
 
+  function validate(nextForm) {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if ((nextForm.name || "").trim().length < 2) {
+      errors.name = "Name must be at least 2 characters.";
+    }
+
+    if (!emailRegex.test((nextForm.email || "").trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+
+    if ((nextForm.branch || "").trim().length < 2) {
+      errors.branch = "Branch must be at least 2 characters.";
+    }
+
+    if ((nextForm.batch || "").trim().length < 2) {
+      errors.batch = "Batch must be at least 2 characters.";
+    }
+
+    const whyJoinLength = (nextForm.why_join || "").trim().length;
+    if (whyJoinLength < 10) {
+      errors.why_join = "Why you want to join must be at least 10 characters.";
+    }
+
+    if ((nextForm.skills || "").trim().length > 500) {
+      errors.skills = "Skills and interests must be 500 characters or fewer.";
+    }
+
+    return errors;
+  }
+
+  function getRequestErrorMessage(requestError, fallbackMessage) {
+    if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
+      const firstIssue = requestError.details[0];
+      if (firstIssue?.msg && Array.isArray(firstIssue?.loc)) {
+        return `${firstIssue.loc.slice(-1)[0]}: ${firstIssue.msg}`;
+      }
+    }
+
+    return requestError?.message || fallbackMessage;
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+    setForm((current) => {
+      const nextForm = { ...current, [name]: value };
+      const nextErrors = validate(nextForm);
+      setFormErrors((currentErrors) => ({
+        ...currentErrors,
+        [name]: nextErrors[name] || "",
+      }));
+      return nextForm;
+    });
   }
 
   async function submit(event) {
     event.preventDefault();
+
+    const nextErrors = validate(form);
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      const firstError = Object.values(nextErrors)[0];
+      setToast({ type: "error", message: firstError });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await applicationService.submit(form);
       setForm(initialForm);
+      setFormErrors({});
       setToast({ type: "success", message: "Application submitted successfully." });
     } catch (requestError) {
       setToast({
         type: "error",
-        message: requestError.message || "Unable to submit the application.",
+        message: getRequestErrorMessage(requestError, "Unable to submit the application."),
       });
     } finally {
       setLoading(false);
@@ -103,15 +165,24 @@ export default function ApplyPage() {
                   type={type}
                   value={formToRender[name]}
                 />
+                {formErrors[name] ? (
+                  <p className="mt-1 text-xs text-rose-300">{formErrors[name]}</p>
+                ) : null}
               </label>
             ))}
             <label>
               <span className="label">Why do you want to join?</span>
               <textarea autoComplete="off" className="input min-h-[150px]" name="why_join" onChange={handleChange} value={formToRender.why_join} />
+              {formErrors.why_join ? (
+                <p className="mt-1 text-xs text-rose-300">{formErrors.why_join}</p>
+              ) : null}
             </label>
             <label>
               <span className="label">Skills and interests</span>
               <textarea autoComplete="off" className="input min-h-[110px]" name="skills" onChange={handleChange} value={formToRender.skills} />
+              {formErrors.skills ? (
+                <p className="mt-1 text-xs text-rose-300">{formErrors.skills}</p>
+              ) : null}
             </label>
             <button className="btn-primary" disabled={loading} type="submit">
               {loading ? (

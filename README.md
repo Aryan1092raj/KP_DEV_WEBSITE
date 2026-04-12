@@ -27,7 +27,7 @@ This README is synced to committed files only (`git ls-files`) and includes a si
 - Public pages read dynamic content from backend APIs.
 - Admin login is mediated by FastAPI, which issues an `HttpOnly` session cookie after verifying Supabase credentials and admin role metadata.
 - Backend data access is anchored to a server credential path via `SUPABASE_SERVICE_ROLE_KEY` when configured, with a local-development fallback to the anon key.
-- Admin requests revalidate the user against Supabase Auth on the backend, so role revocations take effect without waiting for the browser to refresh.
+- Admin requests are authorized by a signed backend session token in an `HttpOnly` cookie until session expiry.
 - Frontend runtime only needs `VITE_API_BASE_URL`; Supabase project URL and anon key are no longer shipped to the browser bundle.
 - Backend uptime is handled by an external cron job that pings `/health`.
 

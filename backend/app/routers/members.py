@@ -34,7 +34,7 @@ def list_members() -> list[dict]:
 @admin_router.get("/members", response_model=list[MemberResponse])
 def list_members_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("team_members")
         .select(MEMBER_COLUMNS)
         .order("display_order")
@@ -53,7 +53,7 @@ def create_member(payload: MemberCreate, admin: dict = Depends(verify_admin)) ->
     member_payload = jsonable_encoder(payload, exclude_none=True)
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("team_members")
             .insert(member_payload)
             .execute()
@@ -68,7 +68,7 @@ def update_member(
     member_id: UUID, payload: MemberUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     update_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
     try:
         if update_payload:
             response = db.table("team_members").update(update_payload).eq("id", str(member_id)).execute()
@@ -90,7 +90,7 @@ def update_member(
 def delete_member(member_id: UUID, admin: dict = Depends(verify_admin)) -> dict[str, bool]:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("team_members")
             .delete()
             .eq("id", str(member_id))

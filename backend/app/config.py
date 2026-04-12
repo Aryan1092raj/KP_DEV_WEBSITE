@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     port: int = Field(default=8000, alias="PORT")
-    environment: str = Field(default="development", alias="ENVIRONMENT")
+    environment: str = Field(default="production", alias="ENVIRONMENT")
     cors_origin: str = Field(default="http://localhost:3000", alias="CORS_ORIGIN")
     supabase_url: str = Field(..., alias="SUPABASE_URL")
     supabase_anon_key: str = Field(..., alias="SUPABASE_ANON_KEY")
@@ -51,7 +51,15 @@ class Settings(BaseSettings):
 
     @cached_property
     def session_signing_secret(self) -> str:
-        return self.admin_session_secret or self.supabase_jwt_secret
+        if self.admin_session_secret:
+            return self.admin_session_secret
+
+        if self.is_production:
+            raise RuntimeError(
+                "ADMIN_SESSION_SECRET must be configured when ENVIRONMENT=production."
+            )
+
+        return self.supabase_jwt_secret
 
     @cached_property
     def secure_cookies(self) -> bool:

@@ -8,7 +8,7 @@ class AnnouncementBase(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     title: str = Field(min_length=2, max_length=160)
-    body: str = Field(min_length=10)
+    body: str = Field(min_length=10, max_length=50000)
     author: str = Field(min_length=2, max_length=100)
     is_published: bool = False
     published_at: datetime | None = None
@@ -27,7 +27,7 @@ class AnnouncementUpdate(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     title: str | None = Field(default=None, min_length=2, max_length=160)
-    body: str | None = Field(default=None, min_length=10)
+    body: str | None = Field(default=None, min_length=10, max_length=50000)
     author: str | None = Field(default=None, min_length=2, max_length=100)
     is_published: bool | None = None
     published_at: datetime | None = None

@@ -11,38 +11,9 @@ import { setAccessToken, setUnauthorizedHandler } from "../lib/api";
 import { adminAuthService } from "../services/adminAuthService";
 
 const AuthContext = createContext(null);
-const ADMIN_TOKEN_STORAGE_KEY = "kp_admin_access_token";
 
 function isAdminUser(user) {
   return user?.role === "admin";
-}
-
-function readStoredAdminToken() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const sessionToken = window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
-  if (sessionToken) {
-    return sessionToken;
-  }
-
-  return window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY);
-}
-
-function persistAdminToken(token) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  if (token) {
-    window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
-    window.localStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, token);
-    return;
-  }
-
-  window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
-  window.localStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY);
 }
 
 export function AuthProvider({ children }) {
@@ -53,7 +24,6 @@ export function AuthProvider({ children }) {
 
   function clearAuthState() {
     setAccessToken(null);
-    persistAdminToken(null);
     startTransition(() => {
       setSession(null);
       setUser(null);
@@ -63,14 +33,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let active = true;
-    const storedToken = readStoredAdminToken();
     const isAdminPath =
       typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
-    const shouldProbeSession = Boolean(storedToken) || isAdminPath;
 
-    if (storedToken) {
-      setAccessToken(storedToken);
-    }
+    const shouldProbeSession = isAdminPath;
 
     if (!shouldProbeSession) {
       setLoading(false);
@@ -121,8 +87,7 @@ export function AuthProvider({ children }) {
 
   async function login(credentials) {
     const nextSession = await adminAuthService.login(credentials);
-    setAccessToken(nextSession.access_token);
-    persistAdminToken(nextSession.access_token);
+    setAccessToken(null);
     startTransition(() => {
       setSession(nextSession);
       setUser(nextSession.user);

@@ -46,7 +46,7 @@ def list_announcements() -> list[dict]:
 @admin_router.get("/announcements", response_model=list[AnnouncementResponse])
 def list_announcements_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
     response = (
-        get_postgrest_client(admin["token"])
+        get_postgrest_client()
         .table("announcements")
         .select(ANNOUNCEMENT_COLUMNS)
         .order("created_at", desc=True)
@@ -68,7 +68,7 @@ def create_announcement(
     )
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("announcements")
             .insert(announcement_payload)
             .execute()
@@ -83,7 +83,7 @@ def update_announcement(
     announcement_id: UUID, payload: AnnouncementUpdate, admin: dict = Depends(verify_admin)
 ) -> dict:
     announcement_payload = jsonable_encoder(payload, exclude_unset=True)
-    db = get_postgrest_client(admin["token"])
+    db = get_postgrest_client()
     try:
         if announcement_payload:
             response = (
@@ -112,7 +112,7 @@ def delete_announcement(
 ) -> dict[str, bool]:
     try:
         response = (
-            get_postgrest_client(admin["token"])
+            get_postgrest_client()
             .table("announcements")
             .delete()
             .eq("id", str(announcement_id))

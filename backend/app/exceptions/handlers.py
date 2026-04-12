@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -5,6 +7,8 @@ from postgrest.exceptions import APIError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
+
+logger = logging.getLogger("kp.api")
 
 
 def error_payload(
@@ -27,11 +31,14 @@ def raise_not_found(resource: str) -> None:
 
 
 def raise_conflict(exc: APIError, fallback_message: str) -> None:
-    message = exc.message or fallback_message
-    detail = exc.details or exc.hint
+    logger.warning(
+        "Conflict while processing database request: code=%s message=%s",
+        exc.code,
+        exc.message,
+    )
     raise HTTPException(
         status_code=409,
-        detail=error_payload(message, "CONFLICT", details=detail),
+        detail=error_payload(fallback_message, "CONFLICT"),
     ) from exc
 
 
@@ -72,13 +79,12 @@ async def validation_exception_handler(
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    details = str(exc) if settings.environment.lower() == "development" else None
+    logger.exception("Unhandled server exception at path=%s", request.url.path)
     return JSONResponse(
         status_code=500,
         content=error_payload(
             "Something went wrong on the server",
             "SERVER_ERROR",
-            details=details,
         ),
     )
 
@@ -91,13 +97,24 @@ async def postgrest_exception_handler(request: Request, exc: APIError) -> JSONRe
         message = "Supabase schema is missing required tables for this API"
         code = "SCHEMA_NOT_READY"
     else:
-        message = exc.message or "Database request failed"
+        message = "Database request failed"
         if exc.code and exc.code.startswith("23"):
             status_code = 409
             code = "CONFLICT"
+            message = "Database conflict detected"
 
-    details = exc.json() if settings.environment.lower() == "development" else None
+    logger.warning(
+        "PostgREST error at path=%s status=%s code=%s message=%s",
+        request.url.path,
+        status_code,
+        exc.code,
+        exc.message,
+    )
+
+    if not settings.is_production:
+        logger.debug("PostgREST raw payload: %s", exc.json())
+
     return JSONResponse(
         status_code=status_code,
-        content=error_payload(message, code, details=details),
+        content=error_payload(message, code),
     )
