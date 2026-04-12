@@ -40,7 +40,6 @@ function PublicLayout({ onPublicScrollProgressChange, scrollProgress }) {
   const { session, isAdmin } = useAuth();
   const location = useLocation();
   const scrollContainerRef = useRef(null);
-  const showFooter = location.pathname !== "/";
   const cloudSlots = Array.from({ length: 9 });
 
   useEffect(() => {
@@ -100,7 +99,7 @@ function PublicLayout({ onPublicScrollProgressChange, scrollProgress }) {
       <Navbar authenticated={Boolean(session && isAdmin)} scrollProgress={scrollProgress} />
       <main className="kp-public-scroll" ref={scrollContainerRef}>
         <Outlet />
-        {showFooter ? <Footer /> : null}
+        <Footer />
       </main>
     </div>
   );
