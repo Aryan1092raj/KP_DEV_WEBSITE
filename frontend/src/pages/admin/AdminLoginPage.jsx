@@ -7,6 +7,8 @@ import Toast from "../../components/common/Toast";
 import VariableText from "../../components/common/VariableText";
 import { useAuth } from "../../hooks/useAuth";
 
+const LOGIN_GUARD_STORAGE_KEY = "kp_admin_login_guard";
+
 export default function AdminLoginPage() {
   const ATTEMPT_LIMIT = 5;
   const COOLDOWN_SECONDS = 60;
@@ -40,6 +42,49 @@ export default function AdminLoginPage() {
   }, [lockUntil, now]);
 
   const isLocked = remainingLockSeconds > 0;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const raw = window.sessionStorage.getItem(LOGIN_GUARD_STORAGE_KEY);
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(raw);
+      const nextAttempts = Number(parsed?.failedAttempts);
+      const nextLockUntil = Number(parsed?.lockUntil);
+
+      if (Number.isFinite(nextAttempts) && nextAttempts >= 0) {
+        setFailedAttempts(nextAttempts);
+      }
+
+      if (Number.isFinite(nextLockUntil) && nextLockUntil > Date.now()) {
+        setLockUntil(nextLockUntil);
+      }
+    } catch {
+      window.sessionStorage.removeItem(LOGIN_GUARD_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (failedAttempts === 0 && !lockUntil) {
+      window.sessionStorage.removeItem(LOGIN_GUARD_STORAGE_KEY);
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      LOGIN_GUARD_STORAGE_KEY,
+      JSON.stringify({ failedAttempts, lockUntil })
+    );
+  }, [failedAttempts, lockUntil]);
 
   useEffect(() => {
     if (session && isAdmin) {
@@ -190,6 +235,7 @@ export default function AdminLoginPage() {
     try {
       await login(form);
       setFailedAttempts(0);
+      setLockUntil(null);
       setCaptchaAnswer("");
       navigate("/admin", { replace: true });
     } catch (requestError) {
