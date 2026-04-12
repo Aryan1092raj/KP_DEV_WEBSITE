@@ -39,8 +39,7 @@ export default function ViewApplications() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const applications =
-    boneyardBuildMode || loading || !(data ?? []).length ? fixtureApplications : data ?? [];
+  const applications = boneyardBuildMode ? fixtureApplications : data ?? [];
 
   async function updateStatus(id, status) {
     setPendingId(id);

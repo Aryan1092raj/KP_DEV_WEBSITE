@@ -35,8 +35,7 @@ export default function ViewContactMessages() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const messages =
-    boneyardBuildMode || loading || !(data ?? []).length ? fixtureContactMessages : data ?? [];
+  const messages = boneyardBuildMode ? fixtureContactMessages : data ?? [];
 
   return (
     <div className="space-y-6">

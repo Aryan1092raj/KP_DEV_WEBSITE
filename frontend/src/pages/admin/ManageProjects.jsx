@@ -40,7 +40,7 @@ export default function ManageProjects() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const projects = boneyardBuildMode || loading || !(data ?? []).length ? fixtureProjects : data ?? [];
+  const projects = boneyardBuildMode ? fixtureProjects : data ?? [];
   const contributorOptions = members;
 
   useEffect(() => {
