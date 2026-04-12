@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { animate } from "animejs";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "boneyard-js/react";
 
@@ -6,6 +7,7 @@ import { EventsPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";
 import EventCard from "../../components/public/EventCard";
+import { useOneTimePageHeadingAnimation } from "../../hooks/useOneTimePageHeadingAnimation";
 import { eventService } from "../../services/eventService";
 
 const fixtureUpcomingEvents = [
@@ -76,6 +78,7 @@ export default function EventsPage() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const lastRefreshRef = useRef(0);
+  const motionScopeRef = useRef(null);
 
   const {
     data: allEvents = [],
@@ -147,6 +150,12 @@ export default function EventsPage() {
   const ongoingToRender = pageLoading ? fixtureOngoingEvents : ongoing;
   const allEventsToRender = pageLoading ? fixtureAllEvents : normalizedAllEvents;
 
+  useOneTimePageHeadingAnimation({
+    enabled: !showError && !pageLoading,
+    scopeRef: motionScopeRef,
+    visitTag: "events",
+  });
+
   const load = () => {
     lastRefreshRef.current = Date.now();
     void Promise.all([refetchAllEvents(), refetchUpcoming()]);
@@ -182,6 +191,30 @@ export default function EventsPage() {
     };
   }, [boneyardBuildMode, refetchAllEvents, refetchUpcoming]);
 
+  useEffect(() => {
+    const scope = motionScopeRef.current;
+
+    if (!scope || showError) {
+      return;
+    }
+
+    const movingTargets = Array.from(scope.querySelectorAll(".dir-motion-block"));
+
+    const motionAnimation =
+      movingTargets.length > 0
+        ? animate(movingTargets, {
+            x: ["-17rem", "17rem"],
+            ease: "linear",
+            duration: 4200,
+            loop: true,
+          })
+        : null;
+
+    return () => {
+      motionAnimation?.pause?.();
+    };
+  }, [allEventsToRender.length, ongoingToRender.length, upcomingToRender.length, showError]);
+
   return (
     <div className="page-shell">
       {showError ? <ErrorMessage message={errorMessage} onRetry={load} /> : null}
@@ -193,27 +226,29 @@ export default function EventsPage() {
           loading={pageLoading}
           name={boneyardBuildMode ? "events-page" : undefined}
         >
-          <div className="space-y-8">
+          <div className="space-y-8" ref={motionScopeRef}>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+              <p className="page-heading-anim text-sm font-semibold uppercase tracking-[0.28em] text-ember">
                 <VariableText label="Events and sessions" />
               </p>
-              <h1 className="mt-3 text-4xl font-bold">
+              <h1 className="page-heading-anim mt-3 text-4xl font-bold">
                 <VariableText label="Workshops, talks, hackathons, and club sessions" />
               </h1>
             </div>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="events-section-heading">
                 <VariableText label="Upcoming" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {upcomingToRender.length ? (
                   upcomingToRender.map((event) => (
-                    <EventCard event={event} key={event.id} />
+                    <div className="dir-motion-block" key={event.id}>
+                      <EventCard event={event} />
+                    </div>
                   ))
                 ) : (
-                  <div className="section-card text-sm text-slate-600 dark:text-slate-300">
+                  <div className="section-card dir-motion-block text-sm text-slate-600 dark:text-slate-300">
                     No upcoming event is marked right now.
                   </div>
                 )}
@@ -221,16 +256,18 @@ export default function EventsPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="events-section-heading">
                 <VariableText label="Ongoing" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {ongoingToRender.length ? (
                   ongoingToRender.map((event) => (
-                    <EventCard event={event} key={event.id} />
+                    <div className="dir-motion-block" key={event.id}>
+                      <EventCard event={event} />
+                    </div>
                   ))
                 ) : (
-                  <div className="section-card text-sm text-slate-600 dark:text-slate-300">
+                  <div className="section-card dir-motion-block text-sm text-slate-600 dark:text-slate-300">
                     No ongoing event right now.
                   </div>
                 )}
@@ -238,12 +275,14 @@ export default function EventsPage() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="events-section-heading">
                 <VariableText label="All events" />
               </h2>
               <div className="grid gap-5 lg:grid-cols-2">
                 {allEventsToRender.map((event) => (
-                  <EventCard event={event} key={event.id} />
+                  <div className="dir-motion-block" key={event.id}>
+                    <EventCard event={event} />
+                  </div>
                 ))}
               </div>
             </section>

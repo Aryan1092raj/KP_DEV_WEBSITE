@@ -20,34 +20,27 @@ export default function Footer() {
         </div>
         <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            <VariableText label="Website:" radius={85} />{" "}
+            <VariableText className="text-base font-bold sm:text-lg" label="Website:" radius={85} />{" "}
             <a
-              className="text-ember underline-offset-4 hover:underline"
+              className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
               href="https://pc.iitmandi.co.in"
               rel="noreferrer"
               target="_blank"
             >
-              <VariableText label="https://pc.iitmandi.co.in" radius={85} />
+              <VariableText
+                className="allow-accent text-[#b78bff] font-semibold"
+                label="https://pc.iitmandi.co.in"
+                radius={85}
+              />
             </a>
           </p>
           <p>
-            <VariableText label="Email:" radius={85} />{" "}
+            <VariableText className="text-base font-bold sm:text-lg" label="Email:" radius={85} />{" "}
             <a
-              className="text-ember underline-offset-4 hover:underline"
+              className="allow-accent text-[#b78bff] underline-offset-4 hover:underline"
               href="mailto:pc@iitmandi.ac.in"
             >
-              <VariableText label="pc@iitmandi.ac.in" radius={85} />
-            </a>
-          </p>
-          <p>
-            <VariableText label="GitHub:" radius={85} />{" "}
-            <a
-              className="text-ember underline-offset-4 hover:underline"
-              href="https://github.com/KamandPrompt"
-              rel="noreferrer"
-              target="_blank"
-            >
-              <VariableText label="https://github.com/KamandPrompt" radius={85} />
+              <VariableText className="allow-accent text-[#b78bff] font-semibold" label="pc@iitmandi.ac.in" radius={85} />
             </a>
           </p>
           <p><VariableText label="Official digital platform for Prompt Dev Cell, IIT Mandi." radius={85} /></p>

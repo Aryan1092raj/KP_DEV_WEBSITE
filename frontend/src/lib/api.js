@@ -2,6 +2,25 @@ import axios from "axios";
 
 let accessToken = null;
 let unauthorizedHandler = null;
+const ADMIN_TOKEN_STORAGE_KEY = "kp_admin_access_token";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+const normalizedBaseUrl = rawBaseUrl
+  .split(",")[0]
+  .trim()
+  .replace(/\/+$/, "");
+
+function readStoredToken() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return (
+    window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) ||
+    window.localStorage.getItem(ADMIN_TOKEN_STORAGE_KEY)
+  );
+}
+
+accessToken = readStoredToken();
 
 export function setAccessToken(token) {
   accessToken = token;
@@ -24,7 +43,7 @@ function extractError(error) {
 }
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: normalizedBaseUrl,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
