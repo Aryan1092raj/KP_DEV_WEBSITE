@@ -73,6 +73,7 @@ const fixtureAllEvents = [
 ];
 
 const REFRESH_COOLDOWN_MS = 60_000;
+const BLOCK_SPEED_PX_PER_SECOND = 180;
 
 export default function EventsPage() {
   const boneyardBuildMode =
@@ -200,18 +201,27 @@ export default function EventsPage() {
 
     const movingTargets = Array.from(scope.querySelectorAll(".dir-motion-block"));
 
-    const motionAnimation =
-      movingTargets.length > 0
-        ? animate(movingTargets, {
-            x: ["-17rem", "17rem"],
-            ease: "linear",
-            duration: 4200,
-            loop: true,
-          })
-        : null;
+    const motionAnimations = movingTargets.map((target) => {
+      const rect = target.getBoundingClientRect();
+      const overscan = 24;
+      const startX = -(rect.left + rect.width + overscan);
+      const endX = window.innerWidth - rect.left + overscan;
+      const distance = endX - startX;
+      const durationMs = Math.max(
+        1200,
+        Math.round((distance / BLOCK_SPEED_PX_PER_SECOND) * 1000),
+      );
+
+      return animate(target, {
+        x: [`${startX}px`, `${endX}px`],
+        ease: "linear",
+        duration: durationMs,
+        loop: true,
+      });
+    });
 
     return () => {
-      motionAnimation?.pause?.();
+      motionAnimations.forEach((animation) => animation?.pause?.());
     };
   }, [allEventsToRender.length, ongoingToRender.length, upcomingToRender.length, showError]);
 

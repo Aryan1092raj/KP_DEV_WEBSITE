@@ -44,6 +44,7 @@ const STATION_PREVIEW_MS = 1000;
 const WHEEL_PROGRESS_FACTOR = 0.0008;
 const PROGRESS_SMOOTHING = 0.16;
 const PROGRESS_EPSILON = 0.0006;
+const ROUTE_END_THRESHOLD = 1 - PROGRESS_EPSILON;
 const LANE_PATH_START = 0.04;
 const LANE_PATH_END = 0.965;
 
@@ -238,6 +239,10 @@ export default function TravelLandingPage() {
       const flightLane = flightLaneRef.current;
       const insideShell = travelShell && event.target instanceof Node && travelShell.contains(event.target);
       const insideFlightLane = flightLane && event.target instanceof Node && flightLane.contains(event.target);
+      const scrollingDown = event.deltaY > 0;
+      const atRouteEnd =
+        progressRef.current >= ROUTE_END_THRESHOLD &&
+        targetProgressRef.current >= ROUTE_END_THRESHOLD;
 
       if (!insideShell) {
         return;
@@ -256,12 +261,27 @@ export default function TravelLandingPage() {
         return;
       }
 
+      // Once the aircraft is already at the final station, release wheel-down
+      // so the user can continue normal page scrolling.
+      if (scrollingDown && atRouteEnd) {
+        return;
+      }
+
       event.preventDefault();
       updateTarget(targetProgressRef.current + event.deltaY * WHEEL_PROGRESS_FACTOR);
     };
 
     const onGlobalKeyDown = (event) => {
       if (event.key !== "ArrowDown" && event.key !== "PageDown" && event.key !== "ArrowUp" && event.key !== "PageUp") {
+        return;
+      }
+
+      const movingDown = event.key === "ArrowDown" || event.key === "PageDown";
+      const atRouteEnd =
+        progressRef.current >= ROUTE_END_THRESHOLD &&
+        targetProgressRef.current >= ROUTE_END_THRESHOLD;
+
+      if (movingDown && atRouteEnd) {
         return;
       }
 
