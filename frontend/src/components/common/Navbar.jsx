@@ -36,6 +36,32 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
   }, [menuOpen]);
 
   useEffect(() => {
+    if (!menuOpen) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
     const header = headerRef.current;
     if (!header || typeof document === "undefined") {
       return undefined;
@@ -130,10 +156,10 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
       />
 
       <div
-        className={`kp-mobile-drawer fixed inset-x-0 top-[var(--kp-nav-height,84px)] bottom-0 border-b border-white/10 bg-[#040d1d]/95 px-4 pb-5 pt-4 shadow-xl backdrop-blur transition-transform will-change-transform lg:hidden ${
+        className={`kp-mobile-drawer fixed inset-x-0 top-[var(--kp-nav-height,84px)] border-b border-white/10 bg-[#040d1d]/95 px-4 pb-5 pt-4 shadow-xl backdrop-blur transition-all will-change-transform lg:hidden ${
           menuOpen
-            ? "translate-y-0 duration-220 ease-out"
-            : "-translate-y-[108%] duration-360 ease-in"
+            ? "pointer-events-auto visible translate-y-0 opacity-100 duration-220 ease-out"
+            : "pointer-events-none invisible -translate-y-2 opacity-0 duration-220 ease-in"
         }`}
         id="mobile-nav-drawer"
         style={{ zIndex: 1003 }}
