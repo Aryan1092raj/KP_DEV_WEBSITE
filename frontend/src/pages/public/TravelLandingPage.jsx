@@ -45,6 +45,7 @@ const WHEEL_PROGRESS_FACTOR = 0.0008;
 const PROGRESS_SMOOTHING = 0.16;
 const PROGRESS_EPSILON = 0.0006;
 const ROUTE_END_THRESHOLD = 1 - PROGRESS_EPSILON;
+const FOOTER_REDIRECT_COOLDOWN_MS = 700;
 const LANE_PATH_START = 0.04;
 const LANE_PATH_END = 0.965;
 
@@ -54,6 +55,7 @@ export default function TravelLandingPage() {
   const flightLaneRef = useRef(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
+  const footerRedirectAtRef = useRef(0);
   const motionFrameRef = useRef(null);
   const speedProgressPerSecondRef = useRef(0);
   const lastFrameTimeRef = useRef(null);
@@ -220,6 +222,41 @@ export default function TravelLandingPage() {
     }
   }
 
+  function redirectToFooter() {
+    const now = Date.now();
+    if (now - footerRedirectAtRef.current < FOOTER_REDIRECT_COOLDOWN_MS) {
+      return;
+    }
+
+    footerRedirectAtRef.current = now;
+
+    const travelShell = travelShellRef.current;
+    const scroller = travelShell?.closest(".kp-public-scroll");
+
+    if (!(scroller instanceof HTMLElement)) {
+      return;
+    }
+
+    const footer = scroller.querySelector("footer");
+
+    if (footer instanceof HTMLElement) {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const targetTop = scroller.scrollTop + (footerRect.top - scrollerRect.top);
+
+      scroller.scrollTo({
+        top: targetTop,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    scroller.scrollBy({
+      top: scroller.clientHeight,
+      behavior: "smooth",
+    });
+  }
+
   useEffect(() => {
     if (!journeyStarted) {
       return;
@@ -235,16 +272,16 @@ export default function TravelLandingPage() {
 
   useEffect(() => {
     const onGlobalWheel = (event) => {
-      const travelShell = travelShellRef.current;
       const flightLane = flightLaneRef.current;
-      const insideShell = travelShell && event.target instanceof Node && travelShell.contains(event.target);
-      const insideFlightLane = flightLane && event.target instanceof Node && flightLane.contains(event.target);
+      const insideFlightLane =
+        Boolean(flightLane) && event.target instanceof Node && flightLane.contains(event.target);
       const scrollingDown = event.deltaY > 0;
       const atRouteEnd =
         progressRef.current >= ROUTE_END_THRESHOLD &&
         targetProgressRef.current >= ROUTE_END_THRESHOLD;
 
-      if (!insideShell) {
+      // Scrolling outside the rectangular travel lane should move the page.
+      if (!insideFlightLane) {
         return;
       }
 
@@ -257,13 +294,11 @@ export default function TravelLandingPage() {
         return;
       }
 
-      if (!insideFlightLane) {
-        return;
-      }
-
       // Once the aircraft is already at the final station, release wheel-down
-      // so the user can continue normal page scrolling.
+      // and send the user to the footer section.
       if (scrollingDown && atRouteEnd) {
+        event.preventDefault();
+        redirectToFooter();
         return;
       }
 
@@ -271,35 +306,12 @@ export default function TravelLandingPage() {
       updateTarget(targetProgressRef.current + event.deltaY * WHEEL_PROGRESS_FACTOR);
     };
 
-    const onGlobalKeyDown = (event) => {
-      if (event.key !== "ArrowDown" && event.key !== "PageDown" && event.key !== "ArrowUp" && event.key !== "PageUp") {
-        return;
-      }
-
-      const movingDown = event.key === "ArrowDown" || event.key === "PageDown";
-      const atRouteEnd =
-        progressRef.current >= ROUTE_END_THRESHOLD &&
-        targetProgressRef.current >= ROUTE_END_THRESHOLD;
-
-      if (movingDown && atRouteEnd) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const keyStep = 1 / segments;
-      const direction = event.key === "ArrowDown" || event.key === "PageDown" ? 1 : -1;
-      updateTarget(targetProgressRef.current + direction * keyStep);
-    };
-
     window.addEventListener("wheel", onGlobalWheel, { passive: false });
-    window.addEventListener("keydown", onGlobalKeyDown);
 
     return () => {
       window.removeEventListener("wheel", onGlobalWheel);
-      window.removeEventListener("keydown", onGlobalKeyDown);
     };
-  }, [journeyStarted, segments, stationPositions]);
+  }, [journeyStarted]);
 
   function startJourney() {
     setJourneyStarted((current) => {
