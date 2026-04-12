@@ -1,4 +1,4 @@
-import kpLogo from "../../assets/kp-logo.png";
+import kpLogo from "../../assets/kp-logo.svg";
 import VariableText from "./VariableText";
 
 export default function Footer() {

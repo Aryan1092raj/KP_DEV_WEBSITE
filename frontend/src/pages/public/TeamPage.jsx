@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { animate, onScroll } from "animejs";
 import { Skeleton } from "boneyard-js/react";
 
-import kpLogo from "../../assets/kp-logo.png";
+import kpLogo from "../../assets/kp-logo.svg";
 import { TeamPageFallback } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";

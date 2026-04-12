@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 
-import kpLogo from "../../assets/kp-logo.png";
+import kpLogo from "../../assets/kp-logo.svg";
 import VariableText from "./VariableText";
 
 const links = [
