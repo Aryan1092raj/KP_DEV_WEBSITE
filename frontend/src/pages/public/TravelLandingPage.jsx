@@ -53,6 +53,7 @@ export default function TravelLandingPage() {
   const wheelAreaRef = useRef(null);
   const travelShellRef = useRef(null);
   const flightLaneRef = useRef(null);
+  const touchYRef = useRef(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const footerRedirectAtRef = useRef(0);
@@ -63,9 +64,10 @@ export default function TravelLandingPage() {
   const [isTravelling, setIsTravelling] = useState(false);
   const [activeStationIndex, setActiveStationIndex] = useState(0);
   const [visibleStationIndex, setVisibleStationIndex] = useState(0);
-  const [showStation, setShowStation] = useState(false);
+  const [showStation, setShowStation] = useState(true);
   const [travelVelocity, setTravelVelocity] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isTouchLayout, setIsTouchLayout] = useState(false);
 
   const stationCount = stations.length;
   const segments = Math.max(stationCount - 1, 1);
@@ -103,6 +105,31 @@ export default function TravelLandingPage() {
   useEffect(() => {
     setActiveStationIndex(nearestStationIndex);
   }, [nearestStationIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia("(pointer: coarse)");
+    const updatePointerMode = () => {
+      setIsTouchLayout(mediaQuery.matches);
+    };
+
+    updatePointerMode();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updatePointerMode);
+      return () => {
+        mediaQuery.removeEventListener("change", updatePointerMode);
+      };
+    }
+
+    mediaQuery.addListener(updatePointerMode);
+    return () => {
+      mediaQuery.removeListener(updatePointerMode);
+    };
+  }, []);
 
   useEffect(() => {
     if (!showStation) {
@@ -327,6 +354,86 @@ export default function TravelLandingPage() {
     });
   }
 
+  function handleStationSelect(stationIndex) {
+    if (!Number.isInteger(stationIndex) || stationIndex < 0 || stationIndex >= stationCount) {
+      return;
+    }
+
+    startJourney();
+    openStationWindow(stationIndex);
+    updateTarget(stationPositions[stationIndex]);
+  }
+
+  function handleLaneKeyDown(event) {
+    if (event.key === "ArrowDown" || event.key === "PageDown") {
+      event.preventDefault();
+      updateTarget(targetProgressRef.current + 0.08);
+      return;
+    }
+
+    if (event.key === "ArrowUp" || event.key === "PageUp") {
+      event.preventDefault();
+      updateTarget(targetProgressRef.current - 0.08);
+      return;
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      updateTarget(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      updateTarget(1);
+    }
+  }
+
+  function handleLaneTouchStart(event) {
+    if (event.touches.length !== 1) {
+      return;
+    }
+
+    touchYRef.current = event.touches[0].clientY;
+    startJourney();
+  }
+
+  function handleLaneTouchMove(event) {
+    if (event.touches.length !== 1 || touchYRef.current === null) {
+      return;
+    }
+
+    const nextY = event.touches[0].clientY;
+    const deltaY = touchYRef.current - nextY;
+    touchYRef.current = nextY;
+
+    if (Math.abs(deltaY) < 0.6) {
+      return;
+    }
+
+    const atRouteEnd =
+      progressRef.current >= ROUTE_END_THRESHOLD &&
+      targetProgressRef.current >= ROUTE_END_THRESHOLD;
+
+    if (deltaY > 0 && atRouteEnd) {
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+      redirectToFooter();
+      return;
+    }
+
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
+    updateTarget(targetProgressRef.current + deltaY * WHEEL_PROGRESS_FACTOR * 1.6);
+  }
+
+  function handleLaneTouchEnd() {
+    touchYRef.current = null;
+  }
+
   return (
     <main className="travel-page">
       <div className="travel-backdrop" aria-hidden="true" />
@@ -337,11 +444,21 @@ export default function TravelLandingPage() {
       </div>
 
       <section className="travel-shell" ref={travelShellRef}>
-        <div className="travel-scroll-route" ref={wheelAreaRef} role="application" tabIndex={0}>
+        <div
+          className="travel-scroll-route"
+          onKeyDown={handleLaneKeyDown}
+          ref={wheelAreaRef}
+          role="application"
+          tabIndex={0}
+        >
           <div className="travel-flight-stage">
             <div
               className="travel-flight-lane allow-accent-border"
-              aria-hidden="true"
+              aria-label="Landing route preview"
+              onTouchCancel={handleLaneTouchEnd}
+              onTouchEnd={handleLaneTouchEnd}
+              onTouchMove={handleLaneTouchMove}
+              onTouchStart={handleLaneTouchStart}
               ref={flightLaneRef}
               style={{
                 "--travel-progress": planeProgress,
@@ -426,6 +543,27 @@ export default function TravelLandingPage() {
                 </Link>
               </div>
             </div>
+          </div>
+
+          <p className="travel-scroll-hint is-active">
+            {isTouchLayout
+              ? "Swipe in the route preview or tap a station."
+              : "Scroll, use arrow keys, or tap a station."}
+          </p>
+
+          <div aria-label="Route stations" className="travel-station-rail" role="tablist">
+            {stations.map((station, index) => (
+              <button
+                aria-selected={index === activeStationIndex}
+                className={`travel-station-tab allow-accent-border ${index === activeStationIndex ? "is-active" : ""}`}
+                key={station.stop}
+                onClick={() => handleStationSelect(index)}
+                type="button"
+              >
+                <span>{station.stop}</span>
+                {station.title}
+              </button>
+            ))}
           </div>
 
         </div>
