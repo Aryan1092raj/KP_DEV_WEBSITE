@@ -36,6 +36,16 @@ const dashboardFixture = {
   ],
 };
 
+const emptySummary = {
+  members: [],
+  projects: [],
+  events: [],
+  timeline: [],
+  announcements: [],
+  applications: [],
+  contactMessages: [],
+};
+
 export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState("");
@@ -86,7 +96,7 @@ export default function AdminDashboard() {
   }, [boneyardBuildMode]);
 
   const showError = Boolean(error) && !boneyardBuildMode;
-  const activeSummary = summary ?? dashboardFixture;
+  const activeSummary = boneyardBuildMode ? summary ?? dashboardFixture : summary ?? emptySummary;
 
   if (showError) {
     return <ErrorMessage message={error} onRetry={load} />;

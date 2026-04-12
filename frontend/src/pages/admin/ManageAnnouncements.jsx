@@ -35,8 +35,7 @@ export default function ManageAnnouncements() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const announcements =
-    boneyardBuildMode || loading || !(data ?? []).length ? fixtureAnnouncements : data ?? [];
+  const announcements = boneyardBuildMode ? fixtureAnnouncements : data ?? [];
 
   async function handleSave(payload) {
     setSaving(true);
