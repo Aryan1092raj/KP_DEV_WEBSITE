@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import kpLogo from "../../assets/kp-logo.svg";
@@ -16,6 +16,7 @@ const links = [
 export default function Navbar({ authenticated, scrollProgress = 0 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const headerRef = useRef(null);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -34,12 +35,40 @@ export default function Navbar({ authenticated, scrollProgress = 0 }) {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header || typeof document === "undefined") {
+      return undefined;
+    }
+
+    const syncNavHeight = () => {
+      const nextHeight = Math.round(header.getBoundingClientRect().height);
+      if (nextHeight > 0) {
+        document.documentElement.style.setProperty("--kp-nav-height", `${nextHeight}px`);
+      }
+    };
+
+    syncNavHeight();
+
+    let resizeObserver;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(syncNavHeight);
+      resizeObserver.observe(header);
+    }
+
+    window.addEventListener("resize", syncNavHeight);
+    return () => {
+      window.removeEventListener("resize", syncNavHeight);
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
   const adminButtonClass = authenticated
     ? "btn-primary !px-4 !py-2"
     : "btn-primary !px-4 !py-2 !bg-[#2f8cff] !border-[#2f8cff] hover:!border-[#5aa8ff]";
 
   return (
-    <header className="kp-nav">
+    <header className="kp-nav" ref={headerRef}>
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link className="flex items-center gap-3" to="/">
           <div className="flex h-12 w-[96px] items-center justify-center overflow-hidden">
