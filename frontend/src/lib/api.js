@@ -7,6 +7,10 @@ const normalizedBaseUrl = rawBaseUrl
   .split(",")[0]
   .trim()
   .replace(/\/+$/, "");
+const apiBaseUrl =
+  normalizedBaseUrl.endsWith("/api") || normalizedBaseUrl.endsWith("/api/v1")
+    ? normalizedBaseUrl
+    : `${normalizedBaseUrl}/api`;
 
 function clearLegacyStoredToken() {
   if (typeof window === "undefined") {
@@ -24,8 +28,23 @@ export function setUnauthorizedHandler(handler) {
 }
 
 function extractError(error) {
-  if (error.response?.data?.message) {
-    return error.response.data;
+  const responseData = error.response?.data;
+
+  if (responseData?.message) {
+    return responseData;
+  }
+
+  if (responseData?.detail?.message) {
+    return responseData.detail;
+  }
+
+  if (typeof responseData === "string" && /<!doctype html|<html/i.test(responseData)) {
+    return {
+      error: true,
+      code: "API_ENDPOINT_MISCONFIGURED",
+      message:
+        "Frontend received HTML instead of API JSON. Check VITE_API_BASE_URL (must point to backend and include /api).",
+    };
   }
 
   return {
@@ -36,7 +55,7 @@ function extractError(error) {
 }
 
 const api = axios.create({
-  baseURL: normalizedBaseUrl,
+  baseURL: apiBaseUrl,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
