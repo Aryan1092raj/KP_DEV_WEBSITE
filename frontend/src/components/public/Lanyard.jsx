@@ -5,7 +5,7 @@ import { Environment, Lightformer, useTexture } from "@react-three/drei";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import * as THREE from "three";
 
-import kpLogo from "../../assets/kp-logo.png";
+import kpLogo from "../../assets/kp-logo.svg";
 import "./Lanyard.css";
 
 extend({ MeshLineGeometry, MeshLineMaterial });
