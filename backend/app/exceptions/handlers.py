@@ -11,6 +11,19 @@ from app.config import settings
 logger = logging.getLogger("kp.api")
 
 
+def _apply_cors_headers(request: Request, response: JSONResponse) -> JSONResponse:
+    origin = request.headers.get("origin")
+    if not origin:
+        return response
+
+    if origin in settings.cors_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Vary"] = "Origin"
+
+    return response
+
+
 def error_payload(
     message: str,
     code: str,
@@ -62,13 +75,14 @@ async def http_exception_handler(
             detail if isinstance(detail, str) else "Request failed",
             "HTTP_ERROR",
         )
-    return JSONResponse(status_code=exc.status_code, content=payload)
+    response = JSONResponse(status_code=exc.status_code, content=payload)
+    return _apply_cors_headers(request, response)
 
 
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    return JSONResponse(
+    response = JSONResponse(
         status_code=422,
         content=error_payload(
             "Request validation failed",
@@ -76,17 +90,19 @@ async def validation_exception_handler(
             details=exc.errors(),
         ),
     )
+    return _apply_cors_headers(request, response)
 
 
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     logger.exception("Unhandled server exception at path=%s", request.url.path)
-    return JSONResponse(
+    response = JSONResponse(
         status_code=500,
         content=error_payload(
             "Something went wrong on the server",
             "SERVER_ERROR",
         ),
     )
+    return _apply_cors_headers(request, response)
 
 
 async def postgrest_exception_handler(request: Request, exc: APIError) -> JSONResponse:
@@ -114,7 +130,8 @@ async def postgrest_exception_handler(request: Request, exc: APIError) -> JSONRe
     if not settings.is_production:
         logger.debug("PostgREST raw payload: %s", exc.json())
 
-    return JSONResponse(
+    response = JSONResponse(
         status_code=status_code,
         content=error_payload(message, code),
     )
+    return _apply_cors_headers(request, response)

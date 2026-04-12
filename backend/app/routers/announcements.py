@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client
 from app.exceptions.handlers import raise_conflict, raise_not_found
 from app.middleware.auth import verify_admin
 from app.models.announcement import (
@@ -32,7 +32,7 @@ def _prepare_announcement_payload(payload: dict) -> dict:
 @public_router.get("/announcements", response_model=list[AnnouncementResponse])
 def list_announcements() -> list[dict]:
     response = (
-        get_supabase()
+        get_auth_supabase()
         .table("announcements")
         .select(ANNOUNCEMENT_COLUMNS)
         .eq("is_published", True)

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client
 from app.exceptions.handlers import raise_conflict, raise_not_found
 from app.middleware.auth import verify_admin
 from app.models.event import EventCreate, EventResponse, EventUpdate
@@ -18,7 +18,7 @@ EVENT_COLUMNS = "id,title,description,event_date,event_type,resource_url,is_upco
 @public_router.get("/events", response_model=list[EventResponse])
 def list_events() -> list[dict]:
     response = (
-        get_supabase().table("events").select(EVENT_COLUMNS).order("event_date").execute()
+        get_auth_supabase().table("events").select(EVENT_COLUMNS).order("event_date").execute()
     )
     return response.data or []
 
@@ -26,7 +26,7 @@ def list_events() -> list[dict]:
 @public_router.get("/events/upcoming", response_model=list[EventResponse])
 def list_upcoming_events() -> list[dict]:
     response = (
-        get_supabase()
+        get_auth_supabase()
         .table("events")
         .select(EVENT_COLUMNS)
         .eq("is_upcoming", True)

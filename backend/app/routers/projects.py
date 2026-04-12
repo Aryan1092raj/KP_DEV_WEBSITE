@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client, get_supabase
 from app.exceptions.handlers import raise_conflict, raise_not_found
 from app.middleware.auth import verify_admin
 from app.models.project import ProjectCreate, ProjectResponse, ProjectUpdate
@@ -19,11 +19,11 @@ PROJECT_COLUMNS = (
 PROJECT_MEMBER_COLUMNS = "project_id,member_id,role"
 
 
-def _serialize_projects(projects: list[dict]) -> list[dict]:
+def _serialize_projects(projects: list[dict], db_client=None) -> list[dict]:
     if not projects:
         return []
 
-    db = get_supabase()
+    db = db_client or get_supabase()
     project_ids = [project["id"] for project in projects if project.get("id")]
 
     contributors: list[dict] = []
@@ -102,39 +102,40 @@ def _replace_project_contributors(project_id: str, contributors: list[dict]) -> 
 
 @public_router.get("/projects", response_model=list[ProjectResponse])
 def list_projects() -> list[dict]:
+    db = get_auth_supabase()
     response = (
-        get_supabase()
-        .table("projects")
+        db.table("projects")
         .select(PROJECT_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )
-    return _serialize_projects(response.data or [])
+    return _serialize_projects(response.data or [], db)
 
 
 @public_router.get("/projects/featured", response_model=list[ProjectResponse])
 def list_featured_projects() -> list[dict]:
+    db = get_auth_supabase()
     response = (
-        get_supabase()
-        .table("projects")
+        db.table("projects")
         .select(PROJECT_COLUMNS)
         .eq("is_featured", True)
         .order("created_at", desc=True)
         .execute()
     )
-    return _serialize_projects(response.data or [])
+    return _serialize_projects(response.data or [], db)
 
 
 @admin_router.get("/projects", response_model=list[ProjectResponse])
 def list_projects_admin(admin: dict = Depends(verify_admin)) -> list[dict]:
+    db = get_postgrest_client()
     response = (
-        get_postgrest_client()
+        db
         .table("projects")
         .select(PROJECT_COLUMNS)
         .order("created_at", desc=True)
         .execute()
     )
-    return _serialize_projects(response.data or [])
+    return _serialize_projects(response.data or [], db)
 
 
 @admin_router.post(
@@ -152,7 +153,7 @@ def create_project(payload: ProjectCreate, admin: dict = Depends(verify_admin)) 
         _replace_project_contributors(created["id"], contributors)
     except APIError as exc:
         raise_conflict(exc, "Unable to create project")
-    return _serialize_projects([created])[0]
+    return _serialize_projects([created], db)[0]
 
 
 @admin_router.put("/projects/{project_id}", response_model=ProjectResponse)
@@ -185,7 +186,7 @@ def update_project(
     except APIError as exc:
         raise_conflict(exc, "Unable to update project")
 
-    return _serialize_projects([updated])[0]
+    return _serialize_projects([updated], db)[0]
 
 
 @admin_router.delete("/projects/{project_id}")
