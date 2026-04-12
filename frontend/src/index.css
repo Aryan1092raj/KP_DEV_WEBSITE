@@ -576,9 +576,10 @@
     }
 
     .kp-mobile-drawer {
-      max-height: calc(100dvh - var(--kp-nav-height, 84px));
+      max-height: min(72dvh, calc(100dvh - var(--kp-nav-height, 84px) - 8px));
       overflow-y: auto;
       overscroll-behavior: contain;
+      border-radius: 0 0 16px 16px;
       border-top: 1px solid rgba(109, 181, 246, 0.26);
       background:
         linear-gradient(180deg, rgba(3, 16, 34, 0.98), rgba(3, 14, 31, 0.96)) !important;
@@ -586,7 +587,7 @@
     }
 
     .kp-mobile-drawer-nav {
-      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-bottom: max(0.9rem, env(safe-area-inset-bottom));
     }
 
     .kp-mobile-drawer-nav > a,
