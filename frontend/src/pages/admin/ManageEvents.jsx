@@ -48,7 +48,7 @@ export default function ManageEvents() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const events = boneyardBuildMode || loading || !(data ?? []).length ? fixtureEvents : data ?? [];
+  const events = boneyardBuildMode ? fixtureEvents : data ?? [];
 
   async function handleSave(payload) {
     setSaving(true);

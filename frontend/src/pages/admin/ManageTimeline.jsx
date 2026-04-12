@@ -25,7 +25,7 @@ export default function ManageTimeline() {
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const items = boneyardBuildMode || loading || !(data ?? []).length ? fixtureTimeline : data ?? [];
+  const items = boneyardBuildMode ? fixtureTimeline : data ?? [];
 
   async function handleSave(payload) {
     setSaving(true);
