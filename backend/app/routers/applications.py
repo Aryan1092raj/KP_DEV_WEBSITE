@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client
 from app.exceptions.handlers import raise_conflict, raise_not_found
 from app.middleware.auth import verify_admin
 from app.models.application import (
@@ -27,7 +27,7 @@ APPLICATION_COLUMNS = "id,name,email,branch,batch,why_join,skills,status,submitt
 def create_application(payload: ApplicationCreate) -> dict:
     application_payload = jsonable_encoder(payload, exclude_none=True)
     try:
-        response = get_supabase().table("applications").insert(application_payload).execute()
+        response = get_auth_supabase().table("applications").insert(application_payload).execute()
     except APIError as exc:
         raise_conflict(exc, "Unable to submit application")
     return response.data[0]

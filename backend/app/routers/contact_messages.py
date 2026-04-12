@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client
 from app.exceptions.handlers import raise_conflict
 from app.middleware.auth import verify_admin
 from app.models.contact import ContactMessageCreate, ContactMessageResponse
@@ -21,7 +21,7 @@ CONTACT_MESSAGE_COLUMNS = "id,name,email,message,created_at"
 def create_contact_message(payload: ContactMessageCreate) -> dict:
     message_payload = jsonable_encoder(payload, exclude_none=True)
     try:
-        response = get_supabase().table("contact_messages").insert(message_payload).execute()
+        response = get_auth_supabase().table("contact_messages").insert(message_payload).execute()
     except APIError as exc:
         raise_conflict(exc, "Unable to submit contact message")
     return response.data[0]

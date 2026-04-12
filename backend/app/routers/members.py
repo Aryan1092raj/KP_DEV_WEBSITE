@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from postgrest.exceptions import APIError
 
-from app.db.client import get_postgrest_client, get_supabase
+from app.db.client import get_auth_supabase, get_postgrest_client
 from app.exceptions.handlers import raise_conflict, raise_not_found
 from app.middleware.auth import verify_admin
 from app.models.member import MemberCreate, MemberResponse, MemberUpdate
@@ -20,7 +20,7 @@ MEMBER_COLUMNS = (
 @public_router.get("/members", response_model=list[MemberResponse])
 def list_members() -> list[dict]:
     response = (
-        get_supabase()
+        get_auth_supabase()
         .table("team_members")
         .select(MEMBER_COLUMNS)
         .eq("is_active", True)
