@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "boneyard-js/react";
 
 import { AdminApplicationsFallback } from "../../components/common/BoneyardFallbacks";
@@ -36,21 +36,49 @@ export default function ViewApplications() {
   const { data, error, loading, refetch } = useFetch(applicationService.getAdminAll);
   const [pendingId, setPendingId] = useState(null);
   const [toast, setToast] = useState(null);
+  const [applicationsState, setApplicationsState] = useState([]);
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
   const showError = Boolean(error) && !boneyardBuildMode;
-  const applications = boneyardBuildMode ? fixtureApplications : data ?? [];
+  const applications = boneyardBuildMode ? fixtureApplications : applicationsState;
+
+  useEffect(() => {
+    if (!boneyardBuildMode) {
+      setApplicationsState(data ?? []);
+    }
+  }, [data, boneyardBuildMode]);
+
+  function getRequestErrorMessage(requestError, fallbackMessage) {
+    if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
+      const firstIssue = requestError.details[0];
+      if (firstIssue?.msg && Array.isArray(firstIssue?.loc)) {
+        return `${firstIssue.loc.slice(-1)[0]}: ${firstIssue.msg}`;
+      }
+    }
+
+    return requestError?.message || fallbackMessage;
+  }
 
   async function updateStatus(id, status) {
+    const currentApplication = applications.find((application) => application.id === id);
+    if (!currentApplication || currentApplication.status === status || pendingId === id) {
+      return;
+    }
+
     setPendingId(id);
     try {
-      await applicationService.updateStatus(id, { status });
+      const updatedApplication = await applicationService.updateStatus(id, { status });
+      setApplicationsState((current) =>
+        current.map((application) =>
+          application.id === id ? { ...application, ...updatedApplication } : application
+        )
+      );
       setToast({ type: "success", message: "Application status updated." });
       refetch();
     } catch (requestError) {
       setToast({
         type: "error",
-        message: requestError.message || "Unable to update application status.",
+        message: getRequestErrorMessage(requestError, "Unable to update application status."),
       });
     } finally {
       setPendingId(null);
@@ -97,20 +125,31 @@ export default function ViewApplications() {
                   Skills: {application.skills || "Not specified"}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
-                  {statuses.map((status) => (
-                    <button
-                      key={status}
-                      className={status === "rejected" ? "btn-danger !px-4 !py-2" : "btn-secondary !px-4 !py-2"}
-                      disabled={pendingId === application.id}
-                      onClick={() => updateStatus(application.id, status)}
-                      type="button"
-                    >
-                      <VariableText
-                        label={pendingId === application.id ? "Updating..." : `Mark ${status}`}
-                        radius={85}
-                      />
-                    </button>
-                  ))}
+                  {statuses.map((status) => {
+                    const isCurrentStatus = application.status === status;
+                    return (
+                      <button
+                        key={status}
+                        className={`${
+                          status === "rejected" ? "btn-danger" : "btn-secondary"
+                        } !px-4 !py-2 ${isCurrentStatus ? "cursor-not-allowed opacity-60 saturate-50" : ""}`}
+                        disabled={pendingId === application.id || isCurrentStatus}
+                        onClick={() => updateStatus(application.id, status)}
+                        type="button"
+                      >
+                        <VariableText
+                          label={
+                            pendingId === application.id
+                              ? "Updating..."
+                              : isCurrentStatus
+                                ? `Already ${status}`
+                                : `Mark ${status}`
+                          }
+                          radius={85}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}

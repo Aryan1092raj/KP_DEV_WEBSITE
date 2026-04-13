@@ -103,6 +103,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [copied, setCopied] = useState(false);
   const boneyardBuildMode =
     typeof window !== "undefined" && window.__BONEYARD_BUILD === true;
@@ -121,9 +122,45 @@ export default function ContactPage() {
     visitTag: "contact",
   });
 
+  function validate(nextForm) {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if ((nextForm.name || "").trim().length < 2) {
+      errors.name = "Name must be at least 2 characters.";
+    }
+
+    if (!emailRegex.test((nextForm.email || "").trim())) {
+      errors.email = "Enter a valid email address.";
+    }
+
+    const messageLength = (nextForm.message || "").trim().length;
+    if (messageLength < 10) {
+      errors.message = "Message must be at least 10 characters.";
+    }
+
+    return errors;
+  }
+
+  function getRequestErrorMessage(requestError, fallbackMessage) {
+    if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
+      const firstIssue = requestError.details[0];
+      if (firstIssue?.msg && Array.isArray(firstIssue?.loc)) {
+        return `${firstIssue.loc.slice(-1)[0]}: ${firstIssue.msg}`;
+      }
+    }
+
+    return requestError?.message || fallbackMessage;
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+    setForm((current) => {
+      const nextForm = { ...current, [name]: value };
+      const nextErrors = validate(nextForm);
+      setFormErrors(nextErrors);
+      return nextForm;
+    });
   }
 
   async function copyEmailAddress() {
@@ -136,11 +173,19 @@ export default function ContactPage() {
     }
   }
 
-  const isReady = Boolean(form.name && form.email && form.message);
+  const isReady =
+    Boolean(form.name.trim() && form.email.trim() && form.message.trim()) &&
+    Object.keys(validate(form)).length === 0;
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!isReady || isSubmitting) {
+    if (isSubmitting) {
+      return;
+    }
+
+    const nextErrors = validate(form);
+    setFormErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
@@ -148,11 +193,12 @@ export default function ContactPage() {
     try {
       await contactService.submit(form);
       setForm({ name: "", email: "", message: "" });
+      setFormErrors({});
       setToast({ type: "success", message: "Message saved successfully. Kamand Prompt will get back to you." });
-    } catch (error) {
+    } catch (requestError) {
       setToast({
         type: "error",
-        message: error.message || "Unable to send your message right now.",
+        message: getRequestErrorMessage(requestError, "Unable to send your message right now."),
       });
     } finally {
       setIsSubmitting(false);
@@ -197,6 +243,7 @@ export default function ContactPage() {
                     required
                     value={formToRender.name}
                   />
+                  {formErrors.name ? <p className="mt-2 text-xs text-rose-300">{formErrors.name}</p> : null}
                 </label>
 
                 <label className="block">
@@ -211,6 +258,7 @@ export default function ContactPage() {
                     type="email"
                     value={formToRender.email}
                   />
+                  {formErrors.email ? <p className="mt-2 text-xs text-rose-300">{formErrors.email}</p> : null}
                 </label>
 
                 <label className="block">
@@ -224,6 +272,7 @@ export default function ContactPage() {
                     required
                     value={formToRender.message}
                   />
+                  {formErrors.message ? <p className="mt-2 text-xs text-rose-300">{formErrors.message}</p> : null}
                 </label>
 
                 <button

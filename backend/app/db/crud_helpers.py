@@ -34,12 +34,16 @@ def update_record_by_id(
     not_found_resource: str,
 ) -> dict[str, Any]:
     db = get_postgrest_client()
+    string_record_id = str(record_id)
 
     try:
         if payload:
-            response = db.table(table_name).update(payload).eq("id", str(record_id)).execute()
+            response = db.table(table_name).update(payload).eq("id", string_record_id).execute()
+            if not response.data:
+                # Some PostgREST clients return minimal payloads for updates.
+                response = db.table(table_name).select(columns).eq("id", string_record_id).execute()
         else:
-            response = db.table(table_name).select(columns).eq("id", str(record_id)).execute()
+            response = db.table(table_name).select(columns).eq("id", string_record_id).execute()
     except APIError as exc:
         raise_conflict(exc, conflict_message)
 
