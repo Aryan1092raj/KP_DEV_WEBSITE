@@ -104,42 +104,14 @@ export default function EventsPage() {
     refetchOnWindowFocus: false,
   });
 
-  const {
-    data: upcoming = [],
-    error: upcomingError,
-    isLoading: upcomingLoading,
-    refetch: refetchUpcoming,
-  } = useQuery({
-    queryKey: ["events", "upcoming"],
-    queryFn: eventService.getUpcoming,
-    enabled: !boneyardBuildMode,
-    staleTime: 60_000,
-    gcTime: 300_000,
-    refetchOnWindowFocus: false,
-  });
-
-  const loading = !boneyardBuildMode && (allEventsLoading || upcomingLoading);
+  const loading = !boneyardBuildMode && allEventsLoading;
   const errorMessage =
     !boneyardBuildMode
-      ? allEventsError?.message || upcomingError?.message || ""
+      ? allEventsError?.message || ""
       : "";
   const showError = Boolean(errorMessage);
 
   const todayIso = new Date().toISOString().slice(0, 10);
-
-  const normalizedUpcoming = useMemo(
-    () =>
-      (upcoming ?? []).map((event) => ({
-        ...event,
-        event_date:
-          typeof event.event_date === "string" ? event.event_date.slice(0, 10) : "",
-        end_date:
-          typeof event.end_date === "string" ? event.end_date.slice(0, 10) : null,
-        is_upcoming: Boolean(event.is_upcoming),
-        is_ongoing: Boolean(event.is_ongoing),
-      })).filter((event) => !event.is_ongoing),
-    [upcoming],
-  );
 
   const normalizedAllEvents = useMemo(
     () =>
@@ -167,6 +139,10 @@ export default function EventsPage() {
     () => normalizedAllEvents.filter((event) => event.is_ongoing),
     [normalizedAllEvents],
   );
+  const normalizedUpcoming = useMemo(
+    () => normalizedAllEvents.filter((event) => event.is_upcoming && !event.is_ongoing),
+    [normalizedAllEvents],
+  );
   const pageLoading = boneyardBuildMode || loading;
   const upcomingToRender = pageLoading ? fixtureUpcomingEvents : normalizedUpcoming;
   const ongoingToRender = pageLoading ? fixtureOngoingEvents : ongoing;
@@ -180,7 +156,7 @@ export default function EventsPage() {
 
   const load = () => {
     lastRefreshRef.current = Date.now();
-    void Promise.all([refetchAllEvents(), refetchUpcoming()]);
+    void refetchAllEvents();
   };
 
   useEffect(() => {
@@ -195,7 +171,7 @@ export default function EventsPage() {
       }
 
       lastRefreshRef.current = now;
-      void Promise.all([refetchAllEvents(), refetchUpcoming()]);
+      void refetchAllEvents();
     };
 
     const handleVisibilityChange = () => {
@@ -211,7 +187,7 @@ export default function EventsPage() {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [boneyardBuildMode, refetchAllEvents, refetchUpcoming]);
+  }, [boneyardBuildMode, refetchAllEvents]);
 
   useEffect(() => {
     const scope = motionScopeRef.current;
