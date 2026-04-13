@@ -15,7 +15,7 @@ from app.models.event import EventCreate, EventResponse, EventUpdate
 public_router = APIRouter(prefix="/api", tags=["Events"])
 admin_router = APIRouter(prefix="/api/admin", tags=["Admin Events"])
 
-EVENT_COLUMNS = "id,title,description,event_date,event_type,resource_url,is_upcoming,created_at"
+EVENT_COLUMNS = "id,title,description,event_date,end_date,event_type,resource_url,is_upcoming,is_ongoing,created_at"
 
 
 @public_router.get("/events", response_model=list[EventResponse])
@@ -33,6 +33,7 @@ def list_upcoming_events() -> list[dict]:
         .table("events")
         .select(EVENT_COLUMNS)
         .eq("is_upcoming", True)
+        .eq("is_ongoing", False)
         .order("event_date")
         .execute()
     )

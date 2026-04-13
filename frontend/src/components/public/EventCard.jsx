@@ -3,6 +3,9 @@ import VariableText from "../common/VariableText";
 export default function EventCard({ event }) {
   const status = event.is_ongoing ? "ongoing" : event.is_upcoming ? "upcoming" : "completed";
   const statusLabel = status === "ongoing" ? "Ongoing" : status === "upcoming" ? "Upcoming" : "Completed";
+  const eventDate = typeof event.event_date === "string" ? event.event_date.slice(0, 10) : "";
+  const endDate = typeof event.end_date === "string" ? event.end_date.slice(0, 10) : "";
+  const dateLabel = endDate && eventDate ? `${eventDate} to ${endDate}` : eventDate;
   const statusClass =
     status === "upcoming"
       ? "!border-white/30 !bg-[#101010] !text-white"
@@ -23,7 +26,7 @@ export default function EventCard({ event }) {
       <h3 className="mt-4 text-2xl font-semibold">
         <VariableText label={event.title} />
       </h3>
-      <p className="mt-2 text-sm text-white">{event.event_date}</p>
+      <p className="mt-2 text-sm text-white">{dateLabel}</p>
       <p className="mt-4 text-sm leading-6 text-white">
         <VariableText label={event.description || "Details will be shared with the club community."} radius={85} />
       </p>

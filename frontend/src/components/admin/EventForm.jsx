@@ -6,9 +6,11 @@ const emptyEvent = {
   title: "",
   description: "",
   event_date: "",
+  end_date: "",
   event_type: "session",
   resource_url: "",
   is_upcoming: false,
+  is_ongoing: false,
 };
 
 function mapEventInitialData(initialData, emptyState) {
@@ -19,14 +21,43 @@ function mapEventInitialData(initialData, emptyState) {
       typeof initialData.event_date === "string" && initialData.event_date.length >= 10
         ? initialData.event_date.slice(0, 10)
         : "",
+    end_date:
+      typeof initialData.end_date === "string" && initialData.end_date.length >= 10
+        ? initialData.end_date.slice(0, 10)
+        : "",
     resource_url: initialData.resource_url ?? "",
   };
 }
 
 export default function EventForm({ initialData, onSubmit, onCancel, loading }) {
-  const { form, handleChange } = useAdminForm(emptyEvent, initialData, {
+  const { form, setForm } = useAdminForm(emptyEvent, initialData, {
     mapInitialData: mapEventInitialData,
   });
+
+  function handleChange(event) {
+    const { name, value, type, checked } = event.target;
+
+    setForm((current) => {
+      const next = {
+        ...current,
+        [name]: type === "checkbox" ? checked : value,
+      };
+
+      if (name === "is_upcoming" && checked) {
+        next.is_ongoing = false;
+      }
+
+      if (name === "is_ongoing" && checked) {
+        next.is_upcoming = false;
+      }
+
+      if (name === "event_date" && next.end_date && next.end_date < value) {
+        next.end_date = value;
+      }
+
+      return next;
+    });
+  }
 
   function submit(event) {
     event.preventDefault();
@@ -35,9 +66,11 @@ export default function EventForm({ initialData, onSubmit, onCancel, loading }) 
       title: form.title.trim(),
       description: form.description.trim(),
       event_date: form.event_date,
+      end_date: form.end_date || null,
       event_type: form.event_type,
       resource_url: normalizeUrl(form.resource_url),
       is_upcoming: Boolean(form.is_upcoming),
+      is_ongoing: Boolean(form.is_ongoing),
     });
   }
 
@@ -61,12 +94,25 @@ export default function EventForm({ initialData, onSubmit, onCancel, loading }) 
         <textarea className="input min-h-[110px]" name="description" onChange={handleChange} value={form.description} />
       </label>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <label>
           <span className="label">
             <VariableText label="Event date" radius={85} />
           </span>
           <input className="input" name="event_date" onChange={handleChange} required type="date" value={form.event_date} />
+        </label>
+        <label>
+          <span className="label">
+            <VariableText label="End date (optional)" radius={85} />
+          </span>
+          <input
+            className="input"
+            min={form.event_date || undefined}
+            name="end_date"
+            onChange={handleChange}
+            type="date"
+            value={form.end_date}
+          />
         </label>
         <label>
           <span className="label">
@@ -98,6 +144,11 @@ export default function EventForm({ initialData, onSubmit, onCancel, loading }) 
       <label className="flex items-center gap-3 text-sm font-medium">
         <input checked={form.is_upcoming} name="is_upcoming" onChange={handleChange} type="checkbox" />
         <VariableText label="Mark as upcoming" radius={85} />
+      </label>
+
+      <label className="flex items-center gap-3 text-sm font-medium">
+        <input checked={form.is_ongoing} name="is_ongoing" onChange={handleChange} type="checkbox" />
+        <VariableText label="Mark as ongoing" radius={85} />
       </label>
 
       <div className="flex flex-wrap gap-3">

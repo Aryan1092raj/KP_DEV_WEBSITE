@@ -15,17 +15,44 @@ const fixtureEvents = [
     id: "fixture-event-1",
     title: "Frontend systems workshop",
     event_date: "2026-04-15",
+    end_date: "2026-04-18",
     event_type: "Workshop",
     is_upcoming: true,
+    is_ongoing: false,
   },
   {
     id: "fixture-event-2",
     title: "Backend review session",
     event_date: "2026-03-30",
+    end_date: "2026-04-02",
     event_type: "Session",
     is_upcoming: false,
+    is_ongoing: true,
   },
 ];
+
+function getEventStatus(event) {
+  if (event?.is_ongoing) {
+    return "Ongoing";
+  }
+
+  if (event?.is_upcoming) {
+    return "Upcoming";
+  }
+
+  return "Completed";
+}
+
+function formatEventDateRange(event) {
+  const start = typeof event?.event_date === "string" ? event.event_date.slice(0, 10) : "";
+  const end = typeof event?.end_date === "string" ? event.end_date.slice(0, 10) : "";
+
+  if (start && end) {
+    return `${start} to ${end}`;
+  }
+
+  return start || "Date not set";
+}
 
 function getRequestErrorMessage(requestError, fallbackMessage) {
   if (Array.isArray(requestError?.details) && requestError.details.length > 0) {
@@ -120,7 +147,7 @@ export default function ManageEvents() {
                       <div>
                         <p className="font-semibold">{event.title}</p>
                         <p className="text-sm text-slate-500 dark:text-slate-300">
-                          {event.event_date} • {event.event_type} • {event.is_upcoming ? "Upcoming" : "Completed"}
+                          {formatEventDateRange(event)} • {event.event_type} • {getEventStatus(event)}
                         </p>
                       </div>
                       <div className="flex gap-3">
