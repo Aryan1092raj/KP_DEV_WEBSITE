@@ -7,7 +7,6 @@ import {
   HomeHeroFallback,
   StatsFallback,
   TeamGridFallback,
-  TimelineAnnouncementFallback,
 } from "../../components/common/BoneyardFallbacks";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import VariableText from "../../components/common/VariableText";
@@ -16,11 +15,9 @@ import HeroSection from "../../components/public/HeroSection";
 import MemberCard from "../../components/public/MemberCard";
 import ProjectCard from "../../components/public/ProjectCard";
 import StatsBar from "../../components/public/StatsBar";
-import TimelineItem from "../../components/public/TimelineItem";
 import { announcementService } from "../../services/announcementService";
 import { memberService } from "../../services/memberService";
 import { projectService } from "../../services/projectService";
-import { timelineService } from "../../services/timelineService";
 
 const statsFixture = [
   { label: "Active members", value: 12 },
@@ -55,33 +52,6 @@ const projectFixture = [
   },
 ];
 
-const timelineFixture = [
-  {
-    id: "fixture-home-timeline-1",
-    year: "2019",
-    title: "Club foundation",
-    description: "Kamand Prompt starts with weekly programming circles and hands-on mentoring.",
-  },
-  {
-    id: "fixture-home-timeline-2",
-    year: "2021",
-    title: "Build-track launch",
-    description: "Project squads form around web, systems, and applied ML problem statements.",
-  },
-  {
-    id: "fixture-home-timeline-3",
-    year: "2023",
-    title: "Public demo days",
-    description: "Semester-end showcases begin with open demos, talks, and code walkthroughs.",
-  },
-  {
-    id: "fixture-home-timeline-4",
-    year: "2025",
-    title: "Platform unification",
-    description: "A shared backend and admin stack powers announcements, events, and applications.",
-  },
-];
-
 const announcementFixture = [
   {
     id: "fixture-home-announcement-1",
@@ -111,21 +81,19 @@ function isBoneyardBuildMode() {
 }
 
 async function fetchHomeData() {
-  const [projects, members, timeline, announcements] = await Promise.all([
+  const [projects, members, announcements] = await Promise.all([
     projectService.getFeatured(),
     memberService.getAll(),
-    timelineService.getAll(),
     announcementService.getPublished(),
   ]);
 
-  return { announcements, members, projects, timeline };
+  return { announcements, members, projects };
 }
 
 const EMPTY_HOME_DATA = {
   announcements: [],
   members: [],
   projects: [],
-  timeline: [],
 };
 
 function HomeProjectsPreviewFixture() {
@@ -138,37 +106,21 @@ function HomeProjectsPreviewFixture() {
   );
 }
 
-function HomeTimelineAnnouncementsFixture() {
+function HomeAnnouncementsFixture() {
   return (
-    <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <div className="section-card space-y-6">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            <VariableText label="Club timeline" />
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold">
-            <VariableText label="Milestones that shaped KP" />
-          </h2>
-        </div>
-        {timelineFixture.map((item) => (
-          <TimelineItem item={item} key={item.id} />
-        ))}
+    <section className="space-y-5">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+          <VariableText label="Announcements" />
+        </p>
+        <h2 className="mt-2 text-3xl font-semibold">
+          <VariableText label="What the club is saying this week" />
+        </h2>
       </div>
-
-      <div className="space-y-5">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-            <VariableText label="Announcements" />
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold">
-            <VariableText label="What the club is saying this week" />
-          </h2>
-        </div>
-        <div className="grid gap-5">
-          {announcementFixture.map((announcement) => (
-            <AnnouncementCard announcement={announcement} key={announcement.id} />
-          ))}
-        </div>
+      <div className="grid gap-5">
+        {announcementFixture.map((announcement) => (
+          <AnnouncementCard announcement={announcement} key={announcement.id} />
+        ))}
       </div>
     </section>
   );
@@ -230,12 +182,11 @@ export default function HomePage() {
           <TeamGridFallback />
         </Skeleton>
         <Skeleton
-          fallback={<TimelineAnnouncementFallback />}
-          fixture={<HomeTimelineAnnouncementsFixture />}
+          fallback={<CardGridFallback count={3} />}
+          fixture={<HomeAnnouncementsFixture />}
           loading
-          name={boneyardBuildMode ? "home-timeline-announcements" : undefined}
         >
-          <HomeTimelineAnnouncementsFixture />
+          <HomeAnnouncementsFixture />
         </Skeleton>
       </div>
     );
@@ -249,7 +200,13 @@ export default function HomePage() {
     );
   }
 
-  const firstYear = data.timeline[0]?.year || new Date().getFullYear();
+  const numericProjectYears = data.projects
+    .map((project) => Number(project?.year))
+    .filter((year) => Number.isFinite(year));
+  const firstYear =
+    numericProjectYears.length > 0
+      ? Math.min(...numericProjectYears)
+      : new Date().getFullYear();
   const stats = [
     { label: "Active members", value: data.members.length },
     { label: "Featured builds", value: data.projects.length },
@@ -303,35 +260,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="section-card space-y-6">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              <VariableText label="Club timeline" />
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold">
-              <VariableText label="Milestones that shaped KP" />
-            </h2>
-          </div>
-          {data.timeline.slice(0, 5).map((item) => (
-            <TimelineItem item={item} key={item.id} />
-          ))}
+      <section className="space-y-5">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
+            <VariableText label="Announcements" />
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold">
+            <VariableText label="What the club is saying this week" />
+          </h2>
         </div>
-
-        <div className="space-y-5">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-ember">
-              <VariableText label="Announcements" />
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold">
-              <VariableText label="What the club is saying this week" />
-            </h2>
-          </div>
-          <div className="grid gap-5">
-            {data.announcements.slice(0, 3).map((announcement) => (
-              <AnnouncementCard announcement={announcement} key={announcement.id} />
-            ))}
-          </div>
+        <div className="grid gap-5">
+          {data.announcements.slice(0, 3).map((announcement) => (
+            <AnnouncementCard announcement={announcement} key={announcement.id} />
+          ))}
         </div>
       </section>
     </div>

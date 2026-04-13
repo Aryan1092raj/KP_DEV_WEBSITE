@@ -16,7 +16,6 @@ const ManageAnnouncements = lazy(() => import("./pages/admin/ManageAnnouncements
 const ManageEvents = lazy(() => import("./pages/admin/ManageEvents"));
 const ManageMembers = lazy(() => import("./pages/admin/ManageMembers"));
 const ManageProjects = lazy(() => import("./pages/admin/ManageProjects"));
-const ManageTimeline = lazy(() => import("./pages/admin/ManageTimeline"));
 const ViewContactMessages = lazy(() => import("./pages/admin/ViewContactMessages"));
 const ViewApplications = lazy(() => import("./pages/admin/ViewApplications"));
 const ApplyPage = lazy(() => import("./pages/public/ApplyPage"));
@@ -153,7 +152,6 @@ function AppRoutes({ onPublicScrollProgressChange, scrollProgress }) {
           <Route element={<ManageMembers />} path="members" />
           <Route element={<ManageProjects />} path="projects" />
           <Route element={<ManageEvents />} path="events" />
-          <Route element={<ManageTimeline />} path="timeline" />
           <Route element={<ManageAnnouncements />} path="announcements" />
           <Route element={<ViewApplications />} path="applications" />
           <Route element={<ViewContactMessages />} path="contact-messages" />

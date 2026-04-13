@@ -6,7 +6,6 @@ import _home_hero from './home-hero.bones.json'
 import _home_stats from './home-stats.bones.json'
 import _home_projects_preview from './home-projects-preview.bones.json'
 import _home_team_preview from './home-team-preview.bones.json'
-import _home_timeline_announcements from './home-timeline-announcements.bones.json'
 import _projects_grid from './projects-grid.bones.json'
 import _team_grid from './team-grid.bones.json'
 import _events_page from './events-page.bones.json'
@@ -18,7 +17,6 @@ registerBones({
   "home-stats": _home_stats,
   "home-projects-preview": _home_projects_preview,
   "home-team-preview": _home_team_preview,
-  "home-timeline-announcements": _home_timeline_announcements,
   "projects-grid": _projects_grid,
   "team-grid": _team_grid,
   "events-page": _events_page,

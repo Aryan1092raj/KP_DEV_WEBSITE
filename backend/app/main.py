@@ -26,7 +26,6 @@ from app.routers import (
     events,
     members,
     projects,
-    timeline,
 )
 
 app = FastAPI(
@@ -167,8 +166,6 @@ for router in (
     projects.admin_router,
     events.public_router,
     events.admin_router,
-    timeline.public_router,
-    timeline.admin_router,
     announcements.public_router,
     announcements.admin_router,
     applications.public_router,
