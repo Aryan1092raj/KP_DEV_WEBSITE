@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 
-from app.db.client import get_auth_supabase, get_postgrest_client
+from app.db.client import get_postgrest_client
 from app.db.crud_helpers import create_record, update_record_by_id
 from app.middleware.auth import verify_admin
 from app.models.application import (
@@ -29,7 +29,6 @@ def create_application(payload: ApplicationCreate) -> dict:
         table_name="applications",
         payload=application_payload,
         conflict_message="Unable to submit application",
-        db_client=get_auth_supabase(),
     )
 
 
