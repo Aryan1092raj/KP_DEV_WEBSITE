@@ -45,7 +45,7 @@ export default function Toast({ toast, onClose }) {
   const selected = variants[type] || variants.success;
 
   return (
-    <div className="fixed right-4 top-4" style={{ zIndex: 1005 }}>
+    <div className="fixed right-4 top-[calc(var(--kp-nav-height,84px)+0.75rem)]" style={{ zIndex: 1005 }}>
       <div
         aria-live={selected.live}
         role="status"
