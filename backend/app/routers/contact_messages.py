@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 
-from app.db.client import get_auth_supabase, get_postgrest_client
+from app.db.client import get_postgrest_client
 from app.db.crud_helpers import create_record
 from app.middleware.auth import verify_admin
 from app.models.contact import ContactMessageCreate, ContactMessageResponse
@@ -23,7 +23,6 @@ def create_contact_message(payload: ContactMessageCreate) -> dict:
         table_name="contact_messages",
         payload=message_payload,
         conflict_message="Unable to submit contact message",
-        db_client=get_auth_supabase(),
     )
 
 

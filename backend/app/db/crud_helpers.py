@@ -4,7 +4,7 @@ from uuid import UUID
 from postgrest.exceptions import APIError
 
 from app.db.client import get_postgrest_client
-from app.exceptions.handlers import raise_conflict, raise_not_found
+from app.exceptions.handlers import raise_database_error, raise_not_found
 
 
 def create_record(
@@ -19,7 +19,7 @@ def create_record(
     try:
         response = db.table(table_name).insert(payload).execute()
     except APIError as exc:
-        raise_conflict(exc, conflict_message)
+        raise_database_error(exc, conflict_message=conflict_message)
 
     return response.data[0]
 
@@ -45,7 +45,7 @@ def update_record_by_id(
         else:
             response = db.table(table_name).select(columns).eq("id", string_record_id).execute()
     except APIError as exc:
-        raise_conflict(exc, conflict_message)
+        raise_database_error(exc, conflict_message=conflict_message)
 
     if not response.data:
         raise_not_found(not_found_resource)
@@ -63,7 +63,7 @@ def delete_record_by_id(
     try:
         response = get_postgrest_client().table(table_name).delete().eq("id", str(record_id)).execute()
     except APIError as exc:
-        raise_conflict(exc, conflict_message)
+        raise_database_error(exc, conflict_message=conflict_message)
 
     if not response.data:
         raise_not_found(not_found_resource)

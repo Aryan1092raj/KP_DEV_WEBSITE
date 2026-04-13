@@ -55,6 +55,48 @@ def raise_conflict(exc: APIError, fallback_message: str) -> None:
     ) from exc
 
 
+def raise_database_error(
+    exc: APIError,
+    *,
+    conflict_message: str,
+    fallback_message: str = "Database request failed",
+) -> None:
+    logger.warning(
+        "Database request failed: code=%s message=%s",
+        exc.code,
+        exc.message,
+    )
+
+    if exc.code == "PGRST205":
+        raise HTTPException(
+            status_code=500,
+            detail=error_payload(
+                "Supabase schema is missing required tables for this API",
+                "SCHEMA_NOT_READY",
+            ),
+        ) from exc
+
+    if exc.code and exc.code.startswith("23"):
+        raise HTTPException(
+            status_code=409,
+            detail=error_payload(conflict_message, "CONFLICT"),
+        ) from exc
+
+    if exc.code in {"42501", "PGRST301", "PGRST302"}:
+        raise HTTPException(
+            status_code=403,
+            detail=error_payload(
+                "Database permission denied for this operation",
+                "NOT_AUTHORIZED",
+            ),
+        ) from exc
+
+    raise HTTPException(
+        status_code=500,
+        detail=error_payload(fallback_message, "DB_ERROR"),
+    ) from exc
+
+
 async def http_exception_handler(
     request: Request, exc: StarletteHTTPException
 ) -> JSONResponse:
