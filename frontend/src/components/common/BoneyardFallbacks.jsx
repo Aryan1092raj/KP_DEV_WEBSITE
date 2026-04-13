@@ -100,42 +100,6 @@ export function StatsFallback() {
   );
 }
 
-export function TimelineAnnouncementFallback() {
-  return (
-    <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <div className="section-card space-y-6">
-        <div className="space-y-3">
-          <BoneBlock className="h-4 w-28" />
-          <BoneBlock className="h-8 w-60" />
-        </div>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="space-y-3 border-l border-slate-200 pl-5 dark:border-white/10">
-            <BoneBlock className="h-4 w-16" />
-            <BoneBlock className="h-5 w-40" />
-            <BoneBlock className="h-4 w-full" />
-          </div>
-        ))}
-      </div>
-      <div className="space-y-5">
-        <div className="space-y-3">
-          <BoneBlock className="h-4 w-32" />
-          <BoneBlock className="h-8 w-64" />
-        </div>
-        <div className="grid gap-5">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="section-card space-y-4">
-              <BoneBlock className="h-6 w-3/4" />
-              <BoneBlock className="h-4 w-28" />
-              <BoneBlock className="h-4 w-full" />
-              <BoneBlock className="h-4 w-5/6" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function EventsPageFallback() {
   return (
     <div className="space-y-8">

@@ -21,6 +21,7 @@ class AdminUserResponse(BaseModel):
     id: str
     email: EmailStr | None = None
     role: str
+    last_sign_in_at: datetime | None = None
 
 
 class AdminSessionResponse(BaseModel):

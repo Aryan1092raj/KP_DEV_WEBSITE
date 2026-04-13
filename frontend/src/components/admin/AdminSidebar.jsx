@@ -10,7 +10,6 @@ const links = [
   { to: "/admin/members", label: "Members" },
   { to: "/admin/projects", label: "Projects" },
   { to: "/admin/events", label: "Events" },
-  { to: "/admin/timeline", label: "Timeline" },
   { to: "/admin/announcements", label: "Announcements" },
   { to: "/admin/applications", label: "Applications" },
   { to: "/admin/contact-messages", label: "Contact messages" },
@@ -38,8 +37,10 @@ export default function AdminSidebar({ onLogout }) {
     };
   }, [drawerOpen]);
 
-  const lastLogin = user?.last_sign_in_at
-    ? new Date(user.last_sign_in_at).toLocaleString("en-IN", {
+  const parsedLastLogin = user?.last_sign_in_at ? new Date(user.last_sign_in_at) : null;
+  const hasValidLastLogin = parsedLastLogin instanceof Date && !Number.isNaN(parsedLastLogin.getTime());
+  const lastLogin = hasValidLastLogin
+    ? parsedLastLogin.toLocaleString("en-IN", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -60,12 +61,8 @@ export default function AdminSidebar({ onLogout }) {
         <h2 className="mt-2 text-2xl font-semibold">
           <VariableText label="KP Control Room" />
         </h2>
-        <p className="mt-3 text-xs uppercase tracking-[0.2em]">
-          <VariableText label="Last login" radius={85} />
-        </p>
-        <p className="mt-1 text-sm">
-          <VariableText label={lastLogin} radius={85} />
-        </p>
+        <p className="mt-3 text-xs uppercase tracking-[0.2em]">Last login</p>
+        <p className="mt-1 text-sm">{lastLogin}</p>
       </div>
 
       <nav className="mt-8 grid gap-2">

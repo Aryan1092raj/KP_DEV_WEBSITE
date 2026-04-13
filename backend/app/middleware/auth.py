@@ -36,6 +36,25 @@ def _extract_email(user: object) -> str | None:
     return str(email) if email else None
 
 
+def _extract_last_sign_in_at(user: object) -> datetime | None:
+    raw_value = getattr(user, "last_sign_in_at", None)
+
+    if raw_value is None:
+        return None
+
+    if isinstance(raw_value, datetime):
+        return raw_value
+
+    if isinstance(raw_value, str) and raw_value:
+        normalized = raw_value.replace("Z", "+00:00")
+        try:
+            return datetime.fromisoformat(normalized)
+        except ValueError:
+            return None
+
+    return None
+
+
 def build_admin_session(user: object, expires_at: datetime) -> AdminSessionResponse:
     role = _extract_role(user)
     user_id = _extract_user_id(user)
@@ -49,6 +68,7 @@ def build_admin_session(user: object, expires_at: datetime) -> AdminSessionRespo
             id=user_id,
             email=_extract_email(user),
             role=role,
+            last_sign_in_at=_extract_last_sign_in_at(user),
         ),
     )
 
@@ -58,6 +78,11 @@ def create_admin_session_token(session: AdminSessionResponse) -> str:
         "sub": session.user.id,
         "email": session.user.email,
         "role": session.user.role,
+        "last_sign_in_at": (
+            session.user.last_sign_in_at.isoformat()
+            if session.user.last_sign_in_at is not None
+            else None
+        ),
         "iat": int(datetime.now(timezone.utc).timestamp()),
         "exp": int(session.expires_at.timestamp()),
     }
@@ -125,6 +150,8 @@ def _decode_admin_session(token: str) -> AdminSessionResponse:
     role = payload.get("role")
     user_id = payload.get("sub")
     expires_at_raw = payload.get("exp")
+    iat_raw = payload.get("iat")
+    last_sign_in_at_raw = payload.get("last_sign_in_at")
 
     if role != "admin" or not user_id or not expires_at_raw:
         raise HTTPException(
@@ -133,12 +160,26 @@ def _decode_admin_session(token: str) -> AdminSessionResponse:
         )
 
     expires_at = datetime.fromtimestamp(expires_at_raw, tz=timezone.utc)
+
+    last_sign_in_at: datetime | None = None
+    if isinstance(last_sign_in_at_raw, str) and last_sign_in_at_raw:
+        try:
+            last_sign_in_at = datetime.fromisoformat(
+                last_sign_in_at_raw.replace("Z", "+00:00")
+            )
+        except ValueError:
+            last_sign_in_at = None
+
+    if last_sign_in_at is None and isinstance(iat_raw, (int, float)):
+        last_sign_in_at = datetime.fromtimestamp(iat_raw, tz=timezone.utc)
+
     return AdminSessionResponse(
         expires_at=expires_at,
         user=AdminUserResponse(
             id=str(user_id),
             email=payload.get("email"),
             role=role,
+            last_sign_in_at=last_sign_in_at,
         ),
     )
 

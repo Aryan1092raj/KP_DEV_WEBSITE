@@ -11,13 +11,11 @@ import { contactService } from "../../services/contactService";
 import { eventService } from "../../services/eventService";
 import { memberService } from "../../services/memberService";
 import { projectService } from "../../services/projectService";
-import { timelineService } from "../../services/timelineService";
 
 const dashboardFixture = {
   members: [{ id: "fixture-member" }],
   projects: [{ id: "fixture-project" }],
   events: [{ id: "fixture-event" }],
-  timeline: [{ id: "fixture-timeline" }],
   announcements: [
     { id: "fixture-announcement-1", title: "Spring sprint opens", author: "Core Team", is_published: true },
     { id: "fixture-announcement-2", title: "Workshop schedule updated", author: "Events Desk", is_published: true },
@@ -41,7 +39,6 @@ const emptySummary = {
   members: [],
   projects: [],
   events: [],
-  timeline: [],
   announcements: [],
   applications: [],
   contactMessages: [],
@@ -66,12 +63,11 @@ export default function AdminDashboard() {
     }
 
     try {
-      const [members, projects, events, timeline, announcements, applications, contactMessages] =
+      const [members, projects, events, announcements, applications, contactMessages] =
         await Promise.all([
           memberService.getAdminAll(),
           projectService.getAdminAll(),
           eventService.getAdminAll(),
-          timelineService.getAdminAll(),
           announcementService.getAdminAll(),
           applicationService.getAdminAll(),
           contactService.getAdminAll(),
@@ -81,7 +77,6 @@ export default function AdminDashboard() {
         members,
         projects,
         events,
-        timeline,
         announcements,
         applications,
         contactMessages,
@@ -108,7 +103,6 @@ export default function AdminDashboard() {
     { label: "Members", value: activeSummary.members.length, to: "/admin/members" },
     { label: "Projects", value: activeSummary.projects.length, to: "/admin/projects" },
     { label: "Events", value: activeSummary.events.length, to: "/admin/events" },
-    { label: "Timeline", value: activeSummary.timeline.length, to: "/admin/timeline" },
     { label: "Announcements", value: activeSummary.announcements.length, to: "/admin/announcements" },
     {
       label: "Applications",
@@ -119,7 +113,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Skeleton
         fallback={<AdminDashboardFallback />}
         fixture={<AdminDashboardFallback />}
@@ -151,7 +145,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid gap-x-5 gap-y-7 xl:grid-cols-2">
           <div className="admin-card">
             <h2 className="text-2xl font-semibold">
               <VariableText label="Recent announcements" />
