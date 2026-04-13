@@ -15,8 +15,10 @@ const fixtureUpcomingEvents = [
     id: "fixture-upcoming-1",
     event_type: "Workshop",
     is_upcoming: true,
+    is_ongoing: false,
     title: "Systems Design Lab",
     event_date: "2026-04-20",
+    end_date: "2026-04-20",
     description:
       "A guided session on backend tradeoffs, observability, and production constraints.",
     resource_url: "#",
@@ -25,8 +27,10 @@ const fixtureUpcomingEvents = [
     id: "fixture-upcoming-2",
     event_type: "Hackathon",
     is_upcoming: true,
+    is_ongoing: false,
     title: "Night Build Sprint",
     event_date: "2026-05-01",
+    end_date: "2026-05-03",
     description:
       "An overnight sprint focused on shipping prototypes and demo-ready MVPs.",
     resource_url: "#",
@@ -41,6 +45,7 @@ const fixtureOngoingEvents = [
     is_ongoing: true,
     title: "Build Week",
     event_date: "2026-04-07",
+    end_date: "2026-04-14",
     description:
       "A week-long build sprint where teams ship features, demos, and production fixes.",
     resource_url: "#",
@@ -54,8 +59,10 @@ const fixtureAllEvents = [
     id: "fixture-past-1",
     event_type: "Talk",
     is_upcoming: false,
+    is_ongoing: false,
     title: "Scaling Student Projects",
     event_date: "2026-03-11",
+    end_date: "2026-03-11",
     description:
       "A deep dive into architecture choices that survive rapid growth and team turnover.",
     resource_url: "#",
@@ -64,8 +71,10 @@ const fixtureAllEvents = [
     id: "fixture-past-2",
     event_type: "Session",
     is_upcoming: false,
+    is_ongoing: false,
     title: "Prompt Evaluation Clinic",
     event_date: "2026-02-24",
+    end_date: "2026-02-24",
     description:
       "Hands-on review of prompt evaluation methods and reproducible experiment design.",
     resource_url: "#",
@@ -122,8 +131,13 @@ export default function EventsPage() {
     () =>
       (upcoming ?? []).map((event) => ({
         ...event,
-        is_ongoing: false,
-      })),
+        event_date:
+          typeof event.event_date === "string" ? event.event_date.slice(0, 10) : "",
+        end_date:
+          typeof event.end_date === "string" ? event.end_date.slice(0, 10) : null,
+        is_upcoming: Boolean(event.is_upcoming),
+        is_ongoing: Boolean(event.is_ongoing),
+      })).filter((event) => !event.is_ongoing),
     [upcoming],
   );
 
@@ -132,10 +146,17 @@ export default function EventsPage() {
       (allEvents ?? []).map((event) => {
         const eventDate =
           typeof event.event_date === "string" ? event.event_date.slice(0, 10) : "";
-        const isOngoing = !event.is_upcoming && Boolean(eventDate) && eventDate >= todayIso;
+        const endDate =
+          typeof event.end_date === "string" ? event.end_date.slice(0, 10) : null;
+        const hasNotEnded = !endDate || endDate >= todayIso;
+        const isOngoing = Boolean(event.is_ongoing) && hasNotEnded;
+        const isUpcoming = Boolean(event.is_upcoming) && !isOngoing;
 
         return {
           ...event,
+          event_date: eventDate,
+          end_date: endDate,
+          is_upcoming: isUpcoming,
           is_ongoing: isOngoing,
         };
       }),

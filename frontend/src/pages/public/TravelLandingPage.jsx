@@ -67,7 +67,6 @@ export default function TravelLandingPage() {
   const [showStation, setShowStation] = useState(true);
   const [travelVelocity, setTravelVelocity] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isTouchLayout, setIsTouchLayout] = useState(false);
 
   const stationCount = stations.length;
   const segments = Math.max(stationCount - 1, 1);
@@ -105,31 +104,6 @@ export default function TravelLandingPage() {
   useEffect(() => {
     setActiveStationIndex(nearestStationIndex);
   }, [nearestStationIndex]);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia("(pointer: coarse)");
-    const updatePointerMode = () => {
-      setIsTouchLayout(mediaQuery.matches);
-    };
-
-    updatePointerMode();
-
-    if (typeof mediaQuery.addEventListener === "function") {
-      mediaQuery.addEventListener("change", updatePointerMode);
-      return () => {
-        mediaQuery.removeEventListener("change", updatePointerMode);
-      };
-    }
-
-    mediaQuery.addListener(updatePointerMode);
-    return () => {
-      mediaQuery.removeListener(updatePointerMode);
-    };
-  }, []);
 
   useEffect(() => {
     if (!showStation) {
@@ -544,12 +518,6 @@ export default function TravelLandingPage() {
               </div>
             </div>
           </div>
-
-          <p className="travel-scroll-hint is-active">
-            {isTouchLayout
-              ? "Swipe in the route preview or tap a station."
-              : "Scroll, use arrow keys, or tap a station."}
-          </p>
 
           <div aria-label="Route stations" className="travel-station-rail" role="tablist">
             {stations.map((station, index) => (
